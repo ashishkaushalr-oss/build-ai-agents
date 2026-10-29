@@ -1,0 +1,11 @@
+# Third-party course material (MIT xPRO transcripts and workbooks), not redistributable
+source/mit/
+
+# Local tooling and scratch
+.claude/
+src/*parts/
+dist/_*.js
+__pycache__/
+*.pyc
+.DS_Store
+Thumbs.db

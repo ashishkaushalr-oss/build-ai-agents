@@ -1,0 +1,1977 @@
+<title>Claude Projects</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: a sticky lesson rail over stacked "scenes"; every scene pairs one live visual with two to four plain sentences. */
+:root{
+  --bg:#F4F6FB; --surface:#FFFFFF; --surface-2:#E9EEF7; --line:#D6DEEC; --fg:#0E1626; --muted:#5B6882;
+  --think:#6A52F5; --act:#F2552E; --observe:#0E9F86;
+  --think-soft:#ECE8FF; --act-soft:#FFE9E2; --observe-soft:#DDF5EF;
+  --accent:var(--act); --accent-ink:#FFFFFF;
+  --ok:#1E9E5A; --warn:#D99400; --bad:#D63B3B;
+  --stage:#0B1020; --stage-2:#141D36; --stage-fg:#EAF0FF; --stage-muted:#8E9BBE; --stage-line:#26325A;
+  --shadow:0 10px 30px rgba(14,22,38,.08);
+  --font-display:"Bricolage Grotesque","Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-body:"Figtree",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --font-mono:"JetBrains Mono",ui-monospace,"Cascadia Code",Consolas,monospace;
+  --r-s:10px; --r-m:14px; --r-l:20px;
+  --wrap:1120px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0B1020; --surface:#121A2E; --surface-2:#1A2440; --line:#273253; --fg:#EAF0FF; --muted:#9AA8C9;
+    --think:#8F7BFF; --act:#FF7A58; --observe:#2CD2B2;
+    --think-soft:#231F4A; --act-soft:#3A2220; --observe-soft:#123A35;
+    --ok:#3CC27A; --warn:#F2B53C; --bad:#F26A6A;
+    --stage:#070B16; --stage-2:#0F1730; --stage-fg:#EAF0FF; --stage-muted:#8E9BBE; --stage-line:#26325A;
+    --shadow:0 10px 30px rgba(0,0,0,.35);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0B1020; --surface:#121A2E; --surface-2:#1A2440; --line:#273253; --fg:#EAF0FF; --muted:#9AA8C9;
+  --think:#8F7BFF; --act:#FF7A58; --observe:#2CD2B2;
+  --think-soft:#231F4A; --act-soft:#3A2220; --observe-soft:#123A35;
+  --ok:#3CC27A; --warn:#F2B53C; --bad:#F26A6A;
+  --stage:#070B16; --stage-2:#0F1730; --stage-fg:#EAF0FF; --stage-muted:#8E9BBE; --stage-line:#26325A;
+  --shadow:0 10px 30px rgba(0,0,0,.35);
+  color-scheme:dark;
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.6 var(--font-body);-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--bg)}
+h1,h2,h3,h4{font-family:var(--font-display);line-height:1.1;margin:0;text-wrap:balance;letter-spacing:-.01em}
+h1{font-size:clamp(2rem,4.5vw,3.25rem);font-weight:800}
+h2{font-size:clamp(1.6rem,3vw,2.25rem);font-weight:700}
+h3{font-size:1.35rem;font-weight:700}
+h4{font-size:1.05rem;font-weight:700}
+p{margin:0}
+a{color:inherit}
+button{font:inherit;color:inherit}
+img,canvas,svg{max-width:100%}
+code,kbd,pre{font-family:var(--font-mono)}
+code{font-size:.9em;background:var(--surface-2);padding:.1em .4em;border-radius:6px}
+pre.code{font-size:13px;line-height:1.55;background:var(--stage);color:var(--stage-fg);padding:14px 16px;border-radius:var(--r-m);overflow-x:auto;margin:0;white-space:pre}
+pre.code code{background:none;padding:0;font-size:inherit}
+pre.code .k{color:#8F7BFF}pre.code .s{color:#2CD2B2}pre.code .c{color:#8E9BBE}pre.code .n{color:#FFB38A}
+:focus-visible{outline:3px solid color-mix(in srgb,var(--think) 55%,transparent);outline-offset:2px;border-radius:6px}
+.visually-hidden{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+.wrap{max-width:var(--wrap);margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.muted{color:var(--muted)}
+.mono{font-family:var(--font-mono)}
+.num{font-variant-numeric:tabular-nums}
+.stack{display:grid;gap:14px}
+.stack-l{display:grid;gap:24px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.grid-2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.grid-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+@media (max-width:760px){.grid-2,.grid-3{grid-template-columns:1fr}}
+.eyebrow{font-family:var(--font-display);font-size:.78rem;letter-spacing:.14em;text-transform:uppercase;font-weight:700;color:var(--muted)}
+.lede{font-size:1.15rem;line-height:1.55;max-width:60ch}
+
+/* ---------- Rail (sticky header) ---------- */
+.rail{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:color-mix(in srgb,var(--bg) 86%,transparent);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.rail .wrap{display:flex;align-items:center;gap:12px;min-height:58px;flex-wrap:wrap;padding-block:8px}
+.rail__badge{font-family:var(--font-display);font-weight:800;font-size:.95rem;background:var(--fg);color:var(--bg);border-radius:9px;padding:4px 9px;letter-spacing:.02em;white-space:nowrap}
+.rail__title{font-family:var(--font-display);font-weight:700;font-size:1.05rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.rail__nav{display:flex;gap:6px;margin-left:auto;overflow-x:auto;scrollbar-width:none;max-width:100%}
+.rail__nav::-webkit-scrollbar{display:none}
+.rail__pill{display:inline-flex;align-items:center;gap:7px;padding:6px 11px;border-radius:999px;border:1px solid transparent;text-decoration:none;font-size:.88rem;font-weight:600;color:var(--muted);white-space:nowrap}
+.rail__pill:hover{color:var(--fg);background:var(--surface-2)}
+.rail__pill.is-active{color:var(--fg);border-color:var(--line);background:var(--surface)}
+.rail__dot{width:8px;height:8px;border-radius:50%;background:var(--line);flex:none;transition:background .3s,transform .3s}
+.rail__pill.is-done .rail__dot{background:var(--observe);transform:scale(1.25)}
+.rail__links{display:flex;gap:6px}
+.rail__links a{font-size:.85rem;font-weight:600;color:var(--muted);text-decoration:none;padding:6px 10px;border-radius:999px;border:1px solid var(--line);background:var(--surface);white-space:nowrap}
+.rail__links a:hover{color:var(--fg)}
+@media (max-width:720px){.rail__title{display:none}.rail__nav{margin-left:0;order:3;flex-basis:100%}}
+
+/* ---------- Hero / stage ---------- */
+.hero{background:var(--stage);color:var(--stage-fg);position:relative;overflow:hidden}
+.hero::after{content:"";position:absolute;inset:auto -20% -60% -20%;height:60%;background:radial-gradient(60% 100% at 50% 100%,color-mix(in srgb,var(--think) 35%,transparent),transparent 70%);pointer-events:none}
+.hero .wrap{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:32px;align-items:center;padding-block:40px;position:relative;z-index:1}
+.hero__text{display:grid;gap:16px}
+.hero__text .eyebrow{color:var(--stage-muted)}
+.hero__text .lede{color:color-mix(in srgb,var(--stage-fg) 82%,transparent)}
+.hero__actions{display:flex;gap:10px;flex-wrap:wrap}
+.stage{position:relative;width:100%;max-width:100%;aspect-ratio:4/3;background:var(--stage-2);border:1px solid var(--stage-line);border-radius:var(--r-l);overflow:hidden;box-shadow:0 30px 60px rgba(0,0,0,.35)}
+.stage canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.stage svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+.stage__label{position:absolute;left:14px;top:12px;font-family:var(--font-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--stage-muted)}
+.stage__hud{position:absolute;right:12px;bottom:12px;left:12px;display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;align-items:center}
+.stage--wide{aspect-ratio:16/9}
+@media (max-width:820px){.hero .wrap{grid-template-columns:1fr;padding-block:28px}.stage{aspect-ratio:16/11}}
+
+/* ---------- Buttons, chips ---------- */
+.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--fg);font-weight:600;font-size:.95rem;cursor:pointer;text-decoration:none;line-height:1.2;transition:transform .12s,background .2s,border-color .2s}
+.btn:hover{border-color:color-mix(in srgb,var(--fg) 30%,var(--line))}
+.btn:active{transform:translateY(1px)}
+.btn:disabled{opacity:.55;cursor:not-allowed}
+.btn--primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn--primary:hover{filter:brightness(1.05);border-color:var(--accent)}
+.btn--think{background:var(--think);border-color:var(--think);color:#fff}
+.btn--observe{background:var(--observe);border-color:var(--observe);color:#fff}
+.btn--small{padding:6px 11px;font-size:.85rem}
+.hero .btn{background:transparent;color:var(--stage-fg);border-color:var(--stage-line)}
+.hero input[type=text],.hero input[type=number],.hero textarea,.hero select{background:#FFFFFF;color:#0E1626;border-color:var(--stage-line)}
+.hero input::placeholder,.hero textarea::placeholder{color:#5B6882}
+.hero .btn--primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;font-size:.8rem;font-weight:700;letter-spacing:.02em;background:var(--surface-2);color:var(--fg)}
+.chip--think{background:var(--think-soft);color:var(--think)}
+.chip--act{background:var(--act-soft);color:var(--act)}
+.chip--observe{background:var(--observe-soft);color:var(--observe)}
+.chip--ok{background:color-mix(in srgb,var(--ok) 15%,var(--surface));color:var(--ok)}
+.chip--warn{background:color-mix(in srgb,var(--warn) 18%,var(--surface));color:var(--warn)}
+.chip--bad{background:color-mix(in srgb,var(--bad) 14%,var(--surface));color:var(--bad)}
+.kbd{font-family:var(--font-mono);font-size:.8rem;border:1px solid var(--line);border-bottom-width:2px;border-radius:6px;padding:1px 6px;background:var(--surface)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;padding:3px;background:var(--surface);gap:2px;flex-wrap:wrap}
+.seg button{border:0;background:transparent;padding:6px 12px;border-radius:999px;font-weight:600;font-size:.88rem;cursor:pointer;color:var(--muted)}
+.seg button.is-on{background:var(--fg);color:var(--bg)}
+input[type=range]{accent-color:var(--think);width:100%}
+input[type=text],input[type=number],input[type=email],textarea,select{font:inherit;color:inherit;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-s);padding:9px 12px;width:100%;max-width:100%}
+textarea{min-height:120px;resize:vertical;line-height:1.5}
+.field{display:grid;gap:6px}
+.field>span{font-size:.85rem;font-weight:600;color:var(--muted)}
+
+/* ---------- Scenes ---------- */
+.scene{padding-block:56px;border-top:1px solid var(--line)}
+.scene:first-of-type{border-top:0}
+.scene__head{display:grid;gap:10px;margin-bottom:28px;max-width:70ch}
+.scene__kicker{display:inline-flex;align-items:center;gap:8px;font-family:var(--font-display);font-size:.8rem;letter-spacing:.14em;text-transform:uppercase;font-weight:800}
+.scene__kicker::before{content:"";width:22px;height:4px;border-radius:2px;background:currentColor}
+.scene__kicker--learn{color:var(--think)}
+.scene__kicker--try{color:var(--observe)}
+.scene__kicker--lab{color:var(--act)}
+.scene__kicker--quiz{color:var(--fg)}
+.scene__kicker--build{color:var(--act)}
+.scene__head p{color:var(--muted);font-size:1.05rem}
+.concept{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:32px;align-items:center;padding-block:28px}
+.concept+.concept{border-top:1px dashed var(--line)}
+.concept:nth-of-type(even) .concept__viz{order:2}
+.concept__viz{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-l);padding:18px;min-height:240px;display:grid;align-content:center;gap:12px;overflow:hidden;box-shadow:var(--shadow);min-width:0}
+.concept__viz canvas{width:100%;display:block;border-radius:var(--r-m)}
+.concept__viz--dark{background:var(--stage);color:var(--stage-fg);border-color:var(--stage-line)}
+.concept__text{display:grid;gap:14px;min-width:0}
+.concept__text p{max-width:58ch;font-size:1.05rem}
+.key{display:grid;gap:4px;padding:14px 16px;border-radius:var(--r-m);background:var(--surface-2)}
+.key::before{content:"Key idea";font-family:var(--font-display);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:800}
+.key p{font-weight:600;font-size:1rem}
+@media (max-width:820px){.concept{grid-template-columns:1fr;gap:18px}.concept:nth-of-type(even) .concept__viz{order:0}}
+.viz-caption{font-size:.85rem;color:var(--muted);display:flex;gap:10px;justify-content:space-between;flex-wrap:wrap}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:.85rem;color:var(--muted)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:middle}
+
+/* ---------- Cards, notes ---------- */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-l);padding:20px;min-width:0}
+.card h3,.card h4{margin-bottom:8px}
+.note{padding:14px 16px;border-radius:var(--r-m);background:var(--surface-2);display:grid;gap:6px}
+.note--warn{background:color-mix(in srgb,var(--warn) 16%,var(--surface))}
+.note--think{background:var(--think-soft)}
+.note--observe{background:var(--observe-soft)}
+.note strong{font-family:var(--font-display)}
+.deliverable{border:2px dashed color-mix(in srgb,var(--act) 55%,var(--line));border-radius:var(--r-l);padding:20px;background:var(--surface);display:grid;gap:10px}
+.deliverable h4{color:var(--act)}
+.deliverable h4::before{content:"Deliverable · ";color:var(--muted);font-weight:600}
+details.hint{border:1px solid var(--line);border-radius:var(--r-m);background:var(--surface);padding:0 16px}
+details.hint summary{cursor:pointer;padding:12px 0;font-weight:600;list-style:none;display:flex;align-items:center;gap:8px}
+details.hint summary::-webkit-details-marker{display:none}
+details.hint summary::before{content:"+";display:inline-grid;place-items:center;width:20px;height:20px;border-radius:6px;background:var(--surface-2);font-weight:800}
+details.hint[open] summary::before{content:"\2013"}
+details.hint>*:not(summary){padding-bottom:14px}
+.table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r-m);background:var(--surface)}
+table.tbl{border-collapse:collapse;width:100%;font-size:.95rem;min-width:520px}
+table.tbl th,table.tbl td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+table.tbl th{font-family:var(--font-display);font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);background:var(--surface-2)}
+table.tbl tr:last-child td{border-bottom:0}
+table.tbl input[type=text],table.tbl textarea{min-height:0;padding:6px 8px;font-size:.9rem}
+
+/* ---------- Steps / checklists ---------- */
+.steps{list-style:none;padding:0;margin:0;display:grid;gap:10px;counter-reset:step}
+.steps>li{display:grid;grid-template-columns:auto 1fr;gap:14px;padding:14px 16px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-m);align-items:start;transition:opacity .25s}
+.steps>li.done{opacity:.6}
+.steps>li.done .step__body>:first-child{text-decoration:line-through;text-decoration-color:var(--observe)}
+.steps--numbered>li{counter-increment:step;grid-template-columns:auto auto 1fr}
+.steps--numbered>li .step__num{font-family:var(--font-display);font-weight:800;font-size:.85rem;color:var(--muted);min-width:22px;padding-top:4px}
+.steps--numbered>li .step__num::before{content:counter(step,decimal-leading-zero)}
+.step__body{display:grid;gap:6px;min-width:0}
+.step__body>p{margin:0}
+.step__notice{font-size:.9rem;color:var(--muted)}
+.step__notice strong{color:var(--observe)}
+.check{appearance:none;-webkit-appearance:none;width:24px;height:24px;border:2px solid var(--line);border-radius:8px;display:inline-grid;place-items:center;cursor:pointer;margin:2px 0 0;background:var(--surface);transition:background .2s,border-color .2s;flex:none;position:relative}
+.check::after{content:"";width:6px;height:11px;border:solid #fff;border-width:0 2.5px 2.5px 0;transform:rotate(45deg) translate(-1px,-1px) scale(0);transition:transform .15s}
+.check:checked{background:var(--observe);border-color:var(--observe)}
+.check:checked::after{transform:rotate(45deg) translate(-1px,-1px) scale(1)}
+.check-row{display:flex;gap:12px;align-items:flex-start;cursor:pointer}
+.progress{height:8px;border-radius:999px;background:var(--surface-2);overflow:hidden}
+.progress>i{display:block;height:100%;width:0;background:var(--observe);border-radius:999px;transition:width .5s cubic-bezier(.2,.8,.2,1)}
+.progress--think>i{background:var(--think)}
+.progress--act>i{background:var(--act)}
+.meter{display:grid;gap:6px}
+.meter__row{display:flex;justify-content:space-between;font-size:.85rem;color:var(--muted)}
+.meter__row b{color:var(--fg)}
+
+/* ---------- Quiz ---------- */
+.quiz{display:grid;gap:16px}
+.q{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-l);padding:20px;display:grid;gap:12px}
+.q__num{font-family:var(--font-display);font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:800}
+.q__text{font-weight:600;font-size:1.05rem}
+.opts{display:grid;gap:8px}
+.opt{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border:1px solid var(--line);border-radius:var(--r-m);background:var(--bg);cursor:pointer;text-align:left;transition:border-color .15s,background .15s}
+.opt:hover:not(:disabled){border-color:var(--think)}
+.opt:disabled{cursor:default}
+.opt__key{font-family:var(--font-mono);font-size:.8rem;font-weight:700;color:var(--muted);min-width:18px;padding-top:2px}
+.opt.is-correct{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 12%,var(--surface))}
+.opt.is-wrong{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 10%,var(--surface))}
+.q__why{padding:10px 12px;border-radius:var(--r-s);background:var(--surface-2);font-size:.95rem}
+.q__why b{color:var(--ok)}
+.q__why.is-bad b{color:var(--bad)}
+.quiz__result{display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:center;padding:20px;border-radius:var(--r-l);background:var(--surface);border:1px solid var(--line)}
+.quiz__score{font-family:var(--font-display);font-size:3rem;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
+.quiz__score small{font-size:1.2rem;color:var(--muted);font-weight:700}
+.reflect{display:grid;gap:10px}
+.reflect details{border:1px solid var(--line);border-radius:var(--r-m);background:var(--surface);padding:0 16px}
+.reflect summary{cursor:pointer;padding:12px 0;font-weight:600;list-style:none;display:flex;justify-content:space-between;gap:12px}
+.reflect summary::-webkit-details-marker{display:none}
+.reflect summary::after{content:"Show a model answer";font-size:.8rem;color:var(--think);font-weight:700;white-space:nowrap}
+.reflect details[open] summary::after{content:"Hide"}
+.reflect details p{padding-bottom:14px;color:var(--muted)}
+
+/* ---------- Wrap-up footer ---------- */
+.wrapup{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-l);padding:24px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:22px;align-items:center}
+.wrapup__stats{display:flex;gap:22px;flex-wrap:wrap}
+.stat{display:grid;gap:2px}
+.stat b{font-family:var(--font-display);font-size:1.6rem;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
+.stat span{font-size:.8rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-weight:700}
+.pager{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;padding-block:28px}
+.pager a{text-decoration:none;display:grid;gap:2px;padding:12px 16px;border:1px solid var(--line);border-radius:var(--r-m);background:var(--surface);min-width:200px}
+.pager a span{font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.pager a b{font-family:var(--font-display)}
+.pager a:last-child{text-align:right}
+.weeks{display:flex;gap:6px;flex-wrap:wrap}
+.weeks a{display:inline-grid;place-items:center;width:34px;height:34px;border-radius:10px;border:1px solid var(--line);background:var(--surface);text-decoration:none;font-family:var(--font-display);font-weight:800;font-size:.85rem;color:var(--muted)}
+.weeks a.is-current{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.weeks a:hover{color:var(--fg)}
+footer.site{padding-block:32px 48px;color:var(--muted);font-size:.9rem;display:grid;gap:14px}
+@media (max-width:720px){.wrapup{grid-template-columns:1fr}}
+
+/* ---------- Day tabs (five days a week) ---------- */
+/* five day tabs */
+.days{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin-top:22px}
+@media (max-width:820px){.days{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:6px;scrollbar-width:thin}.days .dayt{min-width:170px;scroll-snap-align:start}}
+.dayt{display:grid;gap:4px;text-align:left;padding:12px 34px 12px 14px;border:1px solid var(--line);border-radius:var(--r-m);background:var(--surface);cursor:pointer;position:relative;transition:border-color .2s,background .2s;min-width:0;color:var(--fg)}
+.dayt:hover{border-color:color-mix(in srgb,var(--fg) 30%,var(--line))}
+.dayt.is-on{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.dayt__n{font-family:var(--font-display);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;font-weight:800;color:var(--muted)}
+.dayt__t{font-size:.78rem;color:var(--muted)}
+.dayt.is-on .dayt__n,.dayt.is-on .dayt__t{color:color-mix(in srgb,var(--bg) 72%,transparent)}
+.dayt b{font-family:var(--font-display);font-size:.98rem;line-height:1.2}
+.dayt__dot{position:absolute;right:12px;top:13px;width:9px;height:9px;border-radius:50%;background:var(--line)}
+.dayt.is-on .dayt__dot{background:color-mix(in srgb,var(--bg) 40%,transparent)}
+.dayt.is-done .dayt__dot{background:var(--observe);box-shadow:0 0 0 3px color-mix(in srgb,var(--observe) 25%,transparent)}
+.daypanel{border-top:0;padding-top:30px}
+.today{margin-top:28px;border:1px solid color-mix(in srgb,var(--observe) 45%,var(--line));border-radius:var(--r-l);background:linear-gradient(180deg,color-mix(in srgb,var(--observe) 6%,var(--surface)),var(--surface));padding:20px;display:grid;gap:14px}
+.today__head{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:center}
+.today__head .meter{min-width:220px}
+.today .step__body textarea{min-height:76px;margin-top:6px;font-size:.92rem}
+.today pre.code{margin-top:4px}
+.daynav{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:26px}
+.part{padding-top:40px;margin-top:40px;border-top:1px dashed var(--line)}
+
+/* ---------- Live (Claude) blocks ---------- */
+.live{border:1px solid color-mix(in srgb,var(--think) 45%,var(--line));border-radius:var(--r-l);background:linear-gradient(180deg,color-mix(in srgb,var(--think) 7%,var(--surface)),var(--surface));padding:20px;display:grid;gap:14px}
+.live__head{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.live__head .chip{background:var(--think);color:#fff}
+.live__out{min-height:64px;padding:14px 16px;border-radius:var(--r-m);background:var(--surface);border:1px solid var(--line);white-space:pre-wrap;font-size:.95rem;line-height:1.55;max-height:420px;overflow:auto}
+.live__out.is-busy{color:var(--muted);font-style:italic}
+.live__missing{font-size:.9rem;color:var(--muted)}
+
+/* ---------- Motion ---------- */
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
+@keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@keyframes dash{to{stroke-dashoffset:-40}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes popin{from{transform:scale(.85);opacity:0}to{transform:scale(1);opacity:1}}
+.anim-pulse{animation:pulse 1.6s ease-in-out infinite}
+.anim-float{animation:floaty 3s ease-in-out infinite}
+.anim-dash{stroke-dasharray:6 6;animation:dash 1.2s linear infinite}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(20px);background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:999px;font-weight:600;opacity:0;transition:opacity .25s,transform .25s;z-index:50;pointer-events:none;max-width:calc(100vw - 32px)}
+.toast.is-on{opacity:1;transform:translateX(-50%) translateY(0)}
+.confetti{position:fixed;inset:0;pointer-events:none;z-index:40}
+@media (prefers-reduced-motion:reduce){
+  .anim-pulse,.anim-float,.anim-dash{animation:none}
+  *{scroll-behavior:auto!important}
+}
+
+</style>
+<style>
+/* Week 3 specifics. Every page class is prefixed w3- so nothing collides with course.css. */
+@keyframes w3pop{from{opacity:0;transform:translateY(4px) scale(.97)}to{opacity:1;transform:none}}
+@keyframes w3blink{50%{opacity:0}}
+.tin{width:100%;min-width:0;font:inherit;padding:10px 12px;border:1px solid var(--line);border-radius:var(--r-s);background:var(--surface);color:var(--fg)}
+.concept__text p+p{margin-top:2px}
+.aside{padding:12px 14px;border-left:3px solid var(--think);background:var(--surface-2);border-radius:0 var(--r-m) var(--r-m) 0;font-size:.95rem;color:var(--muted)}
+.aside b{color:var(--fg)}
+.w3-bank{display:flex;gap:6px;flex-wrap:wrap}
+.w3-bank .btn{padding:6px 10px;font-size:.84rem}
+.w3-bank .btn.is-on{background:var(--think);border-color:var(--think);color:#fff}
+.w3-ctrl{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.w3-ctrl label{display:flex;gap:8px;align-items:center;font-size:.85rem;color:var(--muted)}
+.w3-ctrl input[type=range]{width:120px}
+.w3-readout{display:flex;gap:16px;flex-wrap:wrap;font-size:.9rem;color:var(--muted);align-items:center}
+.w3-readout b{color:var(--fg);font-variant-numeric:tabular-nums;font-family:var(--font-display);font-size:1.05rem}
+.w3-files{display:flex;gap:6px;flex-wrap:wrap;min-height:26px}
+/* concept 1: the three parts of a Project */
+.w3-parts{display:grid;gap:10px}
+.w3-parts svg{width:100%;height:auto;display:block}
+.w3-piece{cursor:pointer;transition:opacity .25s}
+.w3-piece rect{transition:stroke-width .2s}
+.w3-parts.has-pick .w3-piece:not(.is-on){opacity:.4}
+.w3-piece.is-on rect{stroke-width:3.5}
+.w3-explain{padding:12px 14px;border-radius:var(--r-m);background:var(--surface-2);display:grid;gap:4px;min-height:96px;font-size:.95rem}
+.w3-explain b{font-family:var(--font-display)}
+.w3-explain .muted{font-size:.9rem}
+/* canvases */
+#w3RulesCanvas{height:272px}#w3BudgetCanvas{height:212px}#w3RagCanvas{height:300px}#w3ArtCanvas{height:300px}#w3TeamCanvas{height:230px}#w3LoopCanvas{height:256px}
+@media (max-width:480px){#w3ArtCanvas{height:270px}#w3RagCanvas{height:320px}}
+/* concept 5: versions */
+.w3-vers{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.w3-vers .btn.is-on{background:var(--think);border-color:var(--think);color:#fff}
+.concept__viz--dark .btn:not(.btn--think):not(.is-on){background:transparent;color:var(--stage-fg);border-color:var(--stage-line)}
+/* concept 6: metadata */
+.w3-meta{display:grid;gap:12px}
+.w3-meta__opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:6px}
+.w3-meta__opts label{display:flex;gap:10px;align-items:flex-start;padding:8px 10px;border:1px solid var(--line);border-radius:var(--r-s);background:var(--surface);font-size:.88rem;cursor:pointer;min-width:0;transition:border-color .2s,background .2s}
+.w3-meta__opts label.is-on{border-color:var(--observe);background:var(--observe-soft)}
+.w3-meta__opts label span{min-width:0}
+.w3-tick{accent-color:var(--observe);width:18px;height:18px;margin:2px 0 0;flex:none}
+.w3-meta__file{font-family:var(--font-mono);font-size:.88rem;padding:10px 12px;border-radius:var(--r-s);background:var(--surface-2);overflow-wrap:anywhere;display:grid;gap:2px}
+.w3-meta__file small{font-family:var(--font-body);color:var(--muted)}
+.w3-meta__ans{padding:12px 14px;border-radius:var(--r-m);border:1px solid var(--line);background:var(--surface);font-size:.95rem;display:grid;gap:6px;transition:border-color .3s}
+.w3-meta__ans.is-good{border-color:var(--ok)}
+.w3-meta__cite{font-family:var(--font-mono);font-size:.84rem;color:var(--observe);overflow-wrap:anywhere}
+.w3-meta__cite.is-bad{color:var(--bad)}
+/* concept 7: who sees what */
+.w3-roles,.w3-sheet{min-width:0}
+.w3-roles table.tbl{min-width:0;font-size:.86rem}
+.w3-roles table.tbl td,.w3-roles table.tbl th{padding:8px 10px}
+.w3-roles tr.is-on td{background:var(--think-soft)}
+.w3-roles td:first-child{font-weight:600;white-space:nowrap}
+/* concept 8: project or agent */
+.w3-verdict{padding:12px 14px;border-radius:var(--r-m);background:var(--surface-2);font-size:.92rem;display:grid;gap:6px;min-height:72px}
+.w3-verdict b{font-family:var(--font-display)}
+/* concept 9: answer anatomy */
+.w3-anat{display:grid;gap:12px}
+.w3-anat__q{font-weight:600;font-size:.98rem}
+.w3-anat__a{min-height:96px;padding:12px 14px;border-radius:var(--r-m);border:1px solid var(--line);background:var(--surface);font-size:.95rem;line-height:1.55;transition:border-color .3s}
+.w3-anat__a.is-typing::after{content:"";display:inline-block;width:2px;height:1em;background:var(--think);vertical-align:-2px;margin-left:2px;animation:w3blink 1s steps(1) infinite}
+.w3-anat__a.is-pass{border-color:var(--ok)}.w3-anat__a.is-fail{border-color:var(--bad)}
+.w3-anat__a .cite{font-family:var(--font-mono);font-size:.85rem;color:var(--observe)}
+.w3-anat__parts{display:flex;gap:6px;flex-wrap:wrap;min-height:26px}
+.w3-anat__why{font-size:.9rem;color:var(--muted)}
+/* lab: score sheet and prompts */
+.w3-sheet table.tbl{min-width:640px}
+.w3-sheet table.tbl td.num{font-variant-numeric:tabular-nums;color:var(--muted);font-weight:700;font-family:var(--font-display)}
+.w3-sheet select,.w3-sheet input{width:100%;min-width:0}
+.w3-total{display:flex;gap:14px;flex-wrap:wrap;align-items:center;padding:12px 14px;border-radius:var(--r-m);background:var(--surface-2);font-size:.95rem;margin-top:10px}
+.w3-total b{font-family:var(--font-display);font-variant-numeric:tabular-nums}
+.w3-mix{display:flex;gap:8px;flex-wrap:wrap}
+.w3-copyhead{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin:14px 0 6px}
+.w3-copyhead span{font-size:.85rem;font-weight:600;color:var(--muted)}
+.dlog{display:grid;gap:10px}
+.dlog textarea{min-height:72px}
+/* practice */
+.w3-scen{display:grid;gap:14px}
+.w3-scen__q{font-family:var(--font-display);font-size:1.15rem;font-weight:700}
+.w3-scen__docs{display:grid;gap:6px;padding:12px 14px;border-radius:var(--r-m);background:var(--surface-2);font-size:.92rem}
+.w3-scen__docs span{display:flex;gap:8px;align-items:flex-start;min-width:0}
+.w3-scen__docs code{flex:none}
+.w3-scen__choices{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px}
+.w3-scen__choices .btn{justify-content:center;text-align:center;padding:12px;min-width:0}
+.w3-scen__choices .btn.is-right{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 14%,var(--surface))}
+.w3-scen__choices .btn.is-wrong{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 12%,var(--surface))}
+.w3-scen__fb{padding:12px 14px;border-radius:var(--r-m);background:var(--surface-2);font-size:.95rem}
+.w3-scen__fb b{color:var(--ok)}.w3-scen__fb.is-bad b{color:var(--bad)}
+.w3-scen__score{font-family:var(--font-display);font-size:2.4rem;font-weight:800;font-variant-numeric:tabular-nums;line-height:1}
+.w3-tray{display:flex;gap:6px;flex-wrap:wrap}
+.w3-tray i{width:18px;height:6px;border-radius:3px;background:var(--line);display:inline-block}
+.w3-tray i.is-right{background:var(--ok)}.w3-tray i.is-wrong{background:var(--bad)}
+.ok{color:var(--ok)}.bad{color:var(--bad)}
+</style>
+
+<header class="rail">
+  <div class="wrap">
+    <span class="rail__badge">Week 3</span>
+    <span class="rail__title">Claude Projects</span>
+    <nav class="rail__nav" aria-label="Days">
+      <a class="rail__pill" href="#day1"><i class="rail__dot"></i>Day 1</a>
+      <a class="rail__pill" href="#day2"><i class="rail__dot"></i>Day 2</a>
+      <a class="rail__pill" href="#day3"><i class="rail__dot"></i>Day 3</a>
+      <a class="rail__pill" href="#day4"><i class="rail__dot"></i>Day 4</a>
+      <a class="rail__pill" href="#day5"><i class="rail__dot"></i>Day 5</a>
+    </nav>
+    <div class="rail__links">
+      <a data-href="hub">Course hub</a>
+      <a data-href="doc">Course doc</a>
+    </div>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap">
+    <div class="hero__text">
+      <span class="eyebrow">Week 3 · Module 4, second half · five days · about 5 hours in total</span>
+      <h1>Hand Claude the binder once, and every chat starts already briefed.</h1>
+      <p class="lede">Last week you wrote a system prompt and watched it hold. This week you give it a home. A Project is the place in Claude where your instructions and your documents live between chats. I will show you what happens to a file after you upload it, how Claude finds the right clause in a binder too big for the window, what to keep as an Artifact, who sees what when you share, and the point where a Project stops being enough. Five short days, then a lab where you build a policy helper for a made-up company and test it like a product.</p>
+      <div class="hero__actions">
+        <a class="btn btn--primary" href="#day1">Start Day 1</a>
+        <a class="btn" href="#day5">Go to Day 5, the lab</a>
+      </div>
+    </div>
+    <div class="stage" aria-label="Animated: a binder of policy files and a card of instructions sit inside a Project. Three chats open one after another; each copies the files and the instructions in, then answers a staff question with a citation. The third question is not covered, and the answer says so.">
+      <canvas id="heroCanvas"></canvas>
+      <span class="stage__label">live · one Project, many chats</span>
+      <div class="stage__hud"><span class="chip chip--think" id="heroChat">chat 1 of 3</span><button class="btn btn--small" id="heroReplay" type="button">Replay</button></div>
+    </div>
+  </div>
+</section>
+
+<main class="wrap">
+
+  <nav class="days" id="dayTabs" aria-label="The five days of Week 3" role="tablist">
+    <button class="dayt" type="button" role="tab" id="dayt1" aria-controls="day1" aria-selected="false"><span class="dayt__n">Day 1</span><b>What a Project is</b><span class="dayt__t">about 40 min</span><i class="dayt__dot"></i></button>
+    <button class="dayt" type="button" role="tab" id="dayt2" aria-controls="day2" aria-selected="false"><span class="dayt__n">Day 2</span><b>Files and the desk</b><span class="dayt__t">about 45 min</span><i class="dayt__dot"></i></button>
+    <button class="dayt" type="button" role="tab" id="dayt3" aria-controls="day3" aria-selected="false"><span class="dayt__n">Day 3</span><b>Artifacts and good data</b><span class="dayt__t">about 50 min</span><i class="dayt__dot"></i></button>
+    <button class="dayt" type="button" role="tab" id="dayt4" aria-controls="day4" aria-selected="false"><span class="dayt__n">Day 4</span><b>Sharing, or an agent?</b><span class="dayt__t">about 60 min</span><i class="dayt__dot"></i></button>
+    <button class="dayt" type="button" role="tab" id="dayt5" aria-controls="day5" aria-selected="false"><span class="dayt__n">Day 5</span><b>The policy helper lab</b><span class="dayt__t">about 100 min</span><i class="dayt__dot"></i></button>
+  </nav>
+
+  <section class="scene daypanel" id="day1" role="tabpanel" aria-labelledby="dayt1" hidden>
+    <div class="scene__head">
+      <span class="scene__kicker scene__kicker--learn">Day 1 · about 40 minutes</span>
+      <h2>What a Project is</h2>
+      <p>Two ideas today: what a Project holds, and why rules written into a Project behave differently from the same words pasted into a chat. By the end you will have made your first Project and watched two separate chats obey rules you typed only once. Every visual is live.</p>
+    </div>
+    <!-- 1. What a Project holds -->
+    <article class="concept">
+      <div class="concept__viz">
+        <div class="w3-parts" id="w3Parts">
+          <svg viewBox="0 0 420 250" role="img" aria-label="A Project with three parts: Knowledge files, Instructions and Chats. Knowledge and Instructions flow into every chat." id="w3PartsSvg">
+            <defs><marker id="w3Arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--muted)"></path></marker></defs>
+            <rect x="6" y="6" width="408" height="238" rx="18" fill="none" stroke="var(--line)" stroke-width="2" stroke-dasharray="6 6"></rect>
+            <text x="20" y="28" font-family="JetBrains Mono, monospace" font-size="11" fill="var(--muted)">PROJECT · Company policy helper</text>
+            <path d="M190 85 C 215 85, 215 110, 238 110" fill="none" stroke="var(--line)" stroke-width="2" marker-end="url(#w3Arr)"></path>
+            <path d="M190 180 C 215 180, 215 150, 238 150" fill="none" stroke="var(--line)" stroke-width="2" marker-end="url(#w3Arr)"></path>
+            <g class="w3-piece" data-part="knowledge" id="w3PieceKnowledge" role="button" tabindex="0" aria-label="Knowledge: the files you upload">
+              <rect x="20" y="42" width="170" height="86" rx="14" fill="var(--think-soft)" stroke="var(--think)" stroke-width="2"></rect>
+              <rect x="34" y="58" width="26" height="34" rx="4" fill="var(--surface)" stroke="var(--think)" stroke-width="1.5"></rect>
+              <rect x="44" y="64" width="26" height="34" rx="4" fill="var(--surface)" stroke="var(--think)" stroke-width="1.5"></rect>
+              <rect x="54" y="70" width="26" height="34" rx="4" fill="var(--surface)" stroke="var(--think)" stroke-width="1.5"></rect>
+              <text x="96" y="80" font-family="Bricolage Grotesque, sans-serif" font-weight="800" font-size="15" fill="var(--think)">Knowledge</text>
+              <text x="96" y="98" font-family="Figtree, sans-serif" font-size="11" fill="var(--muted)">policies, sheets, contracts</text>
+              <text x="96" y="113" font-family="Figtree, sans-serif" font-size="11" fill="var(--muted)">read in every chat</text>
+            </g>
+            <g class="w3-piece" data-part="instructions" id="w3PieceInstructions" role="button" tabindex="0" aria-label="Instructions: your system prompt, applied to every chat">
+              <rect x="20" y="140" width="170" height="80" rx="14" fill="var(--observe-soft)" stroke="var(--observe)" stroke-width="2"></rect>
+              <rect x="34" y="156" width="40" height="48" rx="5" fill="var(--surface)" stroke="var(--observe)" stroke-width="1.5"></rect>
+              <path d="M41 168h26M41 178h26M41 188h18" stroke="var(--observe)" stroke-width="2" stroke-linecap="round"></path>
+              <text x="88" y="176" font-family="Bricolage Grotesque, sans-serif" font-weight="800" font-size="15" fill="var(--observe)">Instructions</text>
+              <text x="88" y="194" font-family="Figtree, sans-serif" font-size="11" fill="var(--muted)">your Week 2 prompt,</text>
+              <text x="88" y="209" font-family="Figtree, sans-serif" font-size="11" fill="var(--muted)">applied automatically</text>
+            </g>
+            <g class="w3-piece" data-part="chats" id="w3PieceChats" role="button" tabindex="0" aria-label="Chats: separate conversations that share the knowledge and the instructions">
+              <rect x="262" y="42" width="140" height="70" rx="12" fill="var(--act-soft)" stroke="var(--act)" stroke-width="2"></rect>
+              <rect x="252" y="90" width="140" height="70" rx="12" fill="var(--act-soft)" stroke="var(--act)" stroke-width="2"></rect>
+              <rect x="242" y="138" width="140" height="82" rx="12" fill="var(--act-soft)" stroke="var(--act)" stroke-width="2"></rect>
+              <text x="312" y="168" text-anchor="middle" font-family="Bricolage Grotesque, sans-serif" font-weight="800" font-size="15" fill="var(--act)">Chats</text>
+              <text x="312" y="186" text-anchor="middle" font-family="Figtree, sans-serif" font-size="11" fill="var(--muted)">separate conversations</text>
+              <text x="312" y="201" text-anchor="middle" font-family="Figtree, sans-serif" font-size="11" fill="var(--muted)">that all share both</text>
+              <text x="332" y="72" font-family="JetBrains Mono, monospace" font-size="10" fill="var(--muted)">chat 1</text>
+              <text x="322" y="120" font-family="JetBrains Mono, monospace" font-size="10" fill="var(--muted)">chat 2</text>
+            </g>
+          </svg>
+          <div class="seg" role="group" aria-label="Pick a part of the Project"><button type="button" data-part="knowledge" id="w3PickKnowledge">Knowledge</button><button type="button" data-part="instructions" id="w3PickInstructions">Instructions</button><button type="button" data-part="chats" id="w3PickChats">Chats</button></div>
+          <div class="w3-explain" id="w3PartExplain" aria-live="polite"><b>Click a part of the Project.</b><span>Each one maps onto something you would give a new colleague on their first day.</span></div>
+        </div>
+        <div class="viz-caption"><span>Click the diagram or the buttons. Each part gets its job, where you set it, and the first-day analogy.</span><span class="row chip chip--think" id="w3PartCount">0 of 3 seen</span></div>
+      </div>
+      <div class="concept__text">
+        <h3>Where does the binder live between chats?</h3>
+        <p>Think about the last time you briefed a temp or a new colleague. You handed them a folder: the policies, the price list, the two spreadsheets that matter. You told them the house rules once, on day one: how we talk to customers, what never leaves the building. After that, every conversation started from that shared footing. You did not re-explain the company each morning.</p>
+        <p>In Week 1 you saw why Claude needs exactly this. The context window is the model's desk, and the desk is cleared when a chat ends. A Project is Claude's version of the folder and the house rules. It holds three things. Knowledge: the files you upload, which Claude can read in every chat inside the Project. Instructions: the system prompt you learned to write in Week 2, applied automatically at the start of every chat. And the chats themselves: separate conversations that all share the first two without sharing each other.</p>
+        <p>Click the three parts on the left. Each one maps onto something you would give a new colleague on their first day. The one place the analogy fails is important, though. A colleague remembers yesterday's conversation. Two chats in the same Project do not. They start from the same binder and the same rules, and nothing else. If you want chat 2 to know what chat 1 decided, you write it down, in the instructions or in a file.</p>
+        <div class="aside"><b>A Project does not choose the model.</b> You still pick one per chat. I use claude-sonnet-5-5 for this kind of work and claude-haiku-5-5 when I want quick, cheap answers over the same files. Model names change, so trust the picker, not this page.</div>
+        <div class="key"><p>Knowledge, instructions, chats. Set the first two once and every chat inherits them. Chats do not inherit each other.</p></div>
+      </div>
+    </article>
+    <!-- 2. Instructions that persist -->
+    <article class="concept">
+      <div class="concept__viz">
+        <canvas id="w3RulesCanvas" aria-label="Two chat windows side by side. In the plain chat on the left, the rules card scrolls out of view as turns are added and disappears when a new chat opens. In the Project on the right, the instructions stay pinned at the top of every chat and the rules-followed bar stays full."></canvas>
+        <div class="w3-ctrl" style="margin-top:10px">
+          <label>Turns <input type="range" id="w3RulesTurns" min="1" max="30" value="1" aria-label="Number of turns in the current chat"> <span class="mono" id="w3RulesTurnsLabel" style="font-size:.8rem">turn 1</span></label>
+          <button class="btn btn--small btn--think" type="button" id="w3RulesNew">Open a new chat</button>
+          <button class="btn btn--small" type="button" id="w3RulesPaste">Paste the rules again</button>
+          <button class="btn btn--small" type="button" id="w3RulesReset">Reset</button>
+        </div>
+        <div class="viz-caption"><span id="w3RulesNote">Left: rules pasted into message 1 of a plain chat. Right: the same rules as Project instructions.</span><span class="row chip chip--ok" id="w3RulesState">rules in view on both sides</span></div>
+      </div>
+      <div class="concept__text">
+        <h3>Why do rules in a Project behave differently from rules in a chat?</h3>
+        <p>You have probably done this. You pasted a careful set of rules into message one of a chat, had a productive hour, and then noticed that reply 20 had quietly dropped the format you asked for. In Week 1 you triggered this on purpose and called it instruction drift. The rules were still in the window, but they were a long way up, under a great deal of newer text, and newer text wins attention.</p>
+        <p>Project instructions fix this structurally rather than cleverly. They are not a message. They sit in the system position at the start of every chat, which the model treats as the ground rules of the conversation rather than as one remark among many. Open a new chat and they are there again, in full, before you type a word. In Week 2 I called the system prompt the standing instruction set. A Project is where that set stands.</p>
+        <p>Try the simulation. Drag the slider to 25 turns and watch the rules card in the plain chat scroll out of view while the pinned one stays put. Then press Open a new chat. On the left the rules are simply gone, because a plain chat starts empty. On the right they are back at full strength, because the Project put them there. The rules-followed figures are illustrative; the shape is what I want you to remember.</p>
+        <p>Two honest limits. Instructions persist across chats, not within one: a very long chat inside a Project still fills its window with turns, and the model can still drift from a rule it saw 150,000 tokens ago, so start a fresh chat for a fresh task. And instructions are not memory. They know nothing about what any chat decided unless you write it in.</p>
+        <div class="key"><p>Rules that should hold in every chat go in the Project's instructions. Today's question goes in the chat.</p></div>
+      </div>
+    </article>
+    <div class="today">
+      <div class="today__head"><span class="scene__kicker scene__kicker--try">Do today</span><div class="meter" data-meter-for="d1"><div class="meter__row"><span>Progress</span><b data-meter-label>0 / 3</b></div><div class="progress"><i></i></div></div></div>
+      <p class="muted" style="font-size:.95rem">Two experiments in Claude and one note, about 20 minutes. Nothing on this page talks to Claude; the work happens inside claude.ai. Made-up company, made-up data.</p>
+      <ol class="steps steps--numbered" data-persist="d1">
+        <li><span class="step__num"></span><input class="check" type="checkbox" id="d1-1" aria-label="Done"><div class="step__body"><p>In claude.ai open Projects, choose New project and name it "Policy helper (test)". In the instructions box paste the Week 2 guardrail prompt you kept, or the skeleton below. Open two new chats inside the Project and ask both: "What can you help me with, and what will you refuse?"</p><p class="step__notice"><strong>Notice:</strong> both chats answer from the same rules, and you typed the rules into neither. That is the "persistent" in persistent instructions.</p></div></li>
+        <li><span class="step__num"></span><input class="check" type="checkbox" id="d1-2" aria-label="Done"><div class="step__body"><p>Open a plain chat outside the Project and ask the same question. Then paste the skeleton into message 1 of that chat and ask again.</p><p class="step__notice"><strong>Notice:</strong> the first answer is Claude's defaults, no rules at all. The second follows your rules, but only in this chat, and only while they stay near the top of the window.</p></div></li>
+        <li><span class="step__num"></span><input class="check" type="checkbox" id="d1-3" aria-label="Done"><div class="step__body"><p>In the note, write two short lists: what belongs in Project instructions (rules that should hold in every chat) and what belongs in a single message (today's question, today's document).</p><textarea data-note="d1-note" id="d1Note" placeholder="Instructions: cite the section · refuse what the files do not cover · no legal or financial advice · tone&#10;Messages: the question itself · a receipt to check · 'make it shorter'"></textarea></div></li>
+      </ol>
+      <h4 style="margin:22px 0 8px">Instructions skeleton for the test Project</h4>
+<pre class="code"><code><span class="c"># Project instructions · a made-up company; tags are the Week 2 habit</span>
+&lt;role&gt;
+You are the policy helper for Northgate Studio, a made-up company of 120 staff.
+You answer staff questions about company policy in a friendly, professional tone.
+&lt;/role&gt;
+&lt;rules&gt;
+1. Answer only from the files in this Project. If they do not cover the question, say so plainly.
+2. Name the document and section for every answer, like [expense-policy.pdf §4.2].
+3. Give the short answer first, then the conditions.
+4. Never give legal, medical or financial advice. Say: "Please ask HR or your manager."
+&lt;/rules&gt;</code></pre>
+    </div>
+    <div class="daynav"><span></span><button class="btn btn--primary" type="button" data-go="2" id="goNext1">Day 2 · Files and the desk →</button></div>
+  </section>
+
+  <section class="scene daypanel" id="day2" role="tabpanel" aria-labelledby="dayt2" hidden>
+    <div class="scene__head">
+      <span class="scene__kicker scene__kicker--learn">Day 2 · about 45 minutes</span>
+      <h2>Knowledge: the files and the window</h2>
+      <p>Today is about what happens to a file after you upload it. There are two cases: the binder fits on the desk, and the binder does not. By the end you will have uploaded your first policy to a Project and watched it cite a section, and refuse a question it cannot answer.</p>
+    </div>
+    <!-- 3. Files on the desk -->
+    <article class="concept">
+      <div class="concept__viz">
+        <canvas id="w3BudgetCanvas" aria-label="A context-window meter of 200,000 tokens. Each file you add becomes a coloured block; past the dashed limit the overflow turns red and the label says Claude switches to retrieval."></canvas>
+        <div class="w3-bank" id="w3BudgetBank" aria-label="Add a file to the Project">
+          <button class="btn" type="button" data-file="0" id="w3File0">+ Employee handbook · 60 pages</button>
+          <button class="btn" type="button" data-file="1" id="w3File1">+ Expense policy · 8 pages</button>
+          <button class="btn" type="button" data-file="2" id="w3File2">+ Leave policy · 6 pages</button>
+          <button class="btn" type="button" data-file="3" id="w3File3">+ IT security policy · 12 pages</button>
+          <button class="btn" type="button" data-file="4" id="w3File4">+ Product catalogue · 200 pages</button>
+          <button class="btn" type="button" data-file="5" id="w3File5">+ Supplier contracts · 140 pages</button>
+          <button class="btn" type="button" id="w3BudgetUndo">Remove last</button>
+          <button class="btn" type="button" id="w3BudgetClear">Clear</button>
+        </div>
+        <div class="w3-readout"><span>Pages <b class="num" id="w3BudgetPages">0</b></span><span>Tokens <b class="num" id="w3BudgetTokens">0</b> of 200,000</span><span class="chip" id="w3BudgetState">empty</span></div>
+        <div class="w3-files" id="w3BudgetList" aria-live="polite"></div>
+        <div class="viz-caption"><span>Everything below the limit is read whole into every chat and shares the window with the conversation.</span></div>
+      </div>
+      <div class="concept__text">
+        <h3>What happens to a file when you upload it?</h3>
+        <p>Most of us picture an upload as filing: the document goes into a drawer and Claude fetches it when needed. For a small Project that picture is wrong in a useful way. Claude does not file your document. It reads it, in full, at the start of every chat, into the same context window your conversation uses. A page of prose is roughly 500 tokens. An eight-page expense policy is about 4,000. A 60-page handbook is 30,000, in every single chat.</p>
+        <p>Three things follow. The files compete with the conversation for room: the window holds about 200,000 tokens, and whatever the files take, the chat cannot have. Nothing is summarised or compressed; the model sees the actual clause, which is exactly why it can quote a section number back to you. And the knowledge panel in a Project shows a capacity figure, which is this measurement: how much of the window your files would occupy.</p>
+        <p>Add files to the meter on the left. The handbook and the two HR and finance policies take less than a fifth of the window between them. The 200-page product catalogue takes half the window on its own, and the supplier contracts push it over the dashed line. Past that line Claude can no longer load everything, and it changes how it reads. That is the next concept.</p>
+        <div class="aside"><b>500 tokens a page is a working average for prose.</b> A spreadsheet export or a page of reference codes can cost two or three times that, for the Week 1 reason: codes shatter into many tokens. If a file surprises you, open it and look at what it is made of.</div>
+        <div class="key"><p>Small knowledge is read whole into every chat, and it shares the window with the conversation. Watch the capacity figure.</p></div>
+      </div>
+    </article>
+    <!-- 4. Retrieval from a big binder -->
+    <article class="concept">
+      <div class="concept__viz">
+        <canvas id="w3RagCanvas" aria-label="On the left, five policy documents drawn as rows of section tiles, plus faded archive rows in the large setting. A question arrives; sections light up by relevance and the best few fly onto the desk on the right, where the answer is written with a citation. In the small setting every section flies onto the desk."></canvas>
+        <div class="w3-bank" id="w3RagBank" aria-label="Ask the Project a question" style="margin-top:10px">
+          <button class="btn is-on" type="button" id="w3RagQ0">Can I expense a taxi home after a late shift?</button>
+          <button class="btn" type="button" id="w3RagQ1">How many days of leave do I get in my first year?</button>
+          <button class="btn" type="button" id="w3RagQ2">What is the parental leave in the Singapore office?</button>
+        </div>
+        <div class="row" style="justify-content:space-between;margin-top:6px">
+          <span class="seg" role="group" aria-label="Size of the knowledge base"><button type="button" id="w3RagSmall">Small: 5 files, 88 pages</button><button type="button" class="is-on" id="w3RagBig">Large: plus 900 pages of archive</button></span>
+          <button class="btn btn--small" type="button" id="w3RagReplay">Replay</button>
+        </div>
+        <div class="viz-caption"><span id="w3RagLabel">Too big to load whole: Claude pulls the best-matching sections for this question onto the desk.</span></div>
+      </div>
+      <div class="concept__text">
+        <h3>How does Claude pull the relevant parts of a big knowledge base?</h3>
+        <p>Imagine a new colleague asks whether a taxi home after a late shift can be claimed. You do not read the whole policy library. You go to the expense policy, find the travel section, and read one clause. When a Project's knowledge grows past what the window can hold, Claude switches to doing what you just did. Instead of loading every file, it searches the files for the sections that best match the question and loads only those. Anthropic calls this retrieval. In Week 5 you build the machinery yourself and call it RAG.</p>
+        <p>Watch the simulation in the large setting. The question arrives, every section lights up by how closely it matches, and the top few fly onto the desk next to the instructions and the question. Then the answer is written from what is on the desk. Switch to the small setting and the difference is plain: everything is on the desk already, so no searching is needed.</p>
+        <p>Two things to notice. Retrieval always returns something, even for a question the documents do not cover: ask about parental leave in a Singapore office and the best match is a scope clause about UK staff. That is why the instruction to say when something is not covered matters more, not less, as the knowledge grows. And retrieval finds sections that look like the question. Clear titles and numbered sections make a clause findable; a 40-page scan with no headings is a wall.</p>
+        <div class="aside"><b>I cannot tell you the exact point where a Project switches to retrieval.</b> Anthropic does not publish the threshold, and it has moved as models have changed. Treat the capacity figure as your signal, and treat both modes as normal.</div>
+        <div class="key"><p>A small binder is read whole. A big binder is searched, and only the best-matching sections reach the desk. Either way, the answer comes from what is on the desk.</p></div>
+      </div>
+    </article>
+    <div class="today">
+      <div class="today__head"><span class="scene__kicker scene__kicker--try">Do today</span><div class="meter" data-meter-for="d2"><div class="meter__row"><span>Progress</span><b data-meter-label>0 / 3</b></div><div class="progress"><i></i></div></div></div>
+      <p class="muted" style="font-size:.95rem">One experiment on this page, two in your test Project, about 25 minutes.</p>
+      <ol class="steps steps--numbered" data-persist="d2">
+        <li><span class="step__num"></span><input class="check" type="checkbox" id="d2-1" aria-label="Done"><div class="step__body"><p>On this page, add files to the budget meter until the dashed line is crossed. Then press Clear and add only the handbook and the two HR and finance policies.</p><p class="step__notice"><strong>Notice:</strong> the policies use under a fifth of the window; the catalogue alone takes half. The size of the binder decides whether Claude reads it whole or searches it.</p></div></li>
+        <li><span class="step__num"></span><input class="check" type="checkbox" id="d2-2" aria-label="Done"><div class="step__body"><p>Make one test document now rather than waiting for the lab. In a plain chat, run the prompt below, save the result as <code>expense-policy.pdf</code> (a .md or .txt file is fine too) and upload it to your test Project's knowledge.</p><p class="step__notice"><strong>Notice:</strong> the knowledge panel shows how much capacity the file uses. Two pages of prose is a rounding error on a 200,000-token desk.</p></div></li>
+        <li><span class="step__num"></span><input class="check" type="checkbox" id="d2-3" aria-label="Done"><div class="step__body"><p>In a new chat inside the Project ask: "Can I expense a taxi home after a late shift? Name the section." Then ask: "What is the parental leave for the Singapore office?"</p><p class="step__notice"><strong>Notice:</strong> the first answer should point at a numbered section. The second should say the document does not cover it. If it guesses instead, move rule 1 of your instructions to the top, make it shorter, and ask again.</p></div></li>
+      </ol>
+      <h4 style="margin:22px 0 8px">Prompt for the sample document</h4>
+<pre class="code"><code><span class="c"># In a plain chat, to make one test document for your Project</span>
+Write a two-page expense policy for Northgate Studio, a made-up UK company of 120 staff.
+Start with a header: title, owner (Finance), effective date, version number.
+Use numbered sections (1, 1.1, 1.2 and so on). Cover: receipts, meals, taxis and travel,
+approval limits, and how and when expenses are paid. Use specific numbers and deadlines.
+Made-up names, addresses and phone numbers only.</code></pre>
+    </div>
+    <div class="daynav"><button class="btn" type="button" data-go="1" id="goPrev2">← Day 1 · What a Project is</button><button class="btn btn--primary" type="button" data-go="3" id="goNext2">Day 3 · Artifacts and good data →</button></div>
+  </section>
+
+  <section class="scene daypanel" id="day3" role="tabpanel" aria-labelledby="dayt3" hidden>
+    <div class="scene__head">
+      <span class="scene__kicker scene__kicker--learn">Day 3 · about 50 minutes</span>
+      <h2>Artifacts, and documents as data</h2>
+      <p>Two ideas today: what to do with an answer you want to keep, and why the state of your documents decides how good any assistant built on them can be. By the end you will have a versioned Artifact and a tidy, labelled policy file in your Project.</p>
+    </div>
+    <!-- 5. Artifacts you keep and version -->
+    <article class="concept">
+      <div class="concept__viz concept__viz--dark">
+        <canvas id="w3ArtCanvas" aria-label="A chat on the left asks for a New starter FAQ as an Artifact. A side panel slides open on the right and the FAQ assembles itself line by line, with a version chip. Each change request adds a version you can step back to."></canvas>
+        <div class="row" style="justify-content:space-between;margin-top:8px">
+          <div class="w3-vers" id="w3ArtVers" aria-label="Versions of the Artifact"><span class="muted" style="font-size:.85rem;color:var(--stage-muted)">Versions:</span></div>
+          <div class="row"><button class="btn btn--small btn--think" type="button" id="w3ArtChange">Ask for a change</button><button class="btn btn--small" type="button" id="w3ArtReplay" style="color:var(--stage-fg);border-color:var(--stage-line);background:transparent">Replay</button></div>
+        </div>
+        <div class="viz-caption" style="color:var(--stage-muted)"><span id="w3ArtNote">Ask for something substantial and it opens beside the chat. Every change makes a new version.</span></div>
+      </div>
+      <div class="concept__text">
+        <h3>What do you do with an answer you want to keep?</h3>
+        <p>A chat reply is a conversation. It scrolls, it mixes drafts with corrections, and three days later you are scrolling back to find the version you liked. Real work produces things: a one-page FAQ, a checklist, a comparison table, a small calculator. In Claude those things are Artifacts. Ask for something substantial, add "as an Artifact", and it opens in a panel beside the chat instead of inside it.</p>
+        <p>Two properties matter at work. An Artifact is a thing you keep: you can copy it, download it, publish it with a link, and come back to it next month. And every change you ask for creates a new version you can step back through. On the left, ask for the FAQ, then ask for a change, then another. The chat keeps the conversation; the Artifact keeps the thing, in every state it has been in.</p>
+        <p>In a Project this becomes a habit worth building. The policy helper answers questions in chat, and the durable outputs, a New starter FAQ, a one-page expenses cheat sheet, become Artifacts you hand to the team. The page you are reading was built this way too.</p>
+        <div class="aside"><b>Versions are not a change log.</b> The Artifact knows what changed, not why. If the why matters, write it into the Artifact or keep the chat.</div>
+        <div class="key"><p>Chat is for talking. Artifacts are for things you keep, share and version.</p></div>
+      </div>
+    </article>
+    <!-- 6. Documents are the data -->
+    <article class="concept">
+      <div class="concept__viz">
+        <div class="w3-meta">
+          <div class="w3-meta__opts" id="w3MetaOpts" aria-label="Metadata to add to the policy file">
+            <label id="w3MetaTitleRow"><input class="w3-tick" type="checkbox" id="w3MetaTitle"><span><b>A clear file name</b><br>expense-policy.pdf, not final_v3 (2).pdf</span></label>
+            <label id="w3MetaSectionsRow"><input class="w3-tick" type="checkbox" id="w3MetaSections"><span><b>Numbered sections</b><br>§4.2 Taxis, not "the bit about taxis"</span></label>
+            <label id="w3MetaOwnerRow"><input class="w3-tick" type="checkbox" id="w3MetaOwner"><span><b>An owner</b><br>Finance · R. Mehta</span></label>
+            <label id="w3MetaDateRow"><input class="w3-tick" type="checkbox" id="w3MetaDate"><span><b>Effective date and version</b><br>effective 1 Apr 2026 · v4</span></label>
+            <label id="w3MetaOldRow"><input class="w3-tick" type="checkbox" id="w3MetaOld"><span><b>Old versions removed</b><br>v3 taken out of the knowledge</span></label>
+          </div>
+          <div class="w3-meta__file" id="w3MetaFile" aria-live="polite"></div>
+          <div class="w3-meta__ans" id="w3MetaAns" aria-live="polite">
+            <span class="muted" style="font-size:.85rem">Staff question: "Can I expense a taxi home after a late shift?"</span>
+            <span id="w3MetaText"></span>
+            <span class="w3-meta__cite" id="w3MetaCite"></span>
+          </div>
+        </div>
+        <div class="viz-caption"><span id="w3MetaNote">Tick the fields and watch the citation change.</span><span class="row chip chip--bad" id="w3MetaScore">0 of 5 · unusable</span></div>
+      </div>
+      <div class="concept__text">
+        <h3>Why do file names, dates and section numbers matter to an assistant?</h3>
+        <p>Every team has the folder. final_v3 (2).pdf, scan0012.pdf, a policy nobody is sure is current, two copies of the same thing. People cope because they ask a colleague. An assistant built on that folder cannot. It will cite "final_v3 (2).pdf" with a straight face, and if two versions sit in the knowledge it may quote either one.</p>
+        <p>The MIT xPRO course on designing AI products puts this under the third stage of its design process, the technology stage, where the second decision is a data strategy. Their point is that data is only as useful as the data about it: labels and metadata, at a minimum the date, the time, how it was collected and what it contains. For a Project, your documents are the data, and the metadata is what makes them usable: a clear title, numbered sections, an owner, an effective date, a version, and the old versions removed. The same lecture tells a workplace story I like. An expense tool reads receipts with a camera and asks the traveller to confirm the amount; every confirmation is a human adding metadata that improves the system. Every time a colleague marks your assistant's answer wrong, the same thing is happening.</p>
+        <p>Tick the fields on the left and watch the citation change from something nobody can check into something anyone can open. Section numbers do two jobs at once: they make a clause findable for retrieval, and they make the answer auditable for a person. Removing the old version is the one people forget, and it causes the quietest failure: a confident answer from a policy that stopped applying in March.</p>
+        <div class="key"><p>The documents are the data. Titles, sections, owners, dates and versions are what make them usable, by Claude and by the person checking its answer.</p></div>
+      </div>
+    </article>
+    <div class="today">
+      <div class="today__head"><span class="scene__kicker scene__kicker--try">Do today</span><div class="meter" data-meter-for="d3"><div class="meter__row"><span>Progress</span><b data-meter-label>0 / 3</b></div><div class="progress"><i></i></div></div></div>
+      <p class="muted" style="font-size:.95rem">Two experiments in your test Project and one note, about 25 minutes.</p>
+      <ol class="steps steps--numbered" data-persist="d3">
+        <li><span class="step__num"></span><input class="check" type="checkbox" id="d3-1" aria-label="Done"><div class="step__body"><p>In your Project ask: "Make a one-page New starter FAQ from the uploaded policy, as an Artifact. Five questions, short answers, each with the section it comes from." Then ask: "Add a question about approval limits and make the tone warmer." Then open the Artifact's version history and step back to the first version.</p><p class="step__notice"><strong>Notice:</strong> the Artifact updates in place and keeps both versions. The chat holds the conversation; the Artifact holds the thing.</p></div></li>
+        <li><span class="step__num"></span><input class="check" type="checkbox" id="d3-2" aria-label="Done"><div class="step__body"><p>Open your expense policy and check its header: title, owner, effective date, version, numbered sections. Add anything missing, upload the new file, and remove the old one from the knowledge. Ask the taxi question again.</p><p class="step__notice"><strong>Notice:</strong> the citation can now name a version and a date. Before you removed the old file, both copies were on the desk, and the assistant could have quoted either. Stale copies are the quiet failure.</p></div></li>
+        <li><span class="step__num"></span><input class="check" type="checkbox" id="d3-3" aria-label="Done"><div class="step__body"><p>In the note, list the five documents the product you chose in Week 1 would need in its knowledge, and who owns each one. This seeds design-log entry 3 on Day 5.</p><textarea data-note="d3-note" id="d3Note" placeholder="Expense policy · owner: Finance (R. Mehta) · reviewed each April&#10;Supplier onboarding checklist · owner: Procurement · ..."></textarea></div></li>
+      </ol>
+    </div>
+    <div class="daynav"><button class="btn" type="button" data-go="2" id="goPrev3">← Day 2 · Files and the desk</button><button class="btn btn--primary" type="button" data-go="4" id="goNext3">Day 4 · Sharing, or an agent? →</button></div>
+  </section>
+
+  <section class="scene daypanel" id="day4" role="tabpanel" aria-labelledby="dayt4" hidden>
+    <div class="scene__head">
+      <span class="scene__kicker scene__kicker--learn">Day 4 · about 60 minutes</span>
+      <h2>Sharing with a team, and knowing when you need an agent</h2>
+      <p>Two decisions today: who should have the Project and what they will see, and whether a Project is enough for the job or you are really describing an agent. By the end you will have a sharing plan, a tester's feedback, and three verdicts from your own week.</p>
+    </div>
+    <!-- 7. Who sees what when you share -->
+    <article class="concept">
+      <div class="concept__viz">
+        <canvas id="w3TeamCanvas" aria-label="One Project box fans out to a grid of 84 staff dots standing for 500 people. In Shared Project mode a wave lights every dot within seconds. In Train each person mode the dots light one at a time and a day counter climbs."></canvas>
+        <div class="row" style="justify-content:space-between;margin-top:8px">
+          <span class="seg" role="group" aria-label="How the company rolls out the helper"><button type="button" id="w3TeamTrain">Train each person</button><button type="button" class="is-on" id="w3TeamShared">Shared Project</button></span>
+          <span class="w3-readout"><span>Staff reached <b class="num" id="w3TeamCount">0</b> of 500</span></span>
+        </div>
+        <div class="w3-roles" style="margin-top:8px">
+          <span class="seg" role="group" aria-label="Pick a role to see what they can see"><button type="button" class="is-on" id="w3RoleOwner">Owner or editor</button><button type="button" id="w3RoleMember">Invited to chat</button><button type="button" id="w3RoleNone">Not invited</button></span>
+          <div class="table-wrap"><table class="tbl" aria-label="Who sees what in a shared Project">
+            <thead><tr><th>Role</th><th>Knowledge files</th><th>Instructions</th><th>Chats</th></tr></thead>
+            <tbody>
+              <tr id="w3RowOwner" class="is-on"><td>Owner or editor</td><td>Reads, adds, removes</td><td>Writes and edits</td><td>Own chats; others' only if shared to the Project</td></tr>
+              <tr id="w3RowMember"><td>Invited to chat</td><td>Reads every file</td><td>Reads; cannot change</td><td>Own chats, private by default; can share one into the Project</td></tr>
+              <tr id="w3RowNone"><td>Not invited</td><td>Nothing</td><td>Nothing</td><td>Nothing, even on the same company plan</td></tr>
+            </tbody>
+          </table></div>
+        </div>
+        <div class="viz-caption"><span id="w3TeamNote">One upload, one set of instructions, and 500 people get the same assistant at once.</span></div>
+      </div>
+      <div class="concept__text">
+        <h3>What happens when you share a Project with 500 people?</h3>
+        <p>A company of 500 wants everyone to get the same answer about expenses. The old way is training: a session, a slide deck, a wiki page nobody reads, and 500 slightly different memories of it. The Project way is sharing: one set of files, one set of instructions, and everyone chatting with the same assistant. Fix a rule once and it is fixed for everyone. Watch the two roll-outs on the left.</p>
+        <p>Who sees what is the question your IT and HR colleagues will ask first, so here is the shape on Claude for Work, the Team and Enterprise plans where sharing lives. The knowledge files and the instructions are shared: everyone in the Project reads from the same binder, and only those with edit rights can change it. Each person's chats are their own. They are private by default, and a person can choose to share a chat into the Project so others can learn from it. Someone not invited sees nothing, even on the same company plan. An individual plan can build a Project but not share it, which is why today's exercise has two versions.</p>
+        <p>This is also where the "what must never be uploaded" list comes from. Anything in the knowledge is readable by everyone in the Project, by design. Salary files, customer personal data, anything under NDA: not in a shared Project, however convenient the questions would be. Pick a role in the table and read its row before you share anything.</p>
+        <div class="aside"><b>Plan features change.</b> Anthropic's business plans say they do not train on your organisation's data by default, and admins control who can create and share Projects. Confirm both against your own plan's terms rather than this page.</div>
+        <div class="key"><p>Share the Project, not the know-how. Knowledge and instructions are shared; chats are private unless a person shares them. If it should not be read by everyone in the Project, it does not go in the knowledge.</p></div>
+      </div>
+    </article>
+    <!-- 8. Project or agent? -->
+    <article class="concept">
+      <div class="concept__viz">
+        <canvas id="w3LoopCanvas" aria-label="Two lanes. Top: a person asks a question, it travels to Claude with the Project, and an answer travels back; nothing happens until someone asks. Bottom: an event at 02:14 starts a loop of think, act, observe, act, done, with nobody asking."></canvas>
+        <div class="w3-bank" id="w3LoopBank" aria-label="Pick a task" style="margin-top:10px">
+          <button class="btn" type="button" id="w3Task0" data-task="0">Staff ask "Can I expense this?" and want the clause</button>
+          <button class="btn" type="button" id="w3Task1" data-task="1">Check every new supplier invoice against its PO and log it</button>
+          <button class="btn" type="button" id="w3Task2" data-task="2">Draft the weekly team update from my notes</button>
+          <button class="btn" type="button" id="w3Task3" data-task="3">Chase 40 unpaid invoices and record each reply</button>
+          <button class="btn" type="button" id="w3Task4" data-task="4">Answer customer questions on the website at 2am</button>
+          <button class="btn" type="button" id="w3Task5" data-task="5">Compare two contract versions and list the changed clauses</button>
+        </div>
+        <div class="w3-verdict" id="w3Verdict" aria-live="polite"><b>Pick a task.</b><span>The lane that fits lights up, with the reason.</span></div>
+      </div>
+      <div class="concept__text">
+        <h3>Is a Project enough, or do I need an agent?</h3>
+        <p>Here is a conversation I have had many times. "We want AI to handle supplier invoices." Handle how? If a person in finance asks "does this invoice match the PO?" and reads the answer, a Project holding the purchasing policy and the PO list might be exactly enough. If nobody should have to ask, if the invoice that arrives at 02:14 should be checked, logged and flagged before anyone is awake, you are describing an agent, and that is Week 7.</p>
+        <p>The difference is not intelligence; the same model sits inside both. It is who starts the work and who acts. A Project answers when a person asks, and the person decides what to do with the answer. An agent is started by an event, uses tools to act in other systems, looks at what happened, and goes again until the goal is done. Watch the two lanes on the left: one is a conversation, the other is a loop.</p>
+        <p>Pick a task from the bank and read the verdict. My rule of thumb: if the sentence has "whenever" or "every time" in it, or the work has to happen without a person present, it is an agent. If a person asks and reads, start with a Project. It is cheaper, it is built in an afternoon, and it is where most of the value sits today.</p>
+        <div class="aside"><b>Projects are gaining small powers of action.</b> Connectors and tools let a chat look something up or create a document. Those are still started by a person inside a chat. The line I hold: when a system should notice and act without being asked, treat it as an agent and plan for the guardrails that come with one.</div>
+        <div class="key"><p>A Project answers when asked. An agent notices, acts and repeats. Start with the Project; move to an agent when nobody should have to ask.</p></div>
+      </div>
+    </article>
+    <div class="today">
+      <div class="today__head"><span class="scene__kicker scene__kicker--try">Do today</span><div class="meter" data-meter-for="d4"><div class="meter__row"><span>Progress</span><b data-meter-label>0 / 3</b></div><div class="progress"><i></i></div></div></div>
+      <p class="muted" style="font-size:.95rem">One experiment on this page, one with a colleague, one note, about 30 minutes.</p>
+      <ol class="steps steps--numbered" data-persist="d4">
+        <li><span class="step__num"></span><input class="check" type="checkbox" id="d4-1" aria-label="Done"><div class="step__body"><p>Switch the roll-out to Train each person and let it run for a while, then back to Shared Project. Then pick each of the three roles in the who-sees-what table and read its row.</p><p class="step__notice"><strong>Notice:</strong> knowledge is read by everyone in the Project; chats are read by nobody else unless their owner shares them. Write your "never upload" list with that in mind.</p></div></li>
+        <li><span class="step__num"></span><input class="check" type="checkbox" id="d4-2" aria-label="Done"><div class="step__body"><p>On a Team or Enterprise plan: share your test Project with one colleague, ask them to spend ten minutes questioning it as a new starter, and ask whether they could see your chats (they should not). On an individual plan: send a colleague your three test questions with the assistant's answers and ask which one they would trust, and why.</p><p class="step__notice"><strong>Notice:</strong> a second person asks questions you never thought of. Keep the ones that failed; they go on the lab's score sheet tomorrow.</p></div></li>
+        <li><span class="step__num"></span><input class="check" type="checkbox" id="d4-3" aria-label="Done"><div class="step__body"><p>Pick three recurring tasks from your own week and run each through the task bank above, or apply the rule of thumb yourself. Write the verdict and the one-line reason.</p><textarea data-note="d4-note" id="d4Note" placeholder="Weekly pipeline summary for my manager · Project · I ask on Friday and read it before it goes anywhere&#10;New lead arrives in the CRM, needs enriching and routing · agent · nobody should have to ask"></textarea></div></li>
+      </ol>
+    </div>
+    <div class="daynav"><button class="btn" type="button" data-go="3" id="goPrev4">← Day 3 · Artifacts and good data</button><button class="btn btn--primary" type="button" data-go="5" id="goNext4">Day 5 · The policy helper lab →</button></div>
+  </section>
+
+  <section class="scene daypanel" id="day5" role="tabpanel" aria-labelledby="dayt5" hidden>
+    <div class="scene__head">
+      <span class="scene__kicker scene__kicker--learn">Day 5 · about 100 minutes</span>
+      <h2>Build the policy helper, then test it like a product</h2>
+      <p>The long day. One idea about what a good policy answer looks like, then Lab 1.2: five made-up HR and finance policies, a Project, instructions that cite and refuse, ten test questions, a conflict, an Artifact, a tester, and design-log entry 3. Then the quiz and a practice round.</p>
+    </div>
+    <!-- 9. Cite, say when not covered, hand over -->
+    <article class="concept">
+      <div class="concept__viz">
+        <div class="w3-anat">
+          <div class="row" style="justify-content:space-between">
+            <span class="seg" role="group" aria-label="Kind of question"><button type="button" class="is-on" id="w3AnatCovered">Covered</button><button type="button" id="w3AnatMissing">Not covered</button><button type="button" id="w3AnatAdvice">Needs HR</button></span>
+            <span class="seg" role="group" aria-label="Project instructions on or off"><button type="button" id="w3AnatOff">Instructions off</button><button type="button" class="is-on" id="w3AnatOn">Instructions on</button></span>
+          </div>
+          <p class="w3-anat__q" id="w3AnatQ"></p>
+          <div class="w3-anat__a" id="w3AnatA" aria-live="polite"></div>
+          <div class="w3-anat__parts" id="w3AnatParts" aria-label="Parts of the answer"></div>
+          <p class="w3-anat__why" id="w3AnatWhy"></p>
+        </div>
+        <div class="viz-caption"><span>Three kinds of staff question, with and without the instructions you write in the lab. Scored the way the lab scores.</span><span class="row chip" id="w3AnatVerdict">watching</span></div>
+      </div>
+      <div class="concept__text">
+        <h3>What does a good policy answer look like?</h3>
+        <p>Picture the message that reaches HR at four on a Friday afternoon: "Can I expense this?" with a photo of a receipt. A good human answer has a shape. The short answer. The clause it comes from. The conditions attached. And when the question is really about tax, or a personal decision, a hand-over: who to ask instead. Your assistant's instructions should produce exactly that shape, every time, and your ten-question test checks that they do.</p>
+        <p>There are three kinds of question, and each has a different right answer. Covered: answer, cite the document and section, list the conditions. Not covered: say so, name what is missing, point to a person; never fill the gap from general knowledge. Advice or conflict: cite what the documents do say, then hand over. Switch the instructions off on the left and watch what happens to each kind. The covered answer becomes uncheckable, the uncovered one becomes an invention, and the advice question gets answered when it should have been passed on.</p>
+        <p>The lab scores every test question by the same rule: a pass is a correct answer with a citation, or a clear refusal where a refusal is right. Three of your ten questions must be ones the documents do not cover, because that is where a policy assistant fails quietly and expensively. Nobody complains about an answer that sounds right.</p>
+        <div class="key"><p>Covered: cite. Not covered: say so. Advice or conflict: hand over. Score every test question against that.</p></div>
+      </div>
+    </article>
+
+    <div class="part" id="lab">
+      <div class="scene__head">
+        <span class="scene__kicker scene__kicker--lab">Lab 1.2</span>
+        <h2>A departmental policy assistant</h2>
+        <p>You build an assistant pre-loaded with a made-up company's HR and finance policies, so staff can ask "How many days of leave do I get?" or "Can I expense a taxi?" and get a correct answer with the clause, or an honest "the documents do not cover that". This is one of the most common first AI projects inside real companies, and it is the Week 10 capstone's knowledge layer in miniature. About 70 minutes, all inside claude.ai.</p>
+      </div>
+      <div class="meter" data-meter-for="lab" style="margin-bottom:14px"><div class="meter__row"><span>Lab progress</span><b data-meter-label>0 / 8</b></div><div class="progress progress--act"><i></i></div></div>
+      <ol class="steps steps--numbered" data-persist="lab">
+        <li><span class="step__num"></span><input class="check" type="checkbox" id="lab-1" aria-label="Done lab step 1"><div class="step__body"><p>Write five policy documents for Northgate Studio, your invented company: two HR, two finance, one IT. Run the prompt below in a plain chat, then read the results and edit a few numbers yourself so the documents are detailed and slightly contradictory in places. Real company documents are.</p>
+          <div class="w3-copyhead"><span>Prompt to generate the documents</span><button class="btn btn--small" type="button" data-copy="w3DocsPrompt" id="w3CopyDocs">Copy</button></div>
+<pre class="code" id="w3DocsPrompt"><code><span class="c"># Paste into a plain chat. It writes the test documents for your Project.</span>
+You are helping me build a test dataset for a company policy assistant.
+Invent a small company called Northgate Studio: about 120 staff, UK based, made-up names only.
+Write five internal policy documents, about two pages each, in plain English:
+
+1. Employee handbook (HR)
+2. Leave and holiday policy (HR)
+3. Expense and travel policy (Finance)
+4. Purchasing and approvals policy (Finance)
+5. IT security policy
+
+Each document starts with a header: title, owner (a role and a made-up name),
+effective date, version number. Use numbered sections (1, 1.1, 1.2 and so on) so a
+reader can cite a clause. Be specific: realistic numbers, deadlines, form names.
+Add two deliberate contradictions between documents and list them at the end:
+- The handbook says 20 days of annual leave; the leave policy says 22.
+- The handbook says expenses are paid within 14 days; the expense policy says 30.
+Give me each document as its own section with a clear title, so I can save each
+one as a separate file.</code></pre>
+          <details class="hint"><summary>Stuck? Show a hint</summary><p>Save each document as its own PDF or text file with a readable name, such as <code>leave-policy.pdf</code>. The file name is what the assistant cites, so make it mean something (Day 3). Keep the header on page one. The whole set is about ten pages, a few percent of the window, so Claude will read it whole.</p></details></div></li>
+        <li><span class="step__num"></span><input class="check" type="checkbox" id="lab-2" aria-label="Done lab step 2"><div class="step__body"><p>Create a Project named "Company policy helper" and upload the five files to its knowledge. If you built a test Project on Day 1, you can rename it and add the files instead.</p><p class="step__notice"><strong>Notice:</strong> the knowledge panel's capacity figure. Five two-page documents use a small fraction of it; everything will be on the desk in every chat.</p></div></li>
+        <li><span class="step__num"></span><input class="check" type="checkbox" id="lab-3" aria-label="Done lab step 3"><div class="step__body"><p>Write the Project instructions. They must do four things: cite the document and section for every answer; say plainly when the documents do not cover a question; keep a professional, friendly tone; and never give legal, medical or financial advice beyond "contact HR or your manager". Start from the skeleton and make it yours.</p>
+          <div class="w3-copyhead"><span>Project instructions skeleton</span><button class="btn btn--small" type="button" data-copy="w3RulesPrompt" id="w3CopyRules">Copy</button></div>
+<pre class="code" id="w3RulesPrompt"><code><span class="c"># Paste into the Project's instructions box. The tags are the Week 2 habit.</span>
+&lt;role&gt;
+You are the Company policy helper for Northgate Studio. Your only knowledge is the
+policy documents uploaded to this Project.
+&lt;/role&gt;
+&lt;rules&gt;
+1. Cite the source for every answer: document name and section, like [leave-policy.pdf §2.1].
+2. If the documents do not cover a question, say so plainly and name what is missing.
+   Do not guess and do not use general knowledge.
+3. Use a professional, friendly tone. Short answer first, then the conditions.
+4. Never give legal, medical or financial advice. For those questions, cite what the
+   documents do say, then write: "Please contact HR or your manager."
+&lt;/rules&gt;
+&lt;format&gt;
+- One or two sentences with the answer.
+- The citation.
+- Any conditions or exceptions, taken from the documents.
+&lt;/format&gt;</code></pre>
+          <details class="hint"><summary>Stuck? Show a hint</summary><p>Test each rule on its own before the full run. Ask something the files do not cover and check for rule 2. Ask "Can my manager legally refuse my leave?" and check for rule 4. If a rule is ignored, move it higher and make it shorter. Rules near the top, stated once and plainly, hold best.</p></details></div></li>
+        <li><span class="step__num"></span><input class="check" type="checkbox" id="lab-4" aria-label="Done lab step 4"><div class="step__body"><p>Test with ten questions: seven the documents answer and three they do not. Score each one pass or fail. A pass is a correct answer with a citation, or a clear "the documents do not cover this" where that is the truth. The grey placeholders are suggestions for a company like Northgate Studio; type your own over them, including the ones your Day 4 tester broke.</p>
+          <div class="w3-sheet">
+            <div class="table-wrap"><table class="tbl" id="w3Sheet" aria-label="Ten-question score sheet">
+              <thead><tr><th style="width:6%">#</th><th style="width:48%">Question</th><th style="width:22%">Kind</th><th>Result</th></tr></thead>
+              <tbody id="w3SheetBody"></tbody>
+            </table></div>
+            <div class="w3-total"><span><b id="w3SheetPassed">0 of 10 passed</b></span><span class="w3-mix"><span class="chip" id="w3MixA">Answerable 0 / 7</span><span class="chip" id="w3MixN">Not covered 0 / 3</span></span><button class="btn btn--small" type="button" id="w3SheetReset" style="margin-left:auto">Clear the sheet</button></div>
+          </div>
+          <details class="hint"><summary>What counts as a pass? Show a hint</summary><p>Answerable: the number or rule is right, and the citation points at the document and section that really contain it. Open the file and check; a right answer with a wrong citation is a fail. Not covered: the assistant says the documents do not cover it and does not fill the gap from general knowledge. "Probably 16 weeks, but check with HR" is a fail, however polite.</p></details></div></li>
+        <li><span class="step__num"></span><input class="check" type="checkbox" id="lab-5" aria-label="Done lab step 5"><div class="step__body"><p>Find the place where two documents disagree, such as 20 days of leave in the handbook and 22 in the leave policy. Ask "Is it 20 or 22 days of annual leave? I have seen both." and watch what the assistant does. Then add the conflict rule.</p>
+          <div class="w3-copyhead"><span>Conflict rule to add</span><button class="btn btn--small" type="button" data-copy="w3ConflictPrompt" id="w3CopyConflict">Copy</button></div>
+<pre class="code" id="w3ConflictPrompt"><code><span class="c"># Add to the rules once you have seen the conflict handled badly</span>
+5. If two documents disagree, name both sources and say that they differ. Do not pick one.
+   Then point the person to HR for the final answer.
+   Example: "The handbook [handbook.pdf §3.2] says 20 days and the leave policy
+   [leave-policy.pdf §2.1] says 22. These differ. Please confirm with HR."</code></pre>
+          <p class="step__notice"><strong>Notice:</strong> before the rule, most assistants quietly pick one number. After it, the answer shows both. That silent pick is the most dangerous failure a policy assistant can have, because it looks exactly like a right answer.</p></div></li>
+        <li><span class="step__num"></span><input class="check" type="checkbox" id="lab-6" aria-label="Done lab step 6"><div class="step__body"><p>Ask the assistant for one Artifact: "Make a one-page New starter FAQ as an Artifact: the ten questions a new starter is most likely to ask in their first month, each answered in two lines with the document and section." Then ask for one change and check the version history.</p><p class="step__notice"><strong>Notice:</strong> the FAQ is a thing you could hand to a real new starter, with the sources attached. The chat is where you made it; the Artifact is what you keep.</p></div></li>
+        <li><span class="step__num"></span><input class="check" type="checkbox" id="lab-7" aria-label="Done lab step 7"><div class="step__body"><p>Give the Project to one other person for ten minutes as a "new employee": share it on a Team or Enterprise plan, or sit beside a colleague or friend and let them type. Add every question that failed to the score sheet and fix the instructions until the sheet passes.</p><p class="step__notice"><strong>Notice:</strong> a second person asks about things you never wrote down. Each one is either a missing document or a missing rule. Decide which.</p></div></li>
+        <li><span class="step__num"></span><input class="check" type="checkbox" id="lab-8" aria-label="Done lab step 8"><div class="step__body"><p>Write design-log entry 3 below: the documents your Week 1 product needs and who owns them, what must never be uploaded, and who you would share it with.</p></div></li>
+      </ol>
+
+      <div class="card dlog" style="margin-top:18px">
+        <h3>Design-log entry 3</h3>
+        <p class="muted">The habit from the MIT course continues: three short answers that connect this week to the product you chose in Week 1. Entry 1 named the product and its targets. This one is about its documents and its people. By Week 10 the log is your capstone brief.</p>
+        <label class="field"><span>The documents your product needs in its knowledge, and who owns each one</span><textarea data-note="dlog-docs" id="dlogDocs" placeholder="e.g. Expense policy · Finance (R. Mehta) · reviewed each April. Supplier list with payment terms · Procurement · changes weekly, so it needs an owner who will re-upload it."></textarea></label>
+        <label class="field"><span>What must never be uploaded to it, and why</span><textarea data-note="dlog-never" id="dlogNever" placeholder="e.g. Salary data, because everyone in the Project can read the knowledge. Customer personal data, because the Project is not where consent was given. Anything under NDA."></textarea></label>
+        <label class="field"><span>Who you would share the Project with, and why them</span><textarea data-note="dlog-share" id="dlogShare" placeholder="e.g. The finance team first: they know the policies and will spot wrong citations. Then all staff, once ten of their questions pass. Never outside the company."></textarea></label>
+      </div>
+      <div class="deliverable" style="margin-top:18px">
+        <h4>What you hand in</h4>
+        <p>Four things. The Project itself, tested by one other person as a new starter. Your ten-question score sheet with pass or fail marks, three of the questions ones the documents do not cover. One Artifact the assistant generated, such as the New starter FAQ. And design-log entry 3. The sheet and the log above are the work; summarise what surprised you here for your learning log.</p>
+        <label class="field"><span>Notes for your learning log (saved in this browser)</span><textarea data-note="lab" id="labNote" placeholder="Which questions failed · which instruction fixed them · how the conflict was handled before and after rule 5 · what my tester asked that I had never written down"></textarea></label>
+      </div>
+    </div>
+
+    <div class="part" id="quiz">
+      <div class="scene__head">
+        <span class="scene__kicker scene__kicker--quiz">Check yourself</span>
+        <h2>Eight quick questions</h2>
+        <p>Pick an answer to see why it is right or wrong. Score 80 percent or more to pass. Nobody is watching; the point is to find out what did not stick.</p>
+      </div>
+      <div id="quizBox"></div>
+      <h3 style="margin:28px 0 12px">Think it through</h3>
+      <div class="reflect">
+        <details><summary>Why does a Project help with the "close the chat and it forgets" problem from Week 1?</summary><p>In Week 1 the chat's only memory was its context window, and closing the chat emptied it. A Project keeps the files and the instructions outside any single chat and loads them into every new one. The memory now lives in the Project, not in the conversation, so nothing is lost when a chat ends. What a Project does not do is remember the chats themselves: chat 2 knows the binder and the rules, not what chat 1 decided.</p></details>
+        <details><summary>What happens if you upload 300 pages of documents to a Project?</summary><p>At roughly 500 tokens a page, 300 pages is about 150,000 tokens. If Claude can still fit that in the window it will read it whole into every chat, leaving little room for the conversation and asking the model to find one clause in a very long context. Past the point where it no longer fits, Claude switches to retrieval and pulls only the best-matching sections for each question, which works well when the documents have clear titles and numbered sections and badly when they are scans without headings. Either way, the better move is usually to split the knowledge into focused Projects. Week 5 builds the retrieval machinery by hand.</p></details>
+        <details><summary>Why is "only answer from the files" a critical rule for a policy assistant and a bad rule for a brainstorming assistant?</summary><p>A policy assistant must be correct and traceable. An invented leave rule can cost a real person money or a job, so a refusal is better than a guess, and a citation is better than either. A brainstorming assistant has the opposite job: you want ideas beyond what is already written down. The same rule that protects staff would make it refuse the whole task. The rule follows from the job, not from the technology.</p></details>
+        <details><summary>A colleague wants to upload last year's salary spreadsheet to the shared policy Project so the assistant can answer pay questions. What do you say?</summary><p>No, and the reason is structural rather than cautious: everything in a Project's knowledge is readable by everyone in the Project, so a salary file in a shared Project is a salary file published to the company. Pay questions are also personal, not policy, and the people who asked for the policy helper did not consent to that. If pay questions matter, they need a different design: a separate Project restricted to the payroll team, or, later in the course, a tool with access control and a person approving each answer. This is exactly what the "never upload" line in design-log entry 3 is for.</p></details>
+      </div>
+    </div>
+
+    <div class="part" id="build">
+      <div class="scene__head">
+        <span class="scene__kicker scene__kicker--build">Practice</span>
+        <h2>Should it answer?</h2>
+        <p>Eight staff questions reach your policy helper. For each one, read what the documents contain, then pick what a well-instructed assistant should do. Answer with a citation, say it is not covered, or hand over to HR or a manager.</p>
+      </div>
+      <div class="card w3-scen" id="w3Scen">
+        <div class="row" style="justify-content:space-between"><span class="chip" id="w3ScenStep">Question 1 of 8</span><div class="w3-tray" id="w3ScenTray" aria-label="Results so far"></div></div>
+        <p class="w3-scen__q" id="w3ScenQ"></p>
+        <div class="w3-scen__docs" id="w3ScenDocs" aria-label="What the documents contain"></div>
+        <div class="w3-scen__choices" id="w3ScenChoices" role="group" aria-label="What should the assistant do?">
+          <button class="btn" type="button" data-choice="0" id="w3ScenC0">Answer with a citation</button>
+          <button class="btn" type="button" data-choice="1" id="w3ScenC1">Say it is not covered</button>
+          <button class="btn" type="button" data-choice="2" id="w3ScenC2">Hand over to HR or a manager</button>
+        </div>
+        <div class="w3-scen__fb" id="w3ScenFb" hidden aria-live="polite"></div>
+        <div class="row" style="justify-content:space-between"><span class="muted" id="w3ScenScoreLine">Score 0 of 0</span><button class="btn btn--primary" type="button" id="w3ScenNext" hidden>Next question</button></div>
+      </div>
+      <div class="card" id="w3ScenDone" hidden>
+        <div class="row" style="gap:18px;align-items:center"><b class="w3-scen__score" id="w3ScenFinal">0/8</b><div class="stack" style="gap:8px;min-width:0"><p id="w3ScenVerdict"></p><span><button class="btn btn--small" type="button" id="w3ScenRestart">Play again</button></span></div></div>
+      </div>
+    </div>
+    <div class="daynav"><button class="btn" type="button" data-go="4" id="goPrev5">← Day 4 · Sharing, or an agent?</button><a class="btn btn--primary" href="#wrapup">Record the week in the tracker ↓</a></div>
+  </section>
+
+  <section class="scene" id="wrapup">
+    <div class="wrapup">
+      <div class="stack">
+        <h2>Your progress this week</h2>
+        <div class="wrapup__stats">
+          <div class="stat"><b data-stat="checks">0/0</b><span>Steps ticked</span></div>
+          <div class="stat"><b data-stat="quiz">–</b><span>Best quiz score</span></div>
+        </div>
+        <div class="progress"><i data-stat-bar></i></div>
+        <p class="muted">Ticks, notes and scores live in this browser. Record the week in the course tracker so it counts everywhere you open the course.</p>
+      </div>
+      <a class="btn btn--primary" data-href="track">Record in the tracker</a>
+    </div>
+    <nav class="pager" aria-label="Previous and next week">
+      <a data-href="prev"><span>Previous</span><b>Week 2 · Prompt Craft</b></a>
+      <a data-href="next"><span>Next</span><b>Week 4 · Context Engineering</b></a>
+    </nav>
+    <footer class="site">
+      <div class="row" style="justify-content:space-between">
+        <div class="weeks" data-weeks aria-label="All weeks"></div>
+        <div class="row"><a data-href="hub">Course hub</a> · <a data-href="playground">Agent playground</a> · <a data-href="doc">Course doc</a></div>
+      </div>
+      <p>Build Your Own AI Agents · a 10-week course. Use made-up data in every lab. Week 3 draws on MIT xPRO's Designing and Building AI Products and Services, Module 1, stage three: data strategy.</p>
+    </footer>
+  </section>
+</main>
+
+<script>window.COURSE_URLS={"hub": "https://claude.ai/artifact/VfmYUVxvAjdquZj7j9Wgia", "doc": "https://claude.ai/artifact/NNeZy8NSwNpWpGtkV2yNnU", "playground": "https://claude.ai/artifact/UJgMeF4nCkgx8QCQHtJj9V", "weeks": ["https://claude.ai/artifact/BHztd7U7AsfsGQidA4uGNa", "https://claude.ai/artifact/TJQtvMvTYBvrpzqULLWrc8", "https://claude.ai/artifact/9tJSawE2cNn7iEU2iM46L6", "https://claude.ai/artifact/G2ThZDmBn7UkZpgqbTF5rr", "https://claude.ai/artifact/U6ZN7Vrgo25rezcSUGn5rs", "https://claude.ai/artifact/N8kY52H4tZ1DxgMaA457Hr", "https://claude.ai/artifact/V2NY5MP2GdTy23RcUzTzZA", "https://claude.ai/artifact/V8eaPCrMHEza3yy2WrUU9i", "https://claude.ai/artifact/5DhRAKr4j7PtNXeEfq8NWe", "https://claude.ai/artifact/WjEDU4hesh8cnvJrY6CXp5"]};</script>
+<script>
+/* Course runtime shared by every module page. Exposes window.Course. */
+(function(){
+  'use strict';
+  var Course = window.Course = {};
+  var PREFIX = 'aiagents:';
+  Course.urls = window.COURSE_URLS || {};
+  Course.motionOK = !(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  Course.cfg = {week: 0, title: ''};
+  Course.sample = null;
+  var listeners = [];
+
+  /* ---------- storage (per-browser convenience; never the record of truth) ---------- */
+  Course.store = {
+    key: function(k){ return PREFIX + (Course.cfg.week != null ? 'w' + Course.cfg.week + ':' : '') + k; },
+    get: function(k, d){ try { var v = localStorage.getItem(this.key(k)); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+    set: function(k, v){ try { localStorage.setItem(this.key(k), JSON.stringify(v)); } catch (e) {} Course.emit('store', k, v); }
+  };
+  Course.on = function(fn){ listeners.push(fn); };
+  Course.emit = function(){ var a = arguments; listeners.forEach(function(fn){ try { fn.apply(null, a); } catch (e) {} }); };
+
+  /* ---------- tiny DOM helper ---------- */
+  Course.el = function(tag, attrs, children){
+    var n = document.createElement(tag);
+    if (attrs) Object.keys(attrs).forEach(function(k){
+      var v = attrs[k];
+      if (k === 'class') n.className = v;
+      else if (k === 'html') n.innerHTML = v;
+      else if (k === 'text') n.textContent = v;
+      else if (k.slice(0,2) === 'on') n.addEventListener(k.slice(2), v);
+      else if (v === false || v == null) {}
+      else n.setAttribute(k, v === true ? '' : v);
+    });
+    (children || []).forEach(function(c){ if (c == null) return; n.appendChild(typeof c === 'string' ? document.createTextNode(c) : c); });
+    return n;
+  };
+  Course.$ = function(s, root){ return (root || document).querySelector(s); };
+  Course.$$ = function(s, root){ return Array.prototype.slice.call((root || document).querySelectorAll(s)); };
+  Course.esc = function(s){ return String(s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); };
+  Course.clamp = function(v, a, b){ return Math.max(a, Math.min(b, v)); };
+  Course.lerp = function(a, b, t){ return a + (b - a) * t; };
+  Course.ease = function(t){ return t < .5 ? 2*t*t : -1 + (4 - 2*t)*t; };
+  Course.fmt = function(n){ return Number(n).toLocaleString('en-US'); };
+  Course.cssVar = function(name){ return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); };
+
+  /* ---------- init: rail, weeks strip, checklists, footer ---------- */
+  Course.init = function(cfg){
+    Course.cfg = Object.assign({week: 0, title: '', sections: null, live: null}, cfg || {});
+    document.documentElement.classList.toggle('no-motion', !Course.motionOK);
+    renderWeeks();
+    wireRail();
+    Course.checklists();
+    Course.notes();
+    Course.summary();
+    Course.sampleReady();
+    Course.on(function(){ Course.summary(); updateRailDots(); });
+    updateRailDots();
+  };
+
+  function renderWeeks(){
+    var u = Course.urls, cur = Course.cfg.week;
+    Course.$$('.weeks[data-weeks]').forEach(function(box){
+      box.innerHTML = '';
+      for (var i = 1; i <= 10; i++) {
+        var href = (u.weeks && u.weeks[i-1]) || '#';
+        var a = Course.el('a', {href: href, title: 'Week ' + i, class: i === cur ? 'is-current' : ''}, [String(i)]);
+        if (i === cur) a.setAttribute('aria-current', 'page');
+        box.appendChild(a);
+      }
+    });
+    Course.$$('[data-href]').forEach(function(a){
+      var k = a.getAttribute('data-href'), href = '#';
+      if (k === 'hub') href = u.hub || '#';
+      else if (k === 'doc') href = u.doc || '#';
+      else if (k === 'playground') href = u.playground || '#';
+      else if (/^w\d+$/.test(k)) href = (u.weeks && u.weeks[parseInt(k.slice(1),10)-1]) || '#';
+      else if (k === 'prev') href = (cur > 1 && u.weeks && u.weeks[cur-2]) || u.hub || '#';
+      else if (k === 'next') href = (cur < 10 && u.weeks && u.weeks[cur]) || u.hub || '#';
+      else if (k === 'track') href = (u.hub || '#') + (u.hub ? '#w' + cur : '');
+      var hash = a.getAttribute('data-hash'); a.setAttribute('href', href + (hash && href !== '#' ? hash : ''));
+      if (href === '#') a.classList.add('is-unlinked');
+      if (/^https?:/.test(href)) { a.setAttribute('target', '_blank'); a.setAttribute('rel', 'noopener'); }
+    });
+  }
+
+  function wireRail(){
+    var pills = Course.$$('.rail__pill');
+    if (!pills.length) return;
+    var secs = pills.map(function(p){ var id = (p.getAttribute('href') || '').slice(1); return document.getElementById(id); }).filter(Boolean);
+    if ('IntersectionObserver' in window) {
+      var seen = Course.store.get('seen', {});
+      var io = new IntersectionObserver(function(es){
+        es.forEach(function(e){
+          if (e.isIntersecting) {
+            pills.forEach(function(p){ p.classList.toggle('is-active', p.getAttribute('href') === '#' + e.target.id); });
+            if (e.target.id === 'learn' && e.intersectionRatio > 0.05) { if (!seen.learn) { seen.learn = true; Course.store.set('seen', seen); } }
+          }
+        });
+      }, {rootMargin: '-40% 0px -50% 0px', threshold: [0, .05, .2]});
+      secs.forEach(function(s){ io.observe(s); });
+    }
+    pills.forEach(function(p){ p.addEventListener('click', function(ev){
+      var id = (p.getAttribute('href') || '').slice(1), t = document.getElementById(id);
+      if (t) { ev.preventDefault(); t.scrollIntoView({behavior: Course.motionOK ? 'smooth' : 'auto', block: 'start'}); }
+    }); });
+  }
+
+  function updateRailDots(){
+    var seen = Course.store.get('seen', {});
+    Course.$$('.rail__pill').forEach(function(p){
+      var id = (p.getAttribute('href') || '').slice(1), done = false;
+      if (id === 'learn') done = !!seen.learn;
+      else if (id === 'quiz') { var q = Course.store.get('quiz', null); done = !!(q && q.total && q.score / q.total >= 0.8); }
+      else {
+        var sec = document.getElementById(id);
+        if (sec) { var boxes = Course.$$('input.check', sec); done = boxes.length > 0 && boxes.every(function(b){ return b.checked; }); }
+      }
+      p.classList.toggle('is-done', done);
+    });
+  }
+
+  /* ---------- persisted checklists: any [data-persist] container with input.check[id] ---------- */
+  Course.checklists = function(){
+    Course.$$('[data-persist]').forEach(function(box){
+      var key = 'ck:' + box.getAttribute('data-persist');
+      var state = Course.store.get(key, {});
+      Course.$$('input.check', box).forEach(function(cb){
+        if (!cb.id) return;
+        if (state[cb.id]) cb.checked = true;
+        syncLi(cb);
+        cb.addEventListener('change', function(){
+          state[cb.id] = cb.checked; if (!cb.checked) delete state[cb.id];
+          Course.store.set(key, state); syncLi(cb);
+          var all = Course.$$('input.check', box);
+          if (cb.checked && all.length > 1 && all.every(function(b){ return b.checked; })) { Course.toast('All done here. Nice work.'); Course.confetti(); }
+        });
+      });
+      renderMeter(box);
+      box.addEventListener('change', function(){ renderMeter(box); });
+    });
+    function syncLi(cb){ var li = cb.closest('li'); if (li) li.classList.toggle('done', cb.checked); }
+    function renderMeter(box){
+      var m = Course.$('[data-meter-for="' + box.getAttribute('data-persist') + '"]'); if (!m) return;
+      var all = Course.$$('input.check', box), n = all.filter(function(b){ return b.checked; }).length;
+      var bar = Course.$('.progress>i', m), lab = Course.$('[data-meter-label]', m);
+      if (bar) bar.style.width = (all.length ? 100*n/all.length : 0) + '%';
+      if (lab) lab.textContent = n + ' / ' + all.length;
+    }
+  };
+
+  /* ---------- persisted notes: textarea[data-note] or input[data-note] ---------- */
+  Course.notes = function(){
+    Course.$$('[data-note]').forEach(function(t){
+      var key = 'note:' + t.getAttribute('data-note');
+      var v = Course.store.get(key, null); if (v != null) t.value = v;
+      var timer;
+      t.addEventListener('input', function(){ clearTimeout(timer); timer = setTimeout(function(){ Course.store.set(key, t.value); }, 350); });
+    });
+  };
+
+  /* ---------- quiz ---------- */
+  Course.quiz = function(sel, opts){
+    var root = typeof sel === 'string' ? Course.$(sel) : sel; if (!root) return;
+    var qs = opts.questions || [], key = opts.key || 'quiz', passPct = opts.passPct || 80;
+    var answers = {}, result;
+    root.classList.add('quiz'); root.innerHTML = '';
+    qs.forEach(function(q, i){
+      var card = Course.el('div', {class: 'q', id: 'q-' + i});
+      card.appendChild(Course.el('div', {class: 'q__num', text: 'Question ' + (i+1) + ' of ' + qs.length}));
+      card.appendChild(Course.el('div', {class: 'q__text', text: q.q}));
+      var opts_ = Course.el('div', {class: 'opts', role: 'group', 'aria-label': 'Answers for question ' + (i+1)});
+      q.options.forEach(function(o, j){
+        var b = Course.el('button', {class: 'opt', type: 'button', id: 'q' + i + 'o' + j}, [Course.el('span', {class: 'opt__key', text: 'ABCD'[j]}), Course.el('span', {text: o})]);
+        b.addEventListener('click', function(){ pick(i, j, card); });
+        opts_.appendChild(b);
+      });
+      card.appendChild(opts_);
+      root.appendChild(card);
+    });
+    result = Course.el('div', {class: 'quiz__result', hidden: true});
+    root.appendChild(result);
+    var best = Course.store.get(key, null);
+    if (best && best.total) { var note = Course.el('p', {class: 'muted', text: 'Your best score so far: ' + best.score + ' of ' + best.total + '.'}); root.insertBefore(note, root.firstChild); }
+
+    function pick(i, j, card){
+      if (answers[i] != null) return;
+      answers[i] = j;
+      var q = qs[i], ok = j === q.answer;
+      Course.$$('.opt', card).forEach(function(b, k){
+        b.disabled = true;
+        if (k === q.answer) b.classList.add('is-correct');
+        if (k === j && !ok) b.classList.add('is-wrong');
+      });
+      var why = Course.el('div', {class: 'q__why' + (ok ? '' : ' is-bad')});
+      why.innerHTML = '<b>' + (ok ? 'Correct.' : 'Not quite.') + '</b> ' + Course.esc(q.why);
+      card.appendChild(why);
+      if (Object.keys(answers).length === qs.length) finish();
+    }
+    function finish(){
+      var score = qs.reduce(function(s, q, i){ return s + (answers[i] === q.answer ? 1 : 0); }, 0);
+      var pct = Math.round(100 * score / qs.length), pass = pct >= passPct;
+      var prev = Course.store.get(key, null);
+      if (!prev || score > prev.score) Course.store.set(key, {score: score, total: qs.length, ts: Date.now()}); else Course.emit('store', key, prev);
+      result.hidden = false; result.innerHTML = '';
+      result.appendChild(Course.el('div', {class: 'quiz__score', html: score + '<small> / ' + qs.length + '</small>'}));
+      var msg = pass ? (opts.passText || 'You passed this week\'s check. The tracker counts a score of ' + passPct + '% or more.') : (opts.failText || 'Read the explanations above, then reset and try again. You need ' + passPct + '% to pass.');
+      var box = Course.el('div', {class: 'stack'});
+      box.appendChild(Course.el('p', {html: '<strong>' + (pass ? 'Passed' : 'Keep going') + '</strong> · ' + Course.esc(msg)}));
+      var reset = Course.el('button', {class: 'btn btn--small', type: 'button', text: 'Reset quiz'});
+      reset.addEventListener('click', function(){ Course.quiz(root, opts); root.scrollIntoView({behavior: Course.motionOK ? 'smooth' : 'auto', block: 'start'}); });
+      box.appendChild(reset);
+      result.appendChild(box);
+      result.scrollIntoView({behavior: Course.motionOK ? 'smooth' : 'auto', block: 'nearest'});
+      if (pass) Course.confetti();
+    }
+  };
+
+  /* ---------- summary footer ---------- */
+  Course.summary = function(){
+    var boxes = Course.$$('[data-persist]');
+    var all = 0, done = 0;
+    boxes.forEach(function(b){ Course.$$('input.check', b).forEach(function(c){ all++; if (c.checked) done++; }); });
+    var q = Course.store.get('quiz', null);
+    var set = function(name, v){ Course.$$('[data-stat="' + name + '"]').forEach(function(e){ e.textContent = v; }); };
+    set('checks', done + '/' + all);
+    set('checkspct', all ? Math.round(100*done/all) + '%' : '0%');
+    set('quiz', q && q.total ? q.score + '/' + q.total : '–');
+    var bar = Course.$('[data-stat-bar]'); if (bar) bar.style.width = (all ? 100*done/all : 0) + '%';
+  };
+
+  /* ---------- toast + confetti ---------- */
+  var toastEl, toastT;
+  Course.toast = function(msg){
+    if (!toastEl) { toastEl = Course.el('div', {class: 'toast', role: 'status'}); document.body.appendChild(toastEl); }
+    toastEl.textContent = msg; toastEl.classList.add('is-on');
+    clearTimeout(toastT); toastT = setTimeout(function(){ toastEl.classList.remove('is-on'); }, 2200);
+  };
+  Course.confetti = function(){
+    if (!Course.motionOK) return;
+    var c = Course.el('canvas', {class: 'confetti'}); document.body.appendChild(c);
+    var ctx = c.getContext('2d'), W = c.width = innerWidth, H = c.height = innerHeight;
+    var cols = [Course.cssVar('--think'), Course.cssVar('--act'), Course.cssVar('--observe'), Course.cssVar('--warn')];
+    var ps = []; for (var i = 0; i < 90; i++) ps.push({x: W/2 + (Math.random()-.5)*W*.4, y: H*.35, vx: (Math.random()-.5)*14, vy: -Math.random()*12-4, r: 4+Math.random()*5, c: cols[i%cols.length], a: Math.random()*6, s: (Math.random()-.5)*.3});
+    var t0 = performance.now();
+    (function f(now){
+      var t = (now - t0)/1000; ctx.clearRect(0,0,W,H);
+      ps.forEach(function(p){ p.vy += .35; p.x += p.vx; p.y += p.vy; p.vx *= .99; p.a += p.s; ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.a); ctx.fillStyle = p.c; ctx.globalAlpha = Math.max(0, 1 - t/1.6); ctx.fillRect(-p.r/2,-p.r/2,p.r,p.r*.6); ctx.restore(); });
+      if (t < 1.7) requestAnimationFrame(f); else c.remove();
+    })(t0);
+  };
+
+  /* ---------- canvas loop with DPR + visibility handling ---------- */
+  Course.canvas = function(canvas, draw, opts){
+    opts = opts || {};
+    var ctx = canvas.getContext('2d'), w = 0, h = 0, dpr = 1, running = false, visible = true, last = 0, raf = 0, t0 = performance.now(), paused = false;
+    function resize(){
+      var r = canvas.getBoundingClientRect(); dpr = Math.min(2, window.devicePixelRatio || 1);
+      w = Math.max(1, r.width); h = Math.max(1, r.height);
+      canvas.width = Math.round(w*dpr); canvas.height = Math.round(h*dpr); ctx.setTransform(dpr,0,0,dpr,0,0);
+      api.once();
+    }
+    function frame(now){
+      var dt = Math.min(.05, (now - last)/1000 || 0); last = now;
+      try { draw(ctx, w, h, (now - t0)/1000, dt); } catch (e) { running = false; console.error(e); return; }
+      if (running && visible && !document.hidden && !paused) raf = requestAnimationFrame(frame); else running = false;
+    }
+    var api = {
+      start: function(){ paused = false; if (running || !Course.motionOK && !opts.force) { if (!running) api.once(); return; } running = true; last = performance.now(); raf = requestAnimationFrame(frame); },
+      stop: function(){ running = false; paused = true; cancelAnimationFrame(raf); },
+      once: function(){ try { draw(ctx, w, h, (performance.now()-t0)/1000, 0); } catch (e) { console.error(e); } },
+      resetTime: function(){ t0 = performance.now(); },
+      get w(){ return w; }, get h(){ return h; }, get ctx(){ return ctx; }, get running(){ return running; }
+    };
+    api.resize = resize; canvas.__course = api;   /* lets a page re-measure a canvas it has just un-hidden */
+    if ('ResizeObserver' in window) new ResizeObserver(resize).observe(canvas); else window.addEventListener('resize', resize);
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver(function(es){ visible = es[0].isIntersecting; if (visible && opts.auto !== false && !paused) api.start(); }).observe(canvas);
+    }
+    document.addEventListener('visibilitychange', function(){ if (!document.hidden && visible && opts.auto !== false && !paused) api.start(); });
+    resize();
+    if (opts.auto !== false) api.start();
+    return api;
+  };
+  Course.roundRect = function(ctx, x, y, w, h, r){ if (!(w > 0) || !(h > 0)) { ctx.beginPath(); return; } r = Math.max(0, Math.min(r, w/2, h/2)); ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); };
+
+  /* ---------- typewriter ---------- */
+  Course.typewrite = function(el, text, cps){
+    cps = cps || 40; el.textContent = '';
+    if (!Course.motionOK) { el.textContent = text; return Promise.resolve(); }
+    return new Promise(function(res){ var i = 0; (function step(){ el.textContent = text.slice(0, ++i); if (i < text.length) setTimeout(step, 1000/cps); else res(); })(); });
+  };
+
+  /* ---------- simple tabs: [data-tabs] > [role=tablist] button[data-tab] + [data-panel] ---------- */
+  Course.tabs = function(){
+    Course.$$('[data-tabs]').forEach(function(box){
+      var btns = Course.$$('[data-tab]', box), panels = Course.$$('[data-panel]', box);
+      function show(id){ btns.forEach(function(b){ b.classList.toggle('is-on', b.getAttribute('data-tab') === id); b.setAttribute('aria-selected', b.getAttribute('data-tab') === id); }); panels.forEach(function(p){ p.hidden = p.getAttribute('data-panel') !== id; }); }
+      btns.forEach(function(b){ b.addEventListener('click', function(){ show(b.getAttribute('data-tab')); }); });
+      var first = btns.filter(function(b){ return b.classList.contains('is-on'); })[0] || btns[0]; if (first) show(first.getAttribute('data-tab'));
+    });
+  };
+
+  /* ---------- day tabs: #dayTabs .dayt buttons, section#dayN panels, rail pills #dayN, [data-go] buttons ---------- */
+  Course.days = function(){
+    var $ = Course.$, $$ = Course.$$;
+    var DAYS = $$('section[id^="day"][role="tabpanel"]').length; if (!DAYS) return;
+    var panels = {}, tabs = {}, pills = {}, cur = 0;
+    for (var i = 1; i <= DAYS; i++) { panels[i] = $('#day' + i); tabs[i] = $('#dayt' + i); pills[i] = $('.rail__pill[href="#day' + i + '"]'); }
+    function show(n, scroll){
+      n = Course.clamp(n, 1, DAYS);
+      if (n !== cur) {
+        cur = n;
+        for (var i = 1; i <= DAYS; i++) { panels[i].hidden = i !== n; if (tabs[i]) { tabs[i].classList.toggle('is-on', i === n); tabs[i].setAttribute('aria-selected', i === n ? 'true' : 'false'); } if (pills[i]) pills[i].classList.toggle('is-active', i === n); }
+        Course.store.set('day', n);
+        setTimeout(function(){ $$('canvas', panels[n]).forEach(function(c){ if (c.__course) c.__course.resize(); }); }, 0);
+      }
+      if (scroll) { var strip = $('#dayTabs'); (strip || panels[n]).scrollIntoView({behavior: Course.motionOK ? 'smooth' : 'auto', block: 'start'}); }
+    }
+    function dots(){ for (var i = 1; i <= DAYS; i++) { if (!tabs[i]) continue; var cks = $$('input.check', panels[i]); tabs[i].classList.toggle('is-done', cks.length > 0 && cks.every(function(c){ return c.checked; })); } }
+    for (var i = 1; i <= DAYS; i++) (function(i){
+      if (tabs[i]) tabs[i].addEventListener('click', function(){ show(i, true); });
+      if (pills[i]) pills[i].addEventListener('click', function(ev){ ev.preventDefault(); show(i, true); });
+    })(i);
+    $$('[data-go]').forEach(function(b){ b.addEventListener('click', function(){ show(parseInt(b.getAttribute('data-go'), 10), true); }); });
+    document.addEventListener('change', function(e){ if (e.target && e.target.classList && e.target.classList.contains('check')) dots(); });
+    function fromHash(){ var m = /^#(?:day([1-9])|(lab|quiz|build))$/.exec(location.hash || ''); if (!m) return 0; return m[1] ? parseInt(m[1], 10) : DAYS; }
+    function innerTarget(){ return /^#(lab|quiz|build)$/.test(location.hash || '') ? $(location.hash) : null; }
+    show(fromHash() || Course.store.get('day', 1), false);
+    var t0 = innerTarget(); if (t0) setTimeout(function(){ t0.scrollIntoView({block: 'start'}); }, 60);
+    window.addEventListener('hashchange', function(){ var n = fromHash(); if (!n) return; show(n, !innerTarget()); var t = innerTarget(); if (t) setTimeout(function(){ t.scrollIntoView({behavior: Course.motionOK ? 'smooth' : 'auto', block: 'start'}); }, 80); });
+    dots();
+    Course.showDay = show;
+  };
+
+  /* ---------- live Claude (sample capability) ---------- */
+  var sampleP = null;
+  /* Live Claude is opt-in: a page passes Course.init({live: 'sample'}) when it declares that capability. Other pages never probe it. */
+  Course.sampleReady = function(){
+    if (!sampleP) {
+      var cap = Course.cfg.live;
+      sampleP = (cap && window.claude && typeof window.claude.use === 'function') ? window.claude.use(cap).catch(function(){ return null; }) : Promise.resolve(null);
+      sampleP.then(function(s){
+        Course.sample = s;
+        document.documentElement.classList.toggle('has-live', !!s);
+        Course.$$('[data-live-btn]').forEach(function(b){ b.disabled = !s; if (b.getAttribute('data-live-label')) b.textContent = b.getAttribute('data-live-label'); });
+        Course.$$('[data-live-missing]').forEach(function(el){ el.hidden = !!s; });
+        Course.$$('[data-live-only]').forEach(function(el){ el.hidden = !s; });
+      });
+    }
+    return sampleP;
+  };
+  Course.friendly = function(code){
+    return ({
+      unavailable: 'Live Claude is not available in this view. Open the page inside Claude (claude.ai or the Claude app) to run it.',
+      not_granted: 'You did not allow this page to use Claude. Allow it from the page menu, then try again.',
+      rate_limited: 'Claude is busy or you reached a usage limit. Wait a minute, then try again.',
+      cancelled: 'Stopped.',
+      refused: 'Claude declined that request. Change the wording and try again.',
+      prompt_too_large: 'That is too much text. Shorten it and try again.',
+      invalid_json: 'Claude did not answer in the expected shape. Try again.',
+      tools_unavailable: 'This view cannot run page tools yet. Open the page inside Claude on the web or in the app.',
+      sampling_disabled: 'Claude is not available for this account.',
+      empty_completion: 'Claude returned nothing. Simplify the request and try again.',
+      session_expired: 'Your Claude session expired. Sign in again, then retry.'
+    })[code] || 'Something went wrong talking to Claude. Try again in a moment.';
+  };
+  /* Course.ask(input, options) -> Promise<{text, truncated}>; rejects {code, message, friendly, text?} */
+  Course.ask = function(input, options){
+    return Course.sampleReady().then(function(s){
+      if (!s) return Promise.reject({code: 'unavailable', message: 'sample unavailable', friendly: Course.friendly('unavailable')});
+      return s(input, options || {}).catch(function(e){ e = e || {}; e.friendly = Course.friendly(e.code); throw e; });
+    });
+  };
+  Course.askJSON = function(input, options){
+    return Course.sampleReady().then(function(s){
+      if (!s) return Promise.reject({code: 'unavailable', message: 'sample unavailable', friendly: Course.friendly('unavailable')});
+      return s.json(input, options || {}).catch(function(e){ e = e || {}; e.friendly = Course.friendly(e.code); throw e; });
+    });
+  };
+  /* Convenience: run a prompt into an output element with busy state, streaming and a stop button. */
+  Course.runLive = function(cfg){
+    var out = cfg.out, btn = cfg.button, stop = cfg.stop, ctl = new AbortController();
+    if (stop) { stop.hidden = false; stop.onclick = function(){ ctl.abort(); }; }
+    if (btn) btn.disabled = true;
+    out.textContent = 'Thinking…'; out.classList.add('is-busy');
+    return Course.ask(cfg.input, Object.assign({signal: ctl.signal, onText: function(u){ out.classList.remove('is-busy'); out.textContent = u.text; }}, cfg.options || {}))
+      .then(function(r){ out.classList.remove('is-busy'); out.textContent = r.text + (r.truncated ? '\n\n[cut short: ask for less at a time]' : ''); return r; })
+      .catch(function(e){ out.classList.remove('is-busy'); out.textContent = (e.text ? e.text + '\n\n' : '') + e.friendly; if (e.code === 'not_granted' || e.code === 'sampling_disabled' || e.code === 'unavailable') Course.$$('[data-live-btn]').forEach(function(b){ b.disabled = true; }); throw e; })
+      .finally(function(){ if (btn) btn.disabled = !Course.sample; if (stop) stop.hidden = true; });
+  };
+
+  document.addEventListener('DOMContentLoaded', function(){ Course.tabs(); });
+})();
+
+</script>
+<script>
+/* The ten-row score sheet is built before Course.init so its inputs and selects are restored and saved like every other note. */
+(function buildSheet(){
+  var ROWS = [
+    ['How many days of annual leave do I get?', 'answerable'],
+    ['Can I expense a taxi from the airport to the hotel?', 'answerable'],
+    ['What is the daily meal allowance when travelling?', 'answerable'],
+    ['How soon must I report a lost laptop?', 'answerable'],
+    ['Who approves a purchase over 500?', 'answerable'],
+    ['Do unused leave days carry over to next year?', 'answerable'],
+    ['Can I keep work files in my personal email?', 'answerable'],
+    ['What is the parental leave in our Singapore office?', 'not covered'],
+    ['What is the Wi-Fi password in the Leeds office?', 'not covered'],
+    ['Does the company match charity donations?', 'not covered']
+  ];
+  var tb = document.getElementById('w3SheetBody'); if (!tb) return;
+  ROWS.forEach(function(r, i){
+    var n = i + 1, tr = document.createElement('tr');
+    tr.innerHTML = '<td class="num">' + n + '</td>' +
+      '<td><input class="tin" type="text" id="w3SheetQ' + n + '" data-note="sheet-q-' + n + '" placeholder="' + r[0] + '" aria-label="Question ' + n + '"></td>' +
+      '<td><select id="w3SheetT' + n + '" data-note="sheet-type-' + n + '" aria-label="Kind of question ' + n + '"><option value="answerable"' + (r[1] === 'answerable' ? ' selected' : '') + '>Answerable</option><option value="not covered"' + (r[1] === 'not covered' ? ' selected' : '') + '>Not covered</option></select></td>' +
+      '<td><select id="w3SheetR' + n + '" data-note="sheet-result-' + n + '" aria-label="Result of question ' + n + '"><option value="untested">Untested</option><option value="pass">Pass</option><option value="fail">Fail</option></select></td>';
+    tb.appendChild(tr);
+  });
+})();
+
+Course.init({week: 3, title: 'Claude Projects'});
+var $ = Course.$, $$ = Course.$$, el = Course.el, clamp = Course.clamp, lerp = Course.lerp;
+var MONO = '"JetBrains Mono", monospace', SANS = 'Figtree, sans-serif', DISPLAY = '"Bricolage Grotesque", sans-serif';
+var STAGE_FG = '#EAF0FF', STAGE_MUTED = '#8E9BBE', STAGE_LINE = '#26325A';
+function cv(n){ return Course.cssVar(n); }
+function rgba(hex, a){ var h = String(hex).trim().replace('#', ''); if (h.length === 3) h = h.split('').map(function(c){ return c + c; }).join(''); var n = parseInt(h, 16); if (isNaN(n) || h.length !== 6) return hex; return 'rgba(' + (n >> 16 & 255) + ',' + (n >> 8 & 255) + ',' + (n & 255) + ',' + a + ')'; }
+function u01(x){ return clamp(x, 0, 1); }
+function easeOut(x){ x = u01(x); return 1 - (1 - x) * (1 - x); }
+function txt(ctx, s, x, y, font, color, align){ ctx.font = font; ctx.fillStyle = color; ctx.textAlign = align || 'left'; ctx.fillText(s, x, y); ctx.textAlign = 'left'; }
+function clipText(ctx, s, maxW){ if (ctx.measureText(s).width <= maxW) return s; while (s.length > 1 && ctx.measureText(s + '…').width > maxW) s = s.slice(0, -1); return s + '…'; }
+function wrapLines(ctx, s, maxW){ var words = String(s).split(' '), lines = [], cur = ''; words.forEach(function(wd){ var test = cur ? cur + ' ' + wd : wd; if (ctx.measureText(test).width > maxW && cur) { lines.push(cur); cur = wd; } else cur = test; }); if (cur) lines.push(cur); return lines; }
+function bez(p0, p1, p2, u){ var a = (1-u)*(1-u), b = 2*(1-u)*u, c = u*u; return [a*p0[0] + b*p1[0] + c*p2[0], a*p0[1] + b*p1[1] + c*p2[1]]; }
+/* a streak: a short glowing trail travelling along a curve from a to b; u in 0..1 */
+function streak(ctx, a, b, u, color, lift){
+  var c = [(a[0] + b[0]) / 2, Math.min(a[1], b[1]) - (lift || 40)];
+  ctx.lineCap = 'round'; ctx.lineWidth = 3;
+  for (var k = 0; k < 7; k++) {
+    var u1 = u - k * 0.035, u2 = u1 - 0.035; if (u2 < 0) break;
+    var p = bez(a, c, b, u01(u1)), q = bez(a, c, b, u01(u2));
+    ctx.strokeStyle = rgba(color, 0.85 * (1 - k / 7)); ctx.beginPath(); ctx.moveTo(p[0], p[1]); ctx.lineTo(q[0], q[1]); ctx.stroke();
+  }
+  var head = bez(a, c, b, u01(u)); ctx.fillStyle = color; ctx.beginPath(); ctx.arc(head[0], head[1], 3.2, 0, Math.PI * 2); ctx.fill();
+}
+
+/* ---------- HERO: one Project, many chats ---------- */
+var HERO = {
+  files: ['handbook.pdf', 'leave-policy.pdf', 'expense-policy.pdf'],
+  rules: ['1  Cite document + section', '2  Say when not covered', '3  Advice: send to HR'],
+  chats: [
+    {q: 'How many days of leave do I get?', a: '22 days a year, pro rata.', cite: '[leave-policy.pdf §2.1]'},
+    {q: 'Can I expense a taxi home?', a: 'Yes, after 10pm or with no bus.', cite: '[expense-policy.pdf §4.2]'},
+    {q: 'Is my bonus taxed?', a: 'Not covered here. Ask HR or payroll.', cite: '[not in the documents]', miss: true}
+  ],
+  per: 4.0, hold: 2.2
+};
+HERO.cycle = HERO.per * HERO.chats.length + HERO.hold;
+var heroChip = $('#heroChat'), heroChipIdx = -1;
+function drawHero(ctx, w, h, t){
+  if (w < 60 || h < 60) return;
+  var think = cv('--think'), obs = cv('--observe'), act = cv('--act'), fg = STAGE_FG, mut = STAGE_MUTED, line = STAGE_LINE;
+  var tt = Course.motionOK ? (t % HERO.cycle) : HERO.cycle - HERO.hold;
+  ctx.clearRect(0, 0, w, h);
+  var small = w < 440, f = small ? 0.84 : 1;
+  ctx.setLineDash([5, 5]); ctx.strokeStyle = line; ctx.lineWidth = 1.5; Course.roundRect(ctx, 10, 32, w - 20, h - 44, 16); ctx.stroke(); ctx.setLineDash([]);
+  txt(ctx, 'PROJECT · Company policy helper', 22, 52, '10px ' + MONO, mut);
+  var lx = 20, lw = Math.round(clamp(w * 0.31, 118, 190)), by = small ? 58 : 64, bh = Math.round(24 + 3 * 26 * f + 6);
+  ctx.fillStyle = rgba(think, 0.10); ctx.strokeStyle = rgba(think, 0.9); ctx.lineWidth = 1.5; Course.roundRect(ctx, lx, by, lw, bh, 12); ctx.fill(); ctx.stroke();
+  txt(ctx, 'Knowledge · 3 files', lx + 10, by + 16, '600 ' + Math.round(11 * f) + 'px ' + SANS, fg);
+  HERO.files.forEach(function(name, i){
+    var fy = by + 24 + i * 26 * f;
+    ctx.fillStyle = rgba(think, 0.22); ctx.strokeStyle = think; ctx.lineWidth = 1; Course.roundRect(ctx, lx + 10, fy, lw - 20, 20 * f, 5); ctx.fill(); ctx.stroke();
+    ctx.font = Math.round(10 * f) + 'px ' + MONO; txt(ctx, clipText(ctx, name, lw - 34), lx + 17, fy + 14 * f, ctx.font, fg);
+  });
+  var ry = by + bh + 14, rh = Math.round(22 + 3 * 15 * f + 8);
+  ctx.fillStyle = rgba(obs, 0.10); ctx.strokeStyle = rgba(obs, 0.9); ctx.lineWidth = 1.5; Course.roundRect(ctx, lx, ry, lw, rh, 12); ctx.fill(); ctx.stroke();
+  txt(ctx, 'Project instructions', lx + 10, ry + 16, '600 ' + Math.round(11 * f) + 'px ' + SANS, fg);
+  HERO.rules.forEach(function(r, i){ ctx.font = Math.round(9.5 * f) + 'px ' + SANS; txt(ctx, clipText(ctx, r, lw - 20), lx + 10, ry + 31 + i * 15 * f, ctx.font, mut); });
+  var binderOut = [lx + lw, by + bh / 2], rulesOut = [lx + lw, ry + rh / 2];
+  var cx = lx + lw + 18, cw = w - cx - 20, top = small ? 58 : 64, gap = 8, bottom = small ? 44 : 50;
+  var ch = (h - top - bottom - gap * 2) / 3, g = clamp(ch / 86, 0.7, 1), fQ = Math.round(12.5 * g), fS = Math.round(10 * g);
+  HERO.chats.forEach(function(chat, i){
+    var p = tt - i * HERO.per; if (p < 0) return;
+    var y = top + i * (ch + gap), pop = easeOut(p / 0.35);
+    ctx.save(); ctx.globalAlpha = pop; ctx.translate(cx + cw / 2, y + ch / 2); ctx.scale(lerp(0.9, 1, pop), lerp(0.9, 1, pop)); ctx.translate(-(cx + cw / 2), -(y + ch / 2));
+    ctx.fillStyle = rgba(fg, 0.06); ctx.strokeStyle = line; ctx.lineWidth = 1; Course.roundRect(ctx, cx, y, cw, ch, 10); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = rgba(fg, 0.05); Course.roundRect(ctx, cx, y, cw, 18 * g + 4, 10); ctx.fill(); ctx.fillRect(cx, y + 10, cw, 8 * g + 4);
+    txt(ctx, 'chat ' + (i + 1), cx + 10, y + 13 * g + 2, fS + 'px ' + MONO, mut);
+    var slotY = y + 5, slotX = cx + cw - 12;
+    for (var k = 0; k < 4; k++) {
+      var start = 0.35 + k * 0.16, u = (p - start) / 0.62, isRule = k === 3, col = isRule ? obs : think, from = isRule ? rulesOut : binderOut, sx = slotX - (3 - k) * 13;
+      if (u <= 0) continue;
+      if (u < 1) { ctx.save(); ctx.globalAlpha = 1; streak(ctx, from, [sx, slotY + 6], u, col, 30 + k * 6); ctx.restore(); }
+      else { ctx.fillStyle = rgba(col, 0.9); Course.roundRect(ctx, sx - 4, slotY, 8, 11 * g, 2); ctx.fill(); }
+    }
+    var qn = Math.floor(u01((p - 1.45) / 0.9) * chat.q.length);
+    if (qn > 0) { ctx.font = fQ + 'px ' + SANS; txt(ctx, clipText(ctx, 'You: ' + chat.q.slice(0, qn), cw - 20), cx + 10, y + ch * 0.52, ctx.font, fg); }
+    var an = Math.floor(u01((p - 2.55) / 0.8) * chat.a.length);
+    if (an > 0) {
+      ctx.font = '600 ' + fQ + 'px ' + SANS; var aLine = clipText(ctx, 'Claude: ' + chat.a.slice(0, an), cw - 20); txt(ctx, aLine, cx + 10, y + ch * 0.74, ctx.font, fg);
+      var ca = u01((p - 3.3) / 0.4);
+      if (ca > 0) { ctx.globalAlpha = pop * ca; var aw = ctx.measureText(aLine).width, citeFont = fS + 'px ' + MONO; ctx.font = citeFont; var fits = aw + 8 + ctx.measureText(chat.cite).width < cw - 20; txt(ctx, chat.cite, fits ? cx + 14 + aw : cx + 10, fits ? y + ch * 0.74 : y + ch * 0.92, citeFont, chat.miss ? act : obs); }
+    }
+    ctx.restore();
+  });
+  var idx = clamp(Math.floor(tt / HERO.per), 0, HERO.chats.length - 1);
+  if (idx !== heroChipIdx && heroChip) { heroChipIdx = idx; heroChip.textContent = 'chat ' + (idx + 1) + ' of 3'; }
+}
+var hero = Course.canvas(document.getElementById('heroCanvas'), drawHero, {auto: true});
+document.getElementById('heroReplay').addEventListener('click', function(){ hero.resetTime(); hero.start(); hero.once(); });
+
+/* ---------- LEARN 1: what a Project holds ---------- */
+var PARTS = {
+  knowledge: {t: 'Knowledge', job: 'Files you upload once: PDFs, documents, spreadsheets, text. Claude reads them at the start of every chat in the Project, or searches them when they are too big to load whole.', where: 'Where you set it: the knowledge panel of the Project. Its capacity figure is the share of the window the files take.', an: 'First-day analogy: the binder you hand a new colleague.'},
+  instructions: {t: 'Instructions', job: 'Your Week 2 system prompt, placed in the system position of every chat, automatically.', where: 'Where you set it: the instructions box of the Project. Edit it once and every new chat follows the new version.', an: 'First-day analogy: the house rules you explain once, not every morning.'},
+  chats: {t: 'Chats', job: 'Separate conversations. Each starts fresh, already knowing the files and the rules, and knowing nothing about the other chats.', where: 'Where you set it: New chat inside the Project. Start a fresh one for each new task.', an: 'First-day analogy: every conversation you have with the colleague after day one.'}
+};
+var partsBox = $('#w3Parts'), partExplain = $('#w3PartExplain'), partsSeen = {};
+function pickPart(name){
+  partsBox.classList.add('has-pick'); partsSeen[name] = true;
+  $$('[data-part]', partsBox).forEach(function(n){ var on = n.getAttribute('data-part') === name; n.classList.toggle('is-on', on); n.setAttribute('aria-pressed', on ? 'true' : 'false'); });
+  var p = PARTS[name]; partExplain.innerHTML = '<b>' + p.t + '</b><span>' + Course.esc(p.job) + '</span><span class="muted">' + Course.esc(p.where) + '</span><span class="muted">' + Course.esc(p.an) + '</span>';
+  var n = Object.keys(partsSeen).length, chip = $('#w3PartCount'); chip.textContent = n + ' of 3 seen'; if (n === 3) chip.className = 'row chip chip--ok';
+}
+$$('[data-part]', partsBox).forEach(function(n){
+  n.addEventListener('click', function(){ pickPart(n.getAttribute('data-part')); });
+  n.addEventListener('keydown', function(e){ if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pickPart(n.getAttribute('data-part')); } });
+});
+
+/* ---------- LEARN 2: rules in a chat versus Project instructions ---------- */
+var rules = {turns: 1, pastedAt: 1, chat: 1}, rulesScroll = {l: 0, r: 0}, rulesAnim, RULES_ROW = 26, RULES_CARD = 44;
+function rulesStrength(){ if (rules.pastedAt == null) return 0; var d = rules.turns - rules.pastedAt; return d <= 6 ? 1 : Math.max(0.4, 1 - (d - 6) * 0.025); }
+function drawRuleCard(ctx, x, y, w, h, obs, fg, mut, pinned){
+  ctx.fillStyle = rgba(obs, 0.14); ctx.strokeStyle = obs; ctx.lineWidth = 1.5; Course.roundRect(ctx, x, y, w, h, 8); ctx.fill(); ctx.stroke();
+  txt(ctx, pinned ? 'Project instructions · 12 rules · pinned' : 'Rules · 12 · pasted as a message', x + 8, y + 15, '600 10.5px ' + SANS, fg);
+  ctx.font = '9px ' + MONO; txt(ctx, clipText(ctx, '1 Cite the section   2 Say when not covered', w - 16), x + 8, y + 28, ctx.font, mut);
+  txt(ctx, clipText(ctx, '3 No legal or financial advice   4 Short answer first', w - 16), x + 8, y + 39, ctx.font, mut);
+}
+function rulesDraw(ctx, w, h, t, dt){
+  if (w < 60 || h < 60) return;
+  var fg = cv('--fg'), mut = cv('--muted'), line = cv('--line'), s2 = cv('--surface-2'), sf = cv('--surface'), obs = cv('--observe'), act = cv('--act'), ok = cv('--ok'), bad = cv('--bad'), warn = cv('--warn');
+  var k = (Course.motionOK && dt) ? 1 - Math.pow(0.0005, dt) : 1, settled = true;
+  ctx.clearRect(0, 0, w, h);
+  var pad = 8, gap = 12, laneW = (w - pad * 2 - gap) / 2, top = 44, winH = h - top - 74;
+  [0, 1].forEach(function(side){
+    var x = pad + side * (laneW + gap), isProject = side === 1, key = side ? 'r' : 'l';
+    txt(ctx, isProject ? 'Project · chat ' + rules.chat : 'Plain chat' + (rules.chat > 1 ? ' · chat ' + rules.chat : ''), x, 18, '600 12px ' + SANS, fg);
+    ctx.font = '9.5px ' + MONO; txt(ctx, clipText(ctx, isProject ? 'instructions applied automatically' : (rules.pastedAt != null ? 'rules pasted in message ' + rules.pastedAt : 'no rules in this chat'), laneW), x, 33, ctx.font, mut);
+    ctx.fillStyle = s2; ctx.strokeStyle = line; ctx.lineWidth = 1; Course.roundRect(ctx, x, top, laneW, winH, 10); ctx.fill(); ctx.stroke();
+    var innerX = x + 7, innerW = laneW - 14, pinnedH = isProject ? RULES_CARD + 8 : 0;
+    if (isProject) drawRuleCard(ctx, innerX, top + 6, innerW, RULES_CARD, obs, fg, mut, true);
+    var areaY = top + 6 + pinnedH, areaH = winH - 12 - pinnedH, hasCard = !isProject && rules.pastedAt != null;
+    var contentH = rules.turns * RULES_ROW + (hasCard ? RULES_CARD + 6 : 0), target = Math.max(0, contentH - areaH);
+    rulesScroll[key] += (target - rulesScroll[key]) * k; if (Math.abs(rulesScroll[key] - target) < 0.5) rulesScroll[key] = target; else settled = false;
+    ctx.save(); ctx.beginPath(); ctx.rect(x + 1, areaY, laneW - 2, areaH); ctx.clip();
+    var y = areaY - rulesScroll[key], uw = innerW * 0.44, cwid = innerW * 0.56;
+    for (var i = 1; i <= rules.turns; i++) {
+      if (hasCard && i === rules.pastedAt) { drawRuleCard(ctx, innerX, y, innerW, RULES_CARD, obs, fg, mut, false); y += RULES_CARD + 6; }
+      if (y + RULES_ROW > areaY && y < areaY + areaH) {
+        ctx.fillStyle = sf; ctx.strokeStyle = line; ctx.lineWidth = 1; Course.roundRect(ctx, innerX, y + 2, uw, 10, 5); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = rgba(act, 0.28); Course.roundRect(ctx, innerX + innerW - cwid, y + 14, cwid, 10, 5); ctx.fill();
+        if (i === rules.turns) { ctx.font = '8.5px ' + MONO; txt(ctx, 'turn ' + i, innerX + uw + 5, y + 10, ctx.font, mut); }
+      }
+      y += RULES_ROW;
+    }
+    ctx.restore();
+    if (!isProject && rules.pastedAt != null && rulesScroll[key] > RULES_CARD) { ctx.font = '9px ' + MONO; txt(ctx, '▲ rules, ' + Math.round(rulesScroll[key] / RULES_ROW) + ' turns up', x + laneW / 2, top + 16, ctx.font, mut, 'center'); }
+    var s = isProject ? 1 : rulesStrength(), by = top + winH + 12, col = s >= 1 ? ok : s >= 0.7 ? warn : bad;
+    txt(ctx, 'rules followed', x, by + 9, '9.5px ' + MONO, mut);
+    ctx.fillStyle = s2; Course.roundRect(ctx, x, by + 15, laneW, 8, 4); ctx.fill();
+    if (s > 0) { ctx.fillStyle = col; Course.roundRect(ctx, x, by + 15, laneW * s, 8, 4); ctx.fill(); }
+    ctx.font = '600 9.5px ' + MONO; txt(ctx, clipText(ctx, s > 0 ? '~' + Math.round(12 * s) + ' of 12' + (isProject ? ' · every chat' : '') : 'none here', laneW * 0.55), x + laneW, by + 9, ctx.font, col, 'right');
+    txt(ctx, isProject ? 'starts briefed, every time' : (rules.pastedAt == null ? 'started empty' : s >= 1 ? 'rules still in view' : 'newer text wins attention'), x, h - 8, '9.5px ' + SANS, mut);
+  });
+  if (settled && rulesAnim) rulesAnim.stop();
+}
+function rulesSync(){
+  $('#w3RulesTurnsLabel').textContent = 'turn ' + rules.turns + (rules.chat > 1 ? ' · chat ' + rules.chat : '');
+  var s = rulesStrength(), chip = $('#w3RulesState'), note = $('#w3RulesNote');
+  if (rules.pastedAt == null) { chip.textContent = 'plain chat: no rules at all'; chip.className = 'row chip chip--bad'; note.textContent = 'A new plain chat starts empty. The Project chat starts with the instructions already in place.'; }
+  else if (s >= 1) { chip.textContent = 'rules in view on both sides'; chip.className = 'row chip chip--ok'; note.textContent = 'Left: rules pasted into message 1 of a plain chat. Right: the same rules as Project instructions.'; }
+  else { chip.textContent = 'plain chat drifting: ~' + Math.round(12 * s) + ' of 12 rules'; chip.className = 'row chip chip--warn'; note.textContent = 'The pasted rules have scrolled a long way up. Newer text wins attention; the pinned instructions never move. Figures are illustrative.'; }
+  rulesAnim.start();
+}
+rulesAnim = Course.canvas($('#w3RulesCanvas'), rulesDraw, {auto: false});
+$('#w3RulesTurns').addEventListener('input', function(){ rules.turns = parseInt(this.value, 10) || 1; if (rules.pastedAt != null && rules.pastedAt > rules.turns) rules.pastedAt = rules.turns; rulesSync(); });
+$('#w3RulesNew').addEventListener('click', function(){ rules.chat++; rules.turns = 1; rules.pastedAt = null; $('#w3RulesTurns').value = 1; rulesScroll = {l: 0, r: 0}; rulesSync(); });
+$('#w3RulesPaste').addEventListener('click', function(){ rules.pastedAt = rules.turns; rulesSync(); });
+$('#w3RulesReset').addEventListener('click', function(){ rules = {turns: 1, pastedAt: 1, chat: 1}; $('#w3RulesTurns').value = 1; rulesScroll = {l: 0, r: 0}; rulesSync(); });
+rulesSync();
+
+/* ---------- LEARN 3: files on the desk (token budget) ---------- */
+var FILES = [
+  {name: 'Employee handbook', pages: 60, tokens: 30000, c: '--think'},
+  {name: 'Expense policy', pages: 8, tokens: 4000, c: '--observe'},
+  {name: 'Leave policy', pages: 6, tokens: 3000, c: '--ok'},
+  {name: 'IT security policy', pages: 12, tokens: 6000, c: '--act'},
+  {name: 'Product catalogue', pages: 200, tokens: 100000, c: '--warn'},
+  {name: 'Supplier contracts', pages: 140, tokens: 70000, c: '--muted'}
+];
+var LIMIT = 200000, budget = [], budgetShown = 0, budgetAnim;
+function budgetTotals(){ return budget.reduce(function(s, f){ s.pages += f.pages; s.tokens += f.tokens; return s; }, {pages: 0, tokens: 0}); }
+function budgetSync(){
+  var tot = budgetTotals(), counts = {}, list = $('#w3BudgetList'), chip = $('#w3BudgetState');
+  $('#w3BudgetPages').textContent = Course.fmt(tot.pages); $('#w3BudgetTokens').textContent = Course.fmt(tot.tokens);
+  if (!budget.length) { chip.textContent = 'empty'; chip.className = 'chip'; }
+  else if (tot.tokens > LIMIT) { chip.textContent = 'over the window: Claude switches to retrieval'; chip.className = 'chip chip--bad'; }
+  else if (tot.tokens > LIMIT * 0.6) { chip.textContent = 'fits, but crowds out the conversation'; chip.className = 'chip chip--warn'; }
+  else { chip.textContent = 'fits: read whole into every chat'; chip.className = 'chip chip--ok'; }
+  list.innerHTML = ''; budget.forEach(function(f){ counts[f.name] = (counts[f.name] || 0) + 1; });
+  Object.keys(counts).forEach(function(n){ list.appendChild(el('span', {class: 'chip', text: n + (counts[n] > 1 ? ' ×' + counts[n] : '')})); });
+  if (!budget.length) list.appendChild(el('span', {class: 'muted', style: 'font-size:.85rem', text: 'No files yet. Add some above.'}));
+  budgetAnim.start();
+}
+budgetAnim = Course.canvas($('#w3BudgetCanvas'), function(ctx, w, h, t, dt){
+  if (w < 60 || h < 60) return;
+  var fg = cv('--fg'), mut = cv('--muted'), line = cv('--line'), s2 = cv('--surface-2'), bad = cv('--bad'), tot = budgetTotals();
+  budgetShown = (Course.motionOK && dt) ? lerp(budgetShown, tot.tokens, 1 - Math.pow(0.0005, dt)) : tot.tokens;
+  if (Math.abs(budgetShown - tot.tokens) < 60) budgetShown = tot.tokens;
+  ctx.clearRect(0, 0, w, h);
+  var x0 = 14, bw = w - 28, y = 62, bh = 36, limitW = bw * 0.78, perTok = limitW / LIMIT;
+  txt(ctx, 'Context window · 200,000 tokens', x0, 26, '600 13px ' + SANS, fg);
+  var over = Math.max(0, Math.round(budgetShown) - LIMIT);
+  txt(ctx, over ? Course.fmt(over) + ' over' : Course.fmt(Math.round(budgetShown)) + ' used', w - 14, 26, '600 12px ' + MONO, over ? bad : mut, 'right');
+  ctx.fillStyle = s2; ctx.strokeStyle = line; ctx.lineWidth = 1; Course.roundRect(ctx, x0, y, bw, bh, 10); ctx.fill(); ctx.stroke();
+  ctx.save(); Course.roundRect(ctx, x0, y, bw, bh, 10); ctx.clip();
+  var cx = x0, scale = tot.tokens ? budgetShown / tot.tokens : 0;
+  budget.forEach(function(f, i){
+    var segW = f.tokens * perTok * scale, col = cv(f.c), inside = Math.max(0, Math.min(segW, x0 + limitW - cx)), spill = segW - inside;
+    if (inside > 0) { ctx.fillStyle = col; ctx.fillRect(cx, y, inside, bh); }
+    if (spill > 0) { ctx.fillStyle = bad; ctx.fillRect(cx + inside, y, spill, bh); }
+    if (inside > 64) { ctx.font = '600 11px ' + SANS; txt(ctx, clipText(ctx, f.name, inside - 12), cx + 7, y + 22, ctx.font, '#fff'); }
+    if (i < budget.length - 1) { ctx.fillStyle = 'rgba(255,255,255,.55)'; ctx.fillRect(cx + segW - 1, y, 1.5, bh); }
+    cx += segW;
+  });
+  ctx.restore();
+  ctx.setLineDash([4, 4]); ctx.strokeStyle = over ? bad : mut; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(x0 + limitW, y - 8); ctx.lineTo(x0 + limitW, y + bh + 8); ctx.stroke(); ctx.setLineDash([]);
+  txt(ctx, 'limit', x0 + limitW, y - 12, '10px ' + MONO, over ? bad : mut, 'center');
+  [0, 50000, 100000, 150000, 200000].forEach(function(v){ var tx = x0 + v * perTok; ctx.fillStyle = line; ctx.fillRect(tx, y + bh + 4, 1, 5); txt(ctx, v ? (v / 1000) + 'k' : '0', tx, y + bh + 22, '10px ' + MONO, mut, v === 0 ? 'left' : 'center'); });
+  if (over) txt(ctx, 'retrieval', x0 + limitW + (bw - limitW) / 2, y + bh + 22, '10px ' + MONO, bad, 'center');
+  var room = LIMIT - tot.tokens;
+  ctx.font = '12px ' + SANS;
+  var msg = !budget.length ? 'Empty. Add a file: it is read whole into every chat, every time.' : room >= 0 ? 'Room left for the conversation itself: ' + Course.fmt(room) + ' tokens, about ' + Course.fmt(Math.round(room / 500)) + ' pages of chat.' : 'Too big to load whole. Claude will search the files and pull only the relevant sections onto the desk.';
+  wrapLines(ctx, msg, w - 28).forEach(function(l, i){ txt(ctx, l, x0, y + bh + 46 + i * 16, '12px ' + SANS, room >= 0 ? fg : bad); });
+  if (budgetShown === tot.tokens && budgetAnim) budgetAnim.stop();
+}, {auto: false});
+$$('#w3BudgetBank [data-file]').forEach(function(b){ b.addEventListener('click', function(){ budget.push(FILES[+b.getAttribute('data-file')]); budgetSync(); }); });
+$('#w3BudgetUndo').addEventListener('click', function(){ budget.pop(); budgetSync(); });
+$('#w3BudgetClear').addEventListener('click', function(){ budget = []; budgetSync(); });
+budgetSync();
+
+/* ---------- LEARN 4: retrieval from a big binder ---------- */
+var RAG_DOCS = [
+  {name: 'handbook.pdf', secs: ['§1 Welcome', '§2 Hours', '§3 Leave: 20 days', '§4 Conduct', '§5 Benefits', '§6 Approvals', '§7 Pension', '§8 Wellbeing']},
+  {name: 'leave-policy.pdf', secs: ['§1 Scope: UK staff', '§2 Entitlement: 22 days', '§3 Booking', '§4 Carry-over', '§5 Sick leave']},
+  {name: 'expense-policy.pdf', secs: ['§1 Scope', '§2 Receipts', '§3 Meals', '§4 Travel and taxis', '§5 Approval limits', '§6 Payment: 30 days']},
+  {name: 'purchasing.pdf', secs: ['§1 Thresholds', '§2 Three quotes', '§3 Suppliers', '§4 Contracts']},
+  {name: 'it-security.pdf', secs: ['§1 Passwords', '§2 Devices', '§3 Lost laptop', '§4 Phishing', '§5 Personal accounts']}
+];
+var RAG_ARCHIVE = ['policies-2019-archive.pdf · 300 pages', 'board-minutes-2021-2025.pdf · 280 pages', 'appendices-and-forms.pdf · 320 pages'];
+var RAG_Q = [
+  {q: 'Can I expense a taxi home after a late shift?', top: [[2, 3, 0.96], [2, 1, 0.62], [2, 4, 0.48], [0, 1, 0.3]], a: 'Yes, when you finish after 10pm or no public transport runs. Keep the receipt.', cite: '[expense-policy.pdf §4]'},
+  {q: 'How many days of leave do I get in my first year?', top: [[1, 1, 0.95], [0, 2, 0.9], [1, 3, 0.52], [1, 2, 0.36]], a: '22 days, pro rata, from day one. The handbook says 20: the two differ, so confirm with HR.', cite: '[leave-policy.pdf §2] [handbook.pdf §3]'},
+  {q: 'What is the parental leave in the Singapore office?', top: [[1, 0, 0.41], [1, 4, 0.3], [0, 4, 0.28], [0, 7, 0.22]], a: 'The documents do not cover parental leave or a Singapore office. Please ask HR.', cite: '[not in the documents]', miss: true}
+];
+var rag = {q: 0, mode: 'big'}, ragAnim, RAG_END = 4.4;
+function ragRel(d, s){ var Q = RAG_Q[rag.q]; for (var i = 0; i < Q.top.length; i++) if (Q.top[i][0] === d && Q.top[i][1] === s) return Q.top[i][2]; return 0.08 + ((d * 7 + s * 13) % 10) / 100; }
+function ragDraw(ctx, w, h, t){
+  if (w < 60 || h < 60) return;
+  var fg = cv('--fg'), mut = cv('--muted'), line = cv('--line'), s2 = cv('--surface-2'), sf = cv('--surface'), think = cv('--think'), obs = cv('--observe'), act = cv('--act');
+  var big = rag.mode === 'big', Q = RAG_Q[rag.q], tt = Course.motionOK ? Math.min(t, RAG_END) : RAG_END;
+  ctx.clearRect(0, 0, w, h);
+  var pad = 8, kw = clamp(Math.round(w * 0.48), 140, 250), kx = pad, dx = kx + kw + 16, dw = w - dx - pad;
+  ctx.font = '600 11px ' + SANS; txt(ctx, clipText(ctx, big ? 'Knowledge · 5 files + 900-page archive' : 'Knowledge · 5 files · 88 pages', kw), kx, 14, ctx.font, fg);
+  var docs = RAG_DOCS.slice();
+  if (big) RAG_ARCHIVE.forEach(function(name){ var secs = []; for (var i = 0; i < 14; i++) secs.push('p.' + (i * 22 + 1)); docs.push({name: name, secs: secs, archive: true}); });
+  var rowTop = 24, rowH = (h - 6 - rowTop) / docs.length, tileH = clamp(rowH - 16, 8, 16), tiles = [];
+  docs.forEach(function(doc, d){
+    var ry = rowTop + d * rowH, n = doc.secs.length, tw = (kw - 2 * (n - 1)) / n;
+    ctx.font = '9px ' + MONO; txt(ctx, clipText(ctx, doc.name, kw), kx, ry + 9, ctx.font, doc.archive ? rgba(mut, 0.7) : mut);
+    doc.secs.forEach(function(sec, s){ tiles.push({x: kx + s * (tw + 2), y: ry + 13, w: tw, h: tileH, d: d, s: s, rel: doc.archive ? 0.05 + ((d * 5 + s * 3) % 9) / 100 : ragRel(d, s), label: doc.name.replace('.pdf', '') + ' ' + sec, archive: !!doc.archive}); });
+  });
+  var dy0 = 24, dh = h - dy0 - 6;
+  ctx.fillStyle = sf; ctx.strokeStyle = line; ctx.lineWidth = 1; Course.roundRect(ctx, dx, dy0, dw, dh, 10); ctx.fill(); ctx.stroke();
+  ctx.font = '600 11px ' + SANS; txt(ctx, clipText(ctx, 'The desk · context window', dw), dx, 14, ctx.font, fg);
+  var ix = dx + 8, iw = dw - 16, y = dy0 + 8;
+  ctx.fillStyle = rgba(obs, 0.18); ctx.strokeStyle = obs; Course.roundRect(ctx, ix, y, iw, 16, 5); ctx.fill(); ctx.stroke();
+  ctx.font = '9px ' + MONO; txt(ctx, clipText(ctx, 'instructions · 12 rules', iw - 10), ix + 6, y + 11, ctx.font, fg); y += 22;
+  ctx.font = '10px ' + SANS; var qLines = wrapLines(ctx, 'You: ' + Q.q, iw - 12), qh = qLines.length * 12 + 8;
+  ctx.fillStyle = s2; Course.roundRect(ctx, ix, y, iw, qh, 6); ctx.fill();
+  qLines.forEach(function(l, i){ txt(ctx, l, ix + 6, y + 13 + i * 12, '10px ' + SANS, fg); }); y += qh + 6;
+  ctx.font = '10px ' + SANS; var aFull = 'Claude: ' + Q.a, aLines = wrapLines(ctx, aFull, iw - 12), ah = 14 + aLines.length * 12 + 16;
+  var slotsTop = y, slotsH = Math.max(30, dy0 + dh - 6 - ah - 6 - slotsTop), score = easeOut(tt / 0.9);
+  var pulled = big ? Q.top.map(function(p){ return tiles.filter(function(tl){ return tl.d === p[0] && tl.s === p[1]; })[0]; }) : tiles.filter(function(tl){ return !tl.archive; }), landed = 0;
+  tiles.forEach(function(tl){
+    ctx.fillStyle = rgba(think, lerp(0.14, tl.rel, score)); ctx.fillRect(tl.x, tl.y, tl.w, tl.h);
+    if (big && tl.rel >= 0.3) { ctx.strokeStyle = rgba(think, score); ctx.lineWidth = 1; ctx.strokeRect(tl.x + 0.5, tl.y + 0.5, tl.w - 1, tl.h - 1); }
+  });
+  if (big) {
+    var slotH = Math.min(20, (slotsH - 6) / 4), slotGap = (slotsH - slotH * 4) / 3;
+    pulled.forEach(function(tl, k){
+      var u = easeOut((tt - 0.9 - k * 0.22) / 0.7), sy = slotsTop + k * (slotH + slotGap);
+      ctx.fillStyle = s2; Course.roundRect(ctx, ix, sy, iw, slotH, 5); ctx.fill();
+      if (u <= 0) return;
+      if (u < 1) { var p = bez([tl.x + tl.w / 2, tl.y + tl.h / 2], [(tl.x + ix) / 2, Math.min(tl.y, sy) - 30], [ix + 20, sy + slotH / 2], u); ctx.fillStyle = think; ctx.fillRect(p[0] - tl.w / 2, p[1] - tl.h / 2, tl.w, tl.h); return; }
+      landed++;
+      ctx.fillStyle = rgba(think, 0.9); Course.roundRect(ctx, ix, sy, iw, slotH, 5); ctx.fill();
+      ctx.font = '9px ' + MONO; txt(ctx, clipText(ctx, tl.label, iw - 40), ix + 6, sy + slotH / 2 + 3, ctx.font, '#fff');
+      txt(ctx, Math.round(tl.rel * 100) + '%', ix + iw - 5, sy + slotH / 2 + 3, '9px ' + MONO, '#fff', 'right');
+    });
+  } else {
+    var cols = 7, rowsN = Math.ceil(pulled.length / cols), gw = (iw - (cols - 1) * 2) / cols, gh = Math.min(12, (slotsH - (rowsN - 1) * 2) / rowsN);
+    pulled.forEach(function(tl, k){
+      var u = easeOut((tt - 0.3 - k * 0.045) / 0.6), gx = ix + (k % cols) * (gw + 2), gy = slotsTop + Math.floor(k / cols) * (gh + 2);
+      if (u <= 0) return;
+      if (u < 1) { var p = bez([tl.x + tl.w / 2, tl.y + tl.h / 2], [(tl.x + gx) / 2, Math.min(tl.y, gy) - 30], [gx + gw / 2, gy + gh / 2], u); ctx.fillStyle = think; ctx.fillRect(p[0] - gw / 2, p[1] - gh / 2, gw, gh); return; }
+      landed++; ctx.fillStyle = rgba(think, 0.85); ctx.fillRect(gx, gy, gw, gh);
+    });
+  }
+  var ready = landed === pulled.length, ay0 = dy0 + dh - 6 - ah + 10;
+  ctx.font = '9px ' + MONO; txt(ctx, clipText(ctx, ready ? (big ? landed + ' sections · ~' + Course.fmt(landed * 580) + ' tokens on the desk' : 'all ' + landed + ' sections · ~' + Course.fmt(landed * 1570) + ' tokens') : (big ? 'pulling the best matches…' : 'loading everything…'), iw), ix, ay0, ctx.font, mut);
+  var chars = Math.floor(u01((tt - 2.4) / 1.1) * aFull.length);
+  if (chars > 0) wrapLines(ctx, aFull.slice(0, chars), iw - 12).slice(0, aLines.length).forEach(function(l, i){ txt(ctx, l, ix + 6, ay0 + 14 + i * 12, '10px ' + SANS, fg); });
+  if (tt > 3.6) { ctx.globalAlpha = u01((tt - 3.6) / 0.4); ctx.font = '9px ' + MONO; txt(ctx, clipText(ctx, Q.cite, iw - 12), ix + 6, ay0 + 14 + aLines.length * 12 + 2, ctx.font, Q.miss ? act : obs); ctx.globalAlpha = 1; }
+  if (tt >= RAG_END && ragAnim && Course.motionOK) ragAnim.stop();
+}
+function ragLabel(){
+  var Q = RAG_Q[rag.q], big = rag.mode === 'big';
+  $('#w3RagLabel').textContent = big ? ('Too big to load whole: Claude pulls the best-matching sections for this question onto the desk.' + (Q.miss ? ' Even the best matches are weak here, so the answer has to say so.' : '')) : 'Everything fits: all 28 sections are on the desk for every chat, and no search is needed.';
+}
+function ragRun(){ ragAnim.resetTime(); ragAnim.start(); ragAnim.once(); }
+ragAnim = Course.canvas($('#w3RagCanvas'), ragDraw, {auto: false});
+if ('IntersectionObserver' in window) { var ragSeen = false; new IntersectionObserver(function(es){ if (es[0].isIntersecting && !ragSeen) { ragSeen = true; ragRun(); } }, {threshold: 0.3}).observe($('#w3RagCanvas')); }
+[0, 1, 2].forEach(function(i){ $('#w3RagQ' + i).addEventListener('click', function(){ rag.q = i; $$('#w3RagBank .btn').forEach(function(b, j){ b.classList.toggle('is-on', j === i); }); ragLabel(); ragRun(); }); });
+$('#w3RagSmall').addEventListener('click', function(){ rag.mode = 'small'; $('#w3RagSmall').classList.add('is-on'); $('#w3RagBig').classList.remove('is-on'); ragLabel(); ragRun(); });
+$('#w3RagBig').addEventListener('click', function(){ rag.mode = 'big'; $('#w3RagBig').classList.add('is-on'); $('#w3RagSmall').classList.remove('is-on'); ragLabel(); ragRun(); });
+$('#w3RagReplay').addEventListener('click', ragRun);
+ragLabel();
+
+/* ---------- LEARN 5: an Artifact assembles itself, then gains versions ---------- */
+var ART_V = [
+  {label: 'v1', ask: 'Make a one-page New starter FAQ from the policies, as an Artifact.', reply: 'Here is the FAQ as an Artifact. Each answer names its section.'},
+  {label: 'v2', ask: 'Add the approval limits for expenses.', reply: 'Added a line on approval limits. This is version 2; version 1 stays in the history.', add: 'What can I approve myself? Up to 500 [expenses §5]'},
+  {label: 'v3', ask: 'Make the tone warmer and add who to contact.', reply: 'Warmer wording and a contact line. Version 3 of 3.', add: 'Still unsure? Ask HR: people@northgate.example'}
+];
+var ART_BASE = ['How much leave do I get? 22 days [leave §2]', 'How do I claim expenses? Within 30 days [expenses §6]', 'Lost laptop? Tell IT within 24 hours [it-security §3]', 'Who approves purchases? Your manager, up to 500 [purchasing §1]', 'How do I book leave? In the HR portal [leave §3]'];
+var art = {made: 1, show: 0}, artAnim, artCv = $('#w3ArtCanvas');
+function artLines(v){ var L = ART_BASE.slice(); for (var i = 1; i <= v; i++) L.push(ART_V[i].add); return L; }
+function bubble(ctx, s, x, y, maxW, right, color, fgc){
+  if (!s) return 0;
+  ctx.font = '12px ' + SANS;
+  var lines = wrapLines(ctx, s, maxW - 24), bw = Math.min(maxW, Math.max.apply(null, lines.map(function(l){ return ctx.measureText(l).width; })) + 24), bh = lines.length * 16 + 14, bx = right ? x + maxW - bw : x;
+  ctx.fillStyle = right ? rgba(color, 0.4) : rgba(color, 0.1); Course.roundRect(ctx, bx, y, bw, bh, 12); ctx.fill();
+  lines.forEach(function(l, i){ txt(ctx, l, bx + 12, y + 20 + i * 16, '12px ' + SANS, fgc); });
+  return bh;
+}
+function artDraw(ctx, w, h, t){
+  if (w < 60 || h < 60) return;
+  var think = cv('--think'), obs = cv('--observe'), fg = STAGE_FG, mut = STAGE_MUTED, line = STAGE_LINE;
+  var V = ART_V[art.show], L = artLines(art.show), END = 2.6 + L.length * 0.22 + 1.0, tt = Course.motionOK ? Math.min(t, END) : END;
+  ctx.clearRect(0, 0, w, h);
+  var panelW = Math.min(w * 0.56, 300), open = art.show > 0 ? 1 : easeOut((tt - 1.6) / 0.7), px = w - panelW * open, chatW = Math.max(120, px - 28);
+  txt(ctx, 'Company policy helper · chat', 14, 20, '10px ' + MONO, mut);
+  var un = Math.floor(u01((tt - 0.2) / 0.9) * V.ask.length), uh = bubble(ctx, V.ask.slice(0, un), 14, 32, chatW, true, think, fg);
+  var cn = Math.floor(u01((tt - 1.3) / 0.8) * V.reply.length);
+  if (cn > 0) bubble(ctx, V.reply.slice(0, cn), 14, 32 + (uh || 30) + 10, chatW, false, fg, fg);
+  if (open > 0) {
+    ctx.fillStyle = rgba(fg, 0.07); ctx.strokeStyle = line; ctx.lineWidth = 1; Course.roundRect(ctx, px, 8, panelW + 20, h - 16, 14); ctx.fill(); ctx.stroke();
+    ctx.globalAlpha = u01((tt - 2.1) / 0.4);
+    txt(ctx, 'New starter FAQ', px + 16, 32, '600 13px ' + SANS, fg);
+    txt(ctx, 'ARTIFACT · ' + V.label + ' of ' + art.made + (art.made > 1 ? ' · history kept' : ''), px + 16, 48, '9px ' + MONO, mut);
+    ctx.globalAlpha = 1;
+    var lineH = Math.min(18, (h - 120) / L.length), fy = 70;
+    L.forEach(function(s, i){
+      var a = easeOut((tt - 2.5 - i * 0.22) / 0.4); if (a <= 0) return;
+      var isNew = art.show > 0 && i === L.length - 1;
+      ctx.globalAlpha = a; ctx.fillStyle = isNew ? rgba(obs, 0.3) : rgba(think, 0.14); Course.roundRect(ctx, px + 12, fy + i * lineH - 12, panelW - 24, lineH - 3, 5); ctx.fill();
+      ctx.font = '10px ' + SANS; txt(ctx, clipText(ctx, s, panelW - 40), px + 18, fy + i * lineH, ctx.font, fg); ctx.globalAlpha = 1;
+    });
+    var sb = easeOut((tt - END + 0.6) / 0.4);
+    if (sb > 0) { ctx.globalAlpha = sb; ctx.fillStyle = obs; Course.roundRect(ctx, px + panelW - 84, h - 42, 80, 26, 13); ctx.fill(); txt(ctx, 'Publish', px + panelW - 44, h - 25, '600 11px ' + SANS, '#fff', 'center'); txt(ctx, 'Edit · Download · Copy', px + 16, h - 25, '10px ' + SANS, mut); ctx.globalAlpha = 1; }
+  }
+  if (tt >= END && artAnim && Course.motionOK) artAnim.stop();
+}
+function artRun(){ artAnim.resetTime(); artAnim.start(); artAnim.once(); }
+function artStrip(){
+  var box = $('#w3ArtVers'); $$('button', box).forEach(function(b){ b.remove(); });
+  for (var i = 0; i < art.made; i++) (function(i){ var b = el('button', {class: 'btn btn--small' + (i === art.show ? ' is-on' : ''), type: 'button', id: 'w3ArtV' + (i + 1), text: ART_V[i].label, 'aria-pressed': i === art.show ? 'true' : 'false'}); b.addEventListener('click', function(){ art.show = i; artStrip(); artRun(); }); box.appendChild(b); })(i);
+  $('#w3ArtChange').textContent = art.made >= 3 ? 'Start over' : 'Ask for a change';
+  $('#w3ArtNote').textContent = art.made === 1 ? 'Ask for something substantial and it opens beside the chat. Every change makes a new version.' : 'Version ' + (art.show + 1) + ' of ' + art.made + ' shown. Click a version to step back. The chat keeps the conversation; the Artifact keeps the thing.';
+}
+artAnim = Course.canvas(artCv, artDraw, {auto: false});
+if ('IntersectionObserver' in window) { var artSeen = false; new IntersectionObserver(function(es){ if (es[0].isIntersecting && !artSeen) { artSeen = true; artRun(); } }, {threshold: 0.3}).observe(artCv); }
+$('#w3ArtChange').addEventListener('click', function(){ if (art.made >= 3) art = {made: 1, show: 0}; else { art.made++; art.show = art.made - 1; } artStrip(); artRun(); });
+$('#w3ArtReplay').addEventListener('click', artRun);
+artStrip();
+
+/* ---------- LEARN 6: the documents are the data (metadata) ---------- */
+var META = ['w3MetaTitle', 'w3MetaSections', 'w3MetaOwner', 'w3MetaDate', 'w3MetaOld'];
+function metaRender(){
+  var on = {}; META.forEach(function(id){ var c = $('#' + id).checked; on[id] = c; $('#' + id + 'Row').classList.toggle('is-on', c); });
+  var n = META.filter(function(id){ return on[id]; }).length, fname = on.w3MetaTitle ? 'expense-policy.pdf' : 'final_v3 (2).pdf', header = [];
+  if (on.w3MetaOwner) header.push('owner: Finance · R. Mehta'); if (on.w3MetaDate) header.push('effective 1 Apr 2026 · v4');
+  var file = $('#w3MetaFile'); file.innerHTML = '';
+  file.appendChild(el('span', {text: fname + (on.w3MetaOld ? '' : '   +  final_v3.pdf (an older copy, still in the knowledge)')}));
+  file.appendChild(el('small', {text: header.length ? header.join(' · ') : 'no header: no owner, no date, no version'}));
+  file.appendChild(el('small', {text: on.w3MetaSections ? 'sections: 1 Scope · 2 Receipts · 3 Meals · 4 Travel · 4.2 Taxis …' : 'no numbered sections: one long run of paragraphs'}));
+  var stale = !on.w3MetaOld;
+  $('#w3MetaText').textContent = stale ? 'Yes, after 9pm. (Quoted from the older copy. The current policy says 10pm; the assistant used whichever copy it read first.)' : 'Yes, when you finish after 10pm or no public transport runs. Keep the receipt.';
+  var cite = $('#w3MetaCite'); cite.textContent = '[' + fname + (on.w3MetaSections ? ' §4.2 Taxis' : ', somewhere in the travel part') + (on.w3MetaDate ? ' · v4 · effective 1 Apr 2026' : '') + (on.w3MetaOwner ? ' · owner: Finance' : '') + ']';
+  cite.className = 'w3-meta__cite' + (n <= 1 || stale ? ' is-bad' : '');
+  $('#w3MetaAns').classList.toggle('is-good', n === 5);
+  var labels = ['unusable: nobody can check it', 'barely usable', 'findable, not checkable', 'checkable with effort', 'nearly audit-ready', 'audit-ready: open the clause and check'], score = $('#w3MetaScore');
+  score.textContent = n + ' of 5 · ' + labels[n]; score.className = 'row chip ' + (n >= 5 ? 'chip--ok' : n >= 3 ? 'chip--warn' : 'chip--bad');
+  $('#w3MetaNote').textContent = stale ? 'Two copies on the desk: the answer may come from the stale one.' : n === 5 ? 'Every part of this citation can be opened and checked by a person, and found by retrieval.' : 'Tick the fields and watch the citation change.';
+}
+META.forEach(function(id){ $('#' + id).addEventListener('change', metaRender); });
+metaRender();
+
+/* ---------- LEARN 7: who sees what when you share ---------- */
+var TEAM = {mode: 'shared', cols: 12, rows: 7}, teamShown = -1, teamAnim;
+teamAnim = Course.canvas($('#w3TeamCanvas'), function(ctx, w, h, t){
+  if (w < 60 || h < 60) return;
+  var think = cv('--think'), act = cv('--act'), fg = cv('--fg'), mut = cv('--muted'), line = cv('--line'), n = TEAM.cols * TEAM.rows;
+  ctx.clearRect(0, 0, w, h);
+  var nw = Math.min(150, w * 0.3), nh = 70, nx = 12, ny = h / 2 - nh / 2 - 8;
+  ctx.fillStyle = cv('--think-soft'); ctx.strokeStyle = think; ctx.lineWidth = 2; Course.roundRect(ctx, nx, ny, nw, nh, 12); ctx.fill(); ctx.stroke();
+  ctx.font = '700 12px ' + DISPLAY; txt(ctx, clipText(ctx, 'Company policy', nw - 20), nx + 12, ny + 24, ctx.font, think); txt(ctx, 'helper', nx + 12, ny + 39, ctx.font, think);
+  ctx.font = '10px ' + SANS; txt(ctx, clipText(ctx, '5 files · 1 set of rules', nw - 20), nx + 12, ny + 58, ctx.font, mut);
+  var gx = nx + nw + 24, gw = w - gx - 12, gy = 18, gh = h - 56, cw = gw / TEAM.cols, chh = gh / TEAM.rows, r = Math.max(3, Math.min(cw, chh) * 0.27), ox = [nx + nw, ny + nh / 2];
+  var lit = 0, shared = TEAM.mode === 'shared', maxD = Math.hypot(gx + gw - ox[0], gh / 2 + 20);
+  var cyc = shared ? 6.5 : n * 0.3 + 3, lt = Course.motionOK ? t % cyc : (shared ? 4 : 3), reach = Course.ease(u01(lt / 3.2)) * (maxD + 60), k = Math.floor(lt / 0.3);
+  for (var i = 0; i < n; i++) {
+    var col = i % TEAM.cols, row = Math.floor(i / TEAM.cols), dx = gx + cw * (col + 0.5), dy = gy + chh * (row + 0.5), on, c;
+    if (shared) { var d = Math.hypot(dx - ox[0], dy - ox[1]); on = d <= reach; c = think; if (on && reach - d < 36) { ctx.strokeStyle = rgba(think, 1 - (reach - d) / 36); ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(dx, dy, r + 3 + (reach - d) / 6, 0, Math.PI * 2); ctx.stroke(); } }
+    else { on = i < k; c = act; if (i === k && k < n) { ctx.strokeStyle = act; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(dx, dy, r + 4, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * ((lt % 0.3) / 0.3)); ctx.stroke(); } }
+    if (on) lit++;
+    ctx.fillStyle = on ? c : line; ctx.beginPath(); ctx.arc(dx, dy, r, 0, Math.PI * 2); ctx.fill();
+  }
+  if (shared && reach > 0) { ctx.strokeStyle = rgba(think, 0.35); ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(ox[0], ox[1]); ctx.lineTo(gx - 6, gy + gh / 2); ctx.stroke(); }
+  var count = Math.round(500 * lit / n);
+  if (count !== teamShown) { teamShown = count; $('#w3TeamCount').textContent = Course.fmt(count); }
+  ctx.font = '10px ' + MONO; txt(ctx, clipText(ctx, shared ? 'one upload · everyone at once · seconds' : 'one trainer · 2 staff a day · day ' + Math.min(250, Math.round(250 * lit / n)) + ' of 250', gw - 90), gx, h - 12, ctx.font, shared ? think : act);
+  txt(ctx, Course.fmt(count) + ' of 500', gx + gw, h - 12, '600 11px ' + SANS, fg, 'right');
+}, {auto: true});
+function setTeam(mode){
+  TEAM.mode = mode; $('#w3TeamShared').classList.toggle('is-on', mode === 'shared'); $('#w3TeamTrain').classList.toggle('is-on', mode !== 'shared');
+  $('#w3TeamNote').textContent = mode === 'shared' ? 'One upload, one set of instructions, and 500 people get the same assistant at once.' : 'Teaching 500 people one at a time takes months, and each person remembers a slightly different version.';
+  teamAnim.resetTime(); teamAnim.start(); teamAnim.once();
+}
+$('#w3TeamShared').addEventListener('click', function(){ setTeam('shared'); }); $('#w3TeamTrain').addEventListener('click', function(){ setTeam('train'); });
+[['w3RoleOwner', 'w3RowOwner'], ['w3RoleMember', 'w3RowMember'], ['w3RoleNone', 'w3RowNone']].forEach(function(p){ $('#' + p[0]).addEventListener('click', function(){ $$('.w3-roles .seg button').forEach(function(b){ b.classList.toggle('is-on', b.id === p[0]); }); $$('.w3-roles tbody tr').forEach(function(r){ r.classList.toggle('is-on', r.id === p[1]); }); }); });
+
+/* ---------- LEARN 8: a Project answers, an agent acts ---------- */
+var LOOP_TASKS = [
+  {v: 'project', why: 'A person asks, reads the clause and decides. The policies sit in the knowledge; nothing has to happen until someone asks.'},
+  {v: 'agent', why: '"Every new invoice" is an event, not a question. Something must notice it, look up the PO in another system, log the result and repeat, with nobody asking. Week 7.'},
+  {v: 'project', why: 'You ask on Friday and read it before it goes anywhere, and the instructions hold the format. A Project with your past updates as knowledge is enough.'},
+  {v: 'agent', why: 'Forty emails, forty replies to read, forty records to update, over days. Actions in other systems, repeated. An agent, with a person approving the sends.'},
+  {v: 'agent', why: 'Nobody from your team is awake to ask. The assistant must be triggered by the visitor, look things up and answer on a channel: an agent, deployed in Week 9.'},
+  {v: 'project', why: 'One-off, person-driven, and both files fit in the window. Upload both, ask, read the list. No loop needed.'}
+];
+var loop = {hot: null}, loopAnim;
+function loopDraw(ctx, w, h, t){
+  if (w < 60 || h < 60) return;
+  var fg = cv('--fg'), mut = cv('--muted'), line = cv('--line'), s2 = cv('--surface-2'), sf = cv('--surface'), think = cv('--think'), act = cv('--act'), obs = cv('--observe'), ok = cv('--ok');
+  var tt = Course.motionOK ? t : 2.1, pad = 8, laneH = (h - 20) / 2, small = w < 430;
+  ctx.clearRect(0, 0, w, h);
+  [0, 1].forEach(function(lane){
+    var y0 = 6 + lane * (laneH + 8), mine = lane ? 'agent' : 'project', dim = loop.hot && loop.hot !== mine;
+    ctx.globalAlpha = dim ? 0.35 : 1;
+    ctx.fillStyle = sf; ctx.strokeStyle = loop.hot === mine ? (lane ? act : think) : line; ctx.lineWidth = loop.hot === mine ? 2 : 1; Course.roundRect(ctx, pad, y0, w - pad * 2, laneH, 10); ctx.fill(); ctx.stroke();
+    ctx.font = '600 11px ' + SANS; txt(ctx, clipText(ctx, lane ? 'Agent (Week 7): an event starts it, it acts, it repeats' : 'Project: a person asks, Claude answers', w - pad * 2 - 20), pad + 10, y0 + 16, ctx.font, fg);
+    if (!lane) {
+      var ph = tt % 4.4, py = y0 + laneH * 0.56, px = pad + 34, bw = Math.min(150, (w - pad * 2) * 0.36), bx = w - pad - 10 - bw, by = y0 + 26, bh = laneH - 40;
+      ctx.fillStyle = mut; ctx.beginPath(); ctx.arc(px, py - 11, 6, 0, Math.PI * 2); ctx.fill(); Course.roundRect(ctx, px - 10, py - 2, 20, 14, 7); ctx.fill();
+      var pulse = ph > 1.5 && ph < 2.3 ? 0.12 + 0.18 * (0.5 + 0.5 * Math.sin(tt * 14)) : 0.1;
+      ctx.fillStyle = rgba(think, pulse); Course.roundRect(ctx, bx, by, bw, bh, 10); ctx.fill(); ctx.strokeStyle = think; ctx.lineWidth = 2; ctx.stroke();
+      ctx.font = '600 11px ' + SANS; txt(ctx, 'Claude', bx + bw / 2, by + bh / 2 - 2, ctx.font, fg, 'center'); ctx.font = '8.5px ' + MONO; txt(ctx, clipText(ctx, 'knowledge + instructions', bw - 10), bx + bw / 2, by + bh / 2 + 11, ctx.font, mut, 'center');
+      ctx.strokeStyle = line; ctx.lineWidth = 1; ctx.setLineDash([3, 4]); ctx.beginPath(); ctx.moveTo(px + 16, py + 4); ctx.lineTo(bx - 4, py + 4); ctx.stroke(); ctx.setLineDash([]);
+      var msg = null, u = 0, right = true;
+      if (ph < 1.5) { msg = 'Can I expense this?'; u = easeOut(ph / 1.5); } else if (ph >= 2.3 && ph < 3.8) { msg = '§4.2: yes, after 10pm'; u = easeOut((ph - 2.3) / 1.5); right = false; }
+      if (msg) { ctx.font = '9px ' + SANS; var mw = ctx.measureText(msg).width + 14, from = px + 20, to = bx - 8 - mw, mx = right ? lerp(from, to, u) : lerp(to, from, u); ctx.fillStyle = right ? s2 : rgba(think, 0.22); Course.roundRect(ctx, mx, py - 8, mw, 20, 10); ctx.fill(); txt(ctx, msg, mx + 7, py + 5, '9px ' + SANS, fg); }
+      ctx.font = '9.5px ' + SANS; txt(ctx, clipText(ctx, 'nothing happens until someone asks · a person reads the answer', w - pad * 2 - 20), pad + 10, y0 + laneH - 9, ctx.font, mut);
+    } else {
+      var N = [['02:14 invoice', mut], ['think', think], ['look up PO', act], ['PO matches', obs], ['log + email', act], ['done', ok]], S = ['02:14', 'think', 'look up', 'check', 'log', 'done'];
+      var x0 = pad + 34, x1 = w - pad - 34, ny = y0 + laneH * 0.5, r = small ? 8 : 11, lp = tt % 6.2, u2 = u01(lp / 5.0) * 5;
+      ctx.strokeStyle = line; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x0, ny); ctx.lineTo(x1, ny); ctx.stroke();
+      var xs = N.map(function(_, i){ return lerp(x0, x1, i / 5); });
+      ctx.setLineDash([3, 3]); ctx.strokeStyle = rgba(act, 0.6); ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(xs[3], ny - r); ctx.quadraticCurveTo((xs[1] + xs[3]) / 2, ny - r - 26, xs[1], ny - r); ctx.stroke(); ctx.setLineDash([]);
+      ctx.font = '8.5px ' + MONO; txt(ctx, 'again, if needed', (xs[1] + xs[3]) / 2, ny - r - 16, ctx.font, mut, 'center');
+      N.forEach(function(nd, i){
+        var lit = u2 >= i - 0.02, c = nd[1];
+        if (i === 0) { ctx.fillStyle = lit ? s2 : sf; ctx.strokeStyle = lit ? fg : line; ctx.lineWidth = 1.5; Course.roundRect(ctx, xs[0] - 18, ny - 9, 36, 18, 5); ctx.fill(); ctx.stroke(); }
+        else { ctx.fillStyle = lit ? c : sf; ctx.strokeStyle = c; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(xs[i], ny, r, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); }
+        ctx.font = (lit ? '600 ' : '') + '8.5px ' + MONO; txt(ctx, small ? S[i] : nd[0], xs[i], ny + r + 13, ctx.font, lit ? fg : mut, 'center');
+      });
+      if (lp < 5.0) { var seg = Math.min(4, Math.floor(u2)), f = u2 - seg, hx = lerp(xs[seg], xs[seg + 1], f); ctx.fillStyle = act; ctx.beginPath(); ctx.arc(hx, ny, 4, 0, Math.PI * 2); ctx.fill(); }
+      ctx.font = '9.5px ' + SANS; txt(ctx, clipText(ctx, 'nobody asked · it acts in other systems · it repeats until done', w - pad * 2 - 20), pad + 10, y0 + laneH - 9, ctx.font, mut);
+    }
+    ctx.globalAlpha = 1;
+  });
+}
+loopAnim = Course.canvas($('#w3LoopCanvas'), loopDraw, {auto: true});
+$$('#w3LoopBank .btn').forEach(function(b){ b.addEventListener('click', function(){
+  var tk = LOOP_TASKS[+b.getAttribute('data-task')]; loop.hot = tk.v;
+  $$('#w3LoopBank .btn').forEach(function(x){ x.classList.toggle('is-on', x === b); });
+  $('#w3Verdict').innerHTML = '<b>' + (tk.v === 'project' ? 'A Project is enough.' : 'That is an agent, Week 7.') + '</b><span>' + Course.esc(tk.why) + '</span>';
+  loopAnim.once();
+}); });
+
+/* ---------- LEARN 9: cite, say when not covered, hand over ---------- */
+var ANAT = {
+  covered: {q: 'Can I expense a taxi home after a late shift?',
+    off: {text: 'Yes. Most companies allow taxis for late finishes, usually after 9 or 10pm, as long as you keep the receipt and claim within the month.', parts: [['no citation', 'chip--bad'], ['general knowledge', 'chip--bad']], pass: false, why: 'Plausible and roughly right, but it is knowledge about "most companies", not your policy. No section, no way to check, and "9 or 10pm" is a hedge where your policy has a number.', tag: 'fail: no citation'},
+    on: {text: 'Yes, when you finish after 10pm or no public transport runs. [expense-policy.pdf §4.2 Taxis] Keep the receipt and claim within 30 days of travel.', parts: [['short answer', 'chip--ok'], ['citation', 'chip--observe'], ['conditions', 'chip--think']], pass: true, why: 'Short answer, the clause, the conditions. Anyone can open §4.2 and check it in ten seconds.', tag: 'pass: correct, with a citation'}},
+  missing: {q: 'What is the parental leave in our Singapore office?',
+    off: {text: 'Singapore employees are entitled to 16 weeks of government-paid maternity leave and 2 weeks of paternity leave, subject to eligibility.', parts: [['invented from general knowledge', 'chip--bad'], ['no citation', 'chip--bad']], pass: false, why: 'Confident, specific and from nowhere in your documents; the leave policy covers UK staff only. This is the failure the three uncovered test questions exist to catch.', tag: 'fail: invented'},
+    on: {text: 'The documents do not cover parental leave or a Singapore office. [checked: leave-policy.pdf, handbook.pdf] Please ask HR; I can only answer from the uploaded policies.', parts: [['names what is missing', 'chip--ok'], ['what it checked', 'chip--observe'], ['hand-over', 'chip--act']], pass: true, why: 'A refusal that names the gap is the right answer here. Nothing invented, and the person knows where to go next.', tag: 'pass: a clear refusal'}},
+  advice: {q: 'Should I take my bonus as pension contributions to save tax?',
+    off: {text: 'Usually yes: pension contributions are tax-efficient, so paying your bonus into your pension will save you tax if you do not need the cash now.', parts: [['financial advice', 'chip--bad'], ['no citation', 'chip--bad']], pass: false, why: 'Financial advice from a policy helper. If it is wrong for this person, the company owns the consequences.', tag: 'fail: gave advice'},
+    on: {text: 'The handbook describes a workplace pension with a 5 percent employer contribution. [handbook.pdf §7 Pension] Whether to pay your bonus in is a personal financial decision: please speak to HR or a regulated adviser.', parts: [['what the policy says', 'chip--ok'], ['citation', 'chip--observe'], ['hand-over', 'chip--act']], pass: true, why: 'It cites what the documents do say, then hands the decision over. That is the shape of every advice question.', tag: 'pass: cites, then hands over'}}
+};
+var anat = {kind: 'covered', on: true, run: 0};
+function anatRender(){
+  var d = ANAT[anat.kind], v = anat.on ? d.on : d.off, a = $('#w3AnatA'), verdict = $('#w3AnatVerdict'), run = ++anat.run;
+  $('#w3AnatQ').textContent = '"' + d.q + '"';
+  $('#w3AnatParts').innerHTML = ''; $('#w3AnatWhy').textContent = ''; verdict.textContent = 'answering'; verdict.className = 'row chip';
+  a.className = 'w3-anat__a is-typing'; a.innerHTML = ''; var span = el('span'); a.appendChild(span);
+  Course.typewrite(span, v.text, 75).then(function(){
+    if (run !== anat.run) return;
+    a.className = 'w3-anat__a ' + (v.pass ? 'is-pass' : 'is-fail');
+    a.innerHTML = Course.esc(v.text).replace(/\[([^\]]+)\]/g, '<span class="cite">[$1]</span>');
+    v.parts.forEach(function(p){ $('#w3AnatParts').appendChild(el('span', {class: 'chip ' + p[1], text: p[0]})); });
+    $('#w3AnatWhy').textContent = v.why;
+    verdict.textContent = v.tag; verdict.className = 'row chip ' + (v.pass ? 'chip--ok' : 'chip--bad');
+  });
+}
+[['w3AnatCovered', 'covered'], ['w3AnatMissing', 'missing'], ['w3AnatAdvice', 'advice']].forEach(function(p){ $('#' + p[0]).addEventListener('click', function(){ anat.kind = p[1]; ['w3AnatCovered', 'w3AnatMissing', 'w3AnatAdvice'].forEach(function(id){ $('#' + id).classList.toggle('is-on', id === p[0]); }); anatRender(); }); });
+$('#w3AnatOff').addEventListener('click', function(){ anat.on = false; $('#w3AnatOff').classList.add('is-on'); $('#w3AnatOn').classList.remove('is-on'); anatRender(); });
+$('#w3AnatOn').addEventListener('click', function(){ anat.on = true; $('#w3AnatOn').classList.add('is-on'); $('#w3AnatOff').classList.remove('is-on'); anatRender(); });
+anatRender();
+
+/* ---------- copy buttons for the lab prompts (comment lines are left out) ---------- */
+function fallbackCopy(s){ var ta = el('textarea', {style: 'position:fixed;opacity:0;left:0;top:0', 'aria-hidden': 'true'}); ta.value = s; document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); } catch (e) {} ta.remove(); }
+$$('[data-copy]').forEach(function(b){ b.addEventListener('click', function(){
+  var pre = document.getElementById(b.getAttribute('data-copy')), s = pre ? pre.textContent.split('\n').filter(function(l){ return l.indexOf('# ') !== 0; }).join('\n').trim() : '';
+  var done = function(){ Course.toast('Copied to the clipboard'); };
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(s).then(done, function(){ fallbackCopy(s); done(); }); else { fallbackCopy(s); done(); }
+}); });
+
+/* ---------- LAB: the ten-question score sheet ---------- */
+function setMix(sel, label, n, target){ var e = $(sel); e.textContent = label + ' ' + n + ' / ' + target; e.className = 'chip ' + (n === target ? 'chip--ok' : 'chip--warn'); }
+function sheetTotals(){
+  var passed = 0, mix = {answerable: 0, 'not covered': 0};
+  for (var i = 1; i <= 10; i++) { if ($('#w3SheetR' + i).value === 'pass') passed++; var ty = $('#w3SheetT' + i).value; if (mix[ty] != null) mix[ty]++; }
+  $('#w3SheetPassed').textContent = passed + ' of 10 passed';
+  setMix('#w3MixA', 'Answerable', mix.answerable, 7); setMix('#w3MixN', 'Not covered', mix['not covered'], 3);
+}
+$('#w3SheetBody').addEventListener('change', sheetTotals); $('#w3SheetBody').addEventListener('input', sheetTotals);
+$('#w3SheetReset').addEventListener('click', function(){
+  for (var i = 1; i <= 10; i++) { var q = $('#w3SheetQ' + i), ty = $('#w3SheetT' + i), rs = $('#w3SheetR' + i); q.value = ''; ty.value = i <= 7 ? 'answerable' : 'not covered'; rs.value = 'untested'; Course.store.set('note:sheet-q-' + i, ''); Course.store.set('note:sheet-type-' + i, ty.value); Course.store.set('note:sheet-result-' + i, rs.value); }
+  sheetTotals(); Course.toast('Score sheet cleared');
+});
+sheetTotals();
+
+/* ---------- QUIZ ---------- */
+Course.quiz('#quizBox', {passPct: 80, questions: [
+  {q: 'What does a Claude Project hold?', options: ['A longer chat history and nothing else', 'Knowledge files, instructions, and the separate chats that share both', 'A copy of the company intranet', 'One file and one question at a time'], answer: 1, why: 'Knowledge (files you upload), instructions (your system prompt) and chats that all start with both. The chats do not share each other.'},
+  {q: 'Why does a Project fix the "close the chat and it forgets" problem from Week 1?', options: ['Claude is retrained on your files overnight', 'Chats inside a Project never end', 'The files and instructions live in the Project and are loaded into every new chat', 'Projects replay your last chat into the new one'], answer: 2, why: 'The memory moves out of the conversation and into the Project. Each new chat starts with the files and the rules already in its window; it still knows nothing about the other chats.'},
+  {q: 'You pasted twelve rules into message 1 of a plain chat. Forty turns later the replies ignore three of them. What is the likely cause, and the fix?', options: ['Claude deleted the rules; paste them again every ten turns', 'Early text loses attention as the window fills; put the rules in Project instructions, which sit in the system position of every chat', 'The rules were too polite; write them in capitals', 'The chat hit a hidden limit of ten rules'], answer: 1, why: 'Instruction drift, from Week 1. Project instructions are applied at the start of every chat as ground rules, not as one old message among forty.'},
+  {q: 'A Project\'s knowledge grows past what the context window can hold. What does Claude do?', options: ['Refuses to start new chats until files are removed', 'Reads only the first file in the list', 'Switches to retrieval: it searches the files and pulls only the best-matching sections into the window for each question', 'Permanently compresses the files into a summary'], answer: 2, why: 'Small knowledge is read whole; large knowledge is searched. Retrieval always returns something, which is why the "say when not covered" rule matters more as the knowledge grows.'},
+  {q: 'What is an Artifact, and what does versioning add?', options: ['A file you upload to the knowledge; versioning tracks who uploaded it', 'A substantial output opened beside the chat that you keep, share and download; each change makes a new version you can step back to', 'A saved copy of the whole chat', 'A plugin that lets Claude browse the web'], answer: 1, why: 'Chat is for talking; Artifacts are for things. Every change is a version, so you can step back without scrolling through the conversation for the draft you liked.'},
+  {q: 'You share a policy Project with your whole department on a Team plan. Who sees what?', options: ['Everyone sees everyone\'s chats, files and instructions', 'Everyone reads the same knowledge and instructions; each person\'s chats are private unless they share one into the Project', 'Only the owner can read the files; others see answers but not sources', 'Nobody sees the instructions once the Project is shared'], answer: 1, why: 'Knowledge and instructions are shared by design, which is why salary files and personal data never go in. Chats are each person\'s own unless shared.'},
+  {q: '"Every new supplier invoice must be checked against its PO and logged, around the clock." Project or agent?', options: ['Project: upload the PO list and the purchasing policy', 'Agent: an event must be noticed and acted on in other systems, repeatedly, with nobody asking', 'Neither: this is a spreadsheet formula', 'Project, as long as it is shared with the whole finance team'], answer: 1, why: '"Every new" is a trigger, and checking and logging are actions. A Project answers when a person asks; an agent notices, acts and repeats. That is Week 7.'},
+  {q: 'Why do numbered sections, an owner and an effective date in your policy files matter to the assistant?', options: ['They make the files smaller, so more fit in the window', 'They are metadata: they let the assistant cite a clause a person can open, help retrieval find the right section, and let you spot a stale version', 'Claude refuses files without a header', 'They only matter for PDFs, not text files'], answer: 1, why: 'The MIT course calls this the data strategy: the documents are the data, and labels and metadata are what make them usable, for retrieval and for the person checking the answer.'}
+]});
+
+/* ---------- PRACTICE: should it answer? ---------- */
+var SCEN = [
+  {q: 'How many days of annual leave do I get in my first year?', docs: [['leave-policy.pdf §2.1', '22 days of paid annual leave for all full-time staff, pro rata, from the first day of employment.']], ans: 0, why: 'The document answers it directly. Give the number and cite [leave-policy.pdf §2.1].'},
+  {q: 'Can I expense a taxi from the airport to the hotel?', docs: [['expense-policy.pdf §4.2', 'Taxis are claimable when no public transport runs or after 10pm. Keep the receipt.']], ans: 0, why: 'Covered, with conditions. Answer yes-with-conditions and cite [expense-policy.pdf §4.2]. A good assistant repeats the conditions, not just the yes.'},
+  {q: 'What is the parental leave policy in our Singapore office?', docs: [['leave-policy.pdf §1', 'This policy applies to UK employees of Northgate Studio.'], ['handbook.pdf', 'No mention of Singapore or of parental leave.']], ans: 1, why: 'Nothing covers it. The assistant must say so rather than guess from general knowledge about Singapore law.'},
+  {q: 'Is it 20 or 22 days of leave? I have seen both numbers.', docs: [['handbook.pdf §3.2', '20 days of annual leave.'], ['leave-policy.pdf §2.1', '22 days of annual leave.']], ans: 2, why: 'A conflict. Name both sources, say they differ, and point to HR for the final answer. Picking one silently is the worst option.'},
+  {q: 'Should I take my bonus as salary or as pension contributions to save tax?', docs: [['handbook.pdf §7', 'Northgate Studio offers a workplace pension with a 5 percent employer contribution.']], ans: 2, why: 'Personal financial advice. The assistant can cite what the pension scheme is, but the decision goes to HR or a regulated adviser.'},
+  {q: 'How quickly do I have to report a lost laptop?', docs: [['it-security.pdf §3', 'Report lost or stolen devices to the IT helpdesk within 24 hours.']], ans: 0, why: 'Covered and clear: within 24 hours to the IT helpdesk, cited to [it-security.pdf §3].'},
+  {q: 'Write a LinkedIn post announcing our new Bristol office.', docs: [['handbook.pdf §1', 'Northgate Studio has offices in Leeds and Bristol.'], ['all documents', 'Nothing about announcements, marketing or social media.']], ans: 1, why: 'Off-topic. A policy helper stays in role: it says it only answers questions about company policy and offers to answer one. Saying so is the "not covered" move.'},
+  {q: 'I have been feeling anxious at work. What medication should I take?', docs: [['handbook.pdf §8', 'The Employee Assistance Programme offers a confidential phone line, 24 hours a day.']], ans: 2, why: 'Medical advice is out of bounds. The assistant can mention the Employee Assistance Programme from §8 and hand over to HR or a manager.'}
+];
+var scen = {i: 0, score: 0, answered: false, results: []};
+var scenQ = $('#w3ScenQ'), scenDocs = $('#w3ScenDocs'), scenFb = $('#w3ScenFb'), scenNext = $('#w3ScenNext'), scenStep = $('#w3ScenStep'), scenTray = $('#w3ScenTray'), scenScoreLine = $('#w3ScenScoreLine'), scenBtns = $$('#w3ScenChoices .btn');
+function scenRender(){
+  var s = SCEN[scen.i];
+  scenStep.textContent = 'Question ' + (scen.i + 1) + ' of ' + SCEN.length;
+  scenQ.textContent = '"' + s.q + '"';
+  scenDocs.innerHTML = ''; s.docs.forEach(function(d){ scenDocs.appendChild(el('span', {}, [el('code', {text: d[0]}), el('span', {text: d[1]})])); });
+  scenBtns.forEach(function(b){ b.disabled = false; b.classList.remove('is-right', 'is-wrong'); });
+  scenFb.hidden = true; scenNext.hidden = true; scen.answered = false;
+  scenTray.innerHTML = ''; for (var k = 0; k < SCEN.length; k++) scenTray.appendChild(el('i', {class: scen.results[k] == null ? '' : scen.results[k] ? 'is-right' : 'is-wrong'}));
+  scenScoreLine.textContent = 'Score ' + scen.score + ' of ' + scen.i;
+}
+scenBtns.forEach(function(b){ b.addEventListener('click', function(){
+  if (scen.answered) return; scen.answered = true;
+  var s = SCEN[scen.i], pick = +b.getAttribute('data-choice'), okPick = pick === s.ans;
+  scenBtns.forEach(function(x, k){ x.disabled = true; if (k === s.ans) x.classList.add('is-right'); if (k === pick && !okPick) x.classList.add('is-wrong'); });
+  if (okPick) scen.score++; scen.results[scen.i] = okPick;
+  scenFb.hidden = false; scenFb.className = 'w3-scen__fb' + (okPick ? '' : ' is-bad'); scenFb.innerHTML = '<b>' + (okPick ? 'Right.' : 'Not this time.') + '</b> ' + Course.esc(s.why);
+  scenNext.hidden = false; scenNext.textContent = scen.i === SCEN.length - 1 ? 'See my score' : 'Next question';
+  scenScoreLine.textContent = 'Score ' + scen.score + ' of ' + (scen.i + 1);
+  if (scenTray.children[scen.i]) scenTray.children[scen.i].className = okPick ? 'is-right' : 'is-wrong';
+}); });
+scenNext.addEventListener('click', function(){
+  if (scen.i < SCEN.length - 1) { scen.i++; scenRender(); return; }
+  $('#w3Scen').hidden = true; $('#w3ScenDone').hidden = false;
+  $('#w3ScenFinal').textContent = scen.score + '/' + SCEN.length;
+  var best = Course.store.get('practice', 0); if (scen.score > best) Course.store.set('practice', scen.score);
+  $('#w3ScenVerdict').textContent = scen.score === SCEN.length ? 'Perfect. You know when a policy assistant should speak, stay quiet, or hand over.' : scen.score >= 6 ? 'Good judgement. Reread the ones you missed: conflicts and advice questions trip up most people.' : 'Keep going. The rule of thumb: cite when it is covered, say so when it is not, hand over when it is legal, medical, financial or a conflict.';
+  if (scen.score >= 6) Course.confetti();
+});
+$('#w3ScenRestart').addEventListener('click', function(){ scen = {i: 0, score: 0, answered: false, results: []}; $('#w3ScenDone').hidden = true; $('#w3Scen').hidden = false; scenRender(); });
+scenRender();
+
+Course.days();
+</script>

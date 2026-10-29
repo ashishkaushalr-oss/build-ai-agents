@@ -1,0 +1,1844 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui}img{max-width:100%}[hidden]{display:none!important}</style></head><body><title>Your First Agent</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: a sticky lesson rail over stacked "scenes"; every scene pairs one live visual with two to four plain sentences. */
+:root{
+  --bg:#F4F6FB; --surface:#FFFFFF; --surface-2:#E9EEF7; --line:#D6DEEC; --fg:#0E1626; --muted:#5B6882;
+  --think:#6A52F5; --act:#F2552E; --observe:#0E9F86;
+  --think-soft:#ECE8FF; --act-soft:#FFE9E2; --observe-soft:#DDF5EF;
+  --accent:var(--act); --accent-ink:#FFFFFF;
+  --ok:#1E9E5A; --warn:#D99400; --bad:#D63B3B;
+  --stage:#0B1020; --stage-2:#141D36; --stage-fg:#EAF0FF; --stage-muted:#8E9BBE; --stage-line:#26325A;
+  --shadow:0 10px 30px rgba(14,22,38,.08);
+  --font-display:"Bricolage Grotesque","Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-body:"Figtree",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --font-mono:"JetBrains Mono",ui-monospace,"Cascadia Code",Consolas,monospace;
+  --r-s:10px; --r-m:14px; --r-l:20px;
+  --wrap:1120px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0B1020; --surface:#121A2E; --surface-2:#1A2440; --line:#273253; --fg:#EAF0FF; --muted:#9AA8C9;
+    --think:#8F7BFF; --act:#FF7A58; --observe:#2CD2B2;
+    --think-soft:#231F4A; --act-soft:#3A2220; --observe-soft:#123A35;
+    --ok:#3CC27A; --warn:#F2B53C; --bad:#F26A6A;
+    --stage:#070B16; --stage-2:#0F1730; --stage-fg:#EAF0FF; --stage-muted:#8E9BBE; --stage-line:#26325A;
+    --shadow:0 10px 30px rgba(0,0,0,.35);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0B1020; --surface:#121A2E; --surface-2:#1A2440; --line:#273253; --fg:#EAF0FF; --muted:#9AA8C9;
+  --think:#8F7BFF; --act:#FF7A58; --observe:#2CD2B2;
+  --think-soft:#231F4A; --act-soft:#3A2220; --observe-soft:#123A35;
+  --ok:#3CC27A; --warn:#F2B53C; --bad:#F26A6A;
+  --stage:#070B16; --stage-2:#0F1730; --stage-fg:#EAF0FF; --stage-muted:#8E9BBE; --stage-line:#26325A;
+  --shadow:0 10px 30px rgba(0,0,0,.35);
+  color-scheme:dark;
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.6 var(--font-body);-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--bg)}
+h1,h2,h3,h4{font-family:var(--font-display);line-height:1.1;margin:0;text-wrap:balance;letter-spacing:-.01em}
+h1{font-size:clamp(2rem,4.5vw,3.25rem);font-weight:800}
+h2{font-size:clamp(1.6rem,3vw,2.25rem);font-weight:700}
+h3{font-size:1.35rem;font-weight:700}
+h4{font-size:1.05rem;font-weight:700}
+p{margin:0}
+a{color:inherit}
+button{font:inherit;color:inherit}
+img,canvas,svg{max-width:100%}
+code,kbd,pre{font-family:var(--font-mono)}
+code{font-size:.9em;background:var(--surface-2);padding:.1em .4em;border-radius:6px}
+pre.code{font-size:13px;line-height:1.55;background:var(--stage);color:var(--stage-fg);padding:14px 16px;border-radius:var(--r-m);overflow-x:auto;margin:0;white-space:pre}
+pre.code code{background:none;padding:0;font-size:inherit}
+pre.code .k{color:#8F7BFF}pre.code .s{color:#2CD2B2}pre.code .c{color:#8E9BBE}pre.code .n{color:#FFB38A}
+:focus-visible{outline:3px solid color-mix(in srgb,var(--think) 55%,transparent);outline-offset:2px;border-radius:6px}
+.visually-hidden{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+.wrap{max-width:var(--wrap);margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.muted{color:var(--muted)}
+.mono{font-family:var(--font-mono)}
+.num{font-variant-numeric:tabular-nums}
+.stack{display:grid;gap:14px}
+.stack-l{display:grid;gap:24px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.grid-2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.grid-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+@media (max-width:760px){.grid-2,.grid-3{grid-template-columns:1fr}}
+.eyebrow{font-family:var(--font-display);font-size:.78rem;letter-spacing:.14em;text-transform:uppercase;font-weight:700;color:var(--muted)}
+.lede{font-size:1.15rem;line-height:1.55;max-width:60ch}
+
+/* ---------- Rail (sticky header) ---------- */
+.rail{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:color-mix(in srgb,var(--bg) 86%,transparent);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.rail .wrap{display:flex;align-items:center;gap:12px;min-height:58px;flex-wrap:wrap;padding-block:8px}
+.rail__badge{font-family:var(--font-display);font-weight:800;font-size:.95rem;background:var(--fg);color:var(--bg);border-radius:9px;padding:4px 9px;letter-spacing:.02em;white-space:nowrap}
+.rail__title{font-family:var(--font-display);font-weight:700;font-size:1.05rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.rail__nav{display:flex;gap:6px;margin-left:auto;overflow-x:auto;scrollbar-width:none;max-width:100%}
+.rail__nav::-webkit-scrollbar{display:none}
+.rail__pill{display:inline-flex;align-items:center;gap:7px;padding:6px 11px;border-radius:999px;border:1px solid transparent;text-decoration:none;font-size:.88rem;font-weight:600;color:var(--muted);white-space:nowrap}
+.rail__pill:hover{color:var(--fg);background:var(--surface-2)}
+.rail__pill.is-active{color:var(--fg);border-color:var(--line);background:var(--surface)}
+.rail__dot{width:8px;height:8px;border-radius:50%;background:var(--line);flex:none;transition:background .3s,transform .3s}
+.rail__pill.is-done .rail__dot{background:var(--observe);transform:scale(1.25)}
+.rail__links{display:flex;gap:6px}
+.rail__links a{font-size:.85rem;font-weight:600;color:var(--muted);text-decoration:none;padding:6px 10px;border-radius:999px;border:1px solid var(--line);background:var(--surface);white-space:nowrap}
+.rail__links a:hover{color:var(--fg)}
+@media (max-width:720px){.rail__title{display:none}.rail__nav{margin-left:0;order:3;flex-basis:100%}}
+
+/* ---------- Hero / stage ---------- */
+.hero{background:var(--stage);color:var(--stage-fg);position:relative;overflow:hidden}
+.hero::after{content:"";position:absolute;inset:auto -20% -60% -20%;height:60%;background:radial-gradient(60% 100% at 50% 100%,color-mix(in srgb,var(--think) 35%,transparent),transparent 70%);pointer-events:none}
+.hero .wrap{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:32px;align-items:center;padding-block:40px;position:relative;z-index:1}
+.hero__text{display:grid;gap:16px}
+.hero__text .eyebrow{color:var(--stage-muted)}
+.hero__text .lede{color:color-mix(in srgb,var(--stage-fg) 82%,transparent)}
+.hero__actions{display:flex;gap:10px;flex-wrap:wrap}
+.stage{position:relative;width:100%;max-width:100%;aspect-ratio:4/3;background:var(--stage-2);border:1px solid var(--stage-line);border-radius:var(--r-l);overflow:hidden;box-shadow:0 30px 60px rgba(0,0,0,.35)}
+.stage canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.stage svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+.stage__label{position:absolute;left:14px;top:12px;font-family:var(--font-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--stage-muted)}
+.stage__hud{position:absolute;right:12px;bottom:12px;left:12px;display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;align-items:center}
+.stage--wide{aspect-ratio:16/9}
+@media (max-width:820px){.hero .wrap{grid-template-columns:1fr;padding-block:28px}.stage{aspect-ratio:16/11}}
+
+/* ---------- Buttons, chips ---------- */
+.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--fg);font-weight:600;font-size:.95rem;cursor:pointer;text-decoration:none;line-height:1.2;transition:transform .12s,background .2s,border-color .2s}
+.btn:hover{border-color:color-mix(in srgb,var(--fg) 30%,var(--line))}
+.btn:active{transform:translateY(1px)}
+.btn:disabled{opacity:.55;cursor:not-allowed}
+.btn--primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn--primary:hover{filter:brightness(1.05);border-color:var(--accent)}
+.btn--think{background:var(--think);border-color:var(--think);color:#fff}
+.btn--observe{background:var(--observe);border-color:var(--observe);color:#fff}
+.btn--small{padding:6px 11px;font-size:.85rem}
+.hero .btn{background:transparent;color:var(--stage-fg);border-color:var(--stage-line)}
+.hero input[type=text],.hero input[type=number],.hero textarea,.hero select{background:#FFFFFF;color:#0E1626;border-color:var(--stage-line)}
+.hero input::placeholder,.hero textarea::placeholder{color:#5B6882}
+.hero .btn--primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;font-size:.8rem;font-weight:700;letter-spacing:.02em;background:var(--surface-2);color:var(--fg)}
+.chip--think{background:var(--think-soft);color:var(--think)}
+.chip--act{background:var(--act-soft);color:var(--act)}
+.chip--observe{background:var(--observe-soft);color:var(--observe)}
+.chip--ok{background:color-mix(in srgb,var(--ok) 15%,var(--surface));color:var(--ok)}
+.chip--warn{background:color-mix(in srgb,var(--warn) 18%,var(--surface));color:var(--warn)}
+.chip--bad{background:color-mix(in srgb,var(--bad) 14%,var(--surface));color:var(--bad)}
+.kbd{font-family:var(--font-mono);font-size:.8rem;border:1px solid var(--line);border-bottom-width:2px;border-radius:6px;padding:1px 6px;background:var(--surface)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;padding:3px;background:var(--surface);gap:2px;flex-wrap:wrap}
+.seg button{border:0;background:transparent;padding:6px 12px;border-radius:999px;font-weight:600;font-size:.88rem;cursor:pointer;color:var(--muted)}
+.seg button.is-on{background:var(--fg);color:var(--bg)}
+input[type=range]{accent-color:var(--think);width:100%}
+input[type=text],input[type=number],input[type=email],textarea,select{font:inherit;color:inherit;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-s);padding:9px 12px;width:100%;max-width:100%}
+textarea{min-height:120px;resize:vertical;line-height:1.5}
+.field{display:grid;gap:6px}
+.field>span{font-size:.85rem;font-weight:600;color:var(--muted)}
+
+/* ---------- Scenes ---------- */
+.scene{padding-block:56px;border-top:1px solid var(--line)}
+.scene:first-of-type{border-top:0}
+.scene__head{display:grid;gap:10px;margin-bottom:28px;max-width:70ch}
+.scene__kicker{display:inline-flex;align-items:center;gap:8px;font-family:var(--font-display);font-size:.8rem;letter-spacing:.14em;text-transform:uppercase;font-weight:800}
+.scene__kicker::before{content:"";width:22px;height:4px;border-radius:2px;background:currentColor}
+.scene__kicker--learn{color:var(--think)}
+.scene__kicker--try{color:var(--observe)}
+.scene__kicker--lab{color:var(--act)}
+.scene__kicker--quiz{color:var(--fg)}
+.scene__kicker--build{color:var(--act)}
+.scene__head p{color:var(--muted);font-size:1.05rem}
+.concept{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:32px;align-items:center;padding-block:28px}
+.concept+.concept{border-top:1px dashed var(--line)}
+.concept:nth-of-type(even) .concept__viz{order:2}
+.concept__viz{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-l);padding:18px;min-height:240px;display:grid;align-content:center;gap:12px;overflow:hidden;box-shadow:var(--shadow);min-width:0}
+.concept__viz canvas{width:100%;display:block;border-radius:var(--r-m)}
+.concept__viz--dark{background:var(--stage);color:var(--stage-fg);border-color:var(--stage-line)}
+.concept__text{display:grid;gap:14px;min-width:0}
+.concept__text p{max-width:58ch;font-size:1.05rem}
+.key{display:grid;gap:4px;padding:14px 16px;border-radius:var(--r-m);background:var(--surface-2)}
+.key::before{content:"Key idea";font-family:var(--font-display);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:800}
+.key p{font-weight:600;font-size:1rem}
+@media (max-width:820px){.concept{grid-template-columns:1fr;gap:18px}.concept:nth-of-type(even) .concept__viz{order:0}}
+.viz-caption{font-size:.85rem;color:var(--muted);display:flex;gap:10px;justify-content:space-between;flex-wrap:wrap}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:.85rem;color:var(--muted)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:middle}
+
+/* ---------- Cards, notes ---------- */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-l);padding:20px;min-width:0}
+.card h3,.card h4{margin-bottom:8px}
+.note{padding:14px 16px;border-radius:var(--r-m);background:var(--surface-2);display:grid;gap:6px}
+.note--warn{background:color-mix(in srgb,var(--warn) 16%,var(--surface))}
+.note--think{background:var(--think-soft)}
+.note--observe{background:var(--observe-soft)}
+.note strong{font-family:var(--font-display)}
+.deliverable{border:2px dashed color-mix(in srgb,var(--act) 55%,var(--line));border-radius:var(--r-l);padding:20px;background:var(--surface);display:grid;gap:10px}
+.deliverable h4{color:var(--act)}
+.deliverable h4::before{content:"Deliverable · ";color:var(--muted);font-weight:600}
+details.hint{border:1px solid var(--line);border-radius:var(--r-m);background:var(--surface);padding:0 16px}
+details.hint summary{cursor:pointer;padding:12px 0;font-weight:600;list-style:none;display:flex;align-items:center;gap:8px}
+details.hint summary::-webkit-details-marker{display:none}
+details.hint summary::before{content:"+";display:inline-grid;place-items:center;width:20px;height:20px;border-radius:6px;background:var(--surface-2);font-weight:800}
+details.hint[open] summary::before{content:"\2013"}
+details.hint>*:not(summary){padding-bottom:14px}
+.table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r-m);background:var(--surface)}
+table.tbl{border-collapse:collapse;width:100%;font-size:.95rem;min-width:520px}
+table.tbl th,table.tbl td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+table.tbl th{font-family:var(--font-display);font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);background:var(--surface-2)}
+table.tbl tr:last-child td{border-bottom:0}
+table.tbl input[type=text],table.tbl textarea{min-height:0;padding:6px 8px;font-size:.9rem}
+
+/* ---------- Steps / checklists ---------- */
+.steps{list-style:none;padding:0;margin:0;display:grid;gap:10px;counter-reset:step}
+.steps>li{display:grid;grid-template-columns:auto 1fr;gap:14px;padding:14px 16px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-m);align-items:start;transition:opacity .25s}
+.steps>li.done{opacity:.6}
+.steps>li.done .step__body>:first-child{text-decoration:line-through;text-decoration-color:var(--observe)}
+.steps--numbered>li{counter-increment:step;grid-template-columns:auto auto 1fr}
+.steps--numbered>li .step__num{font-family:var(--font-display);font-weight:800;font-size:.85rem;color:var(--muted);min-width:22px;padding-top:4px}
+.steps--numbered>li .step__num::before{content:counter(step,decimal-leading-zero)}
+.step__body{display:grid;gap:6px;min-width:0}
+.step__body>p{margin:0}
+.step__notice{font-size:.9rem;color:var(--muted)}
+.step__notice strong{color:var(--observe)}
+.check{appearance:none;-webkit-appearance:none;width:24px;height:24px;border:2px solid var(--line);border-radius:8px;display:inline-grid;place-items:center;cursor:pointer;margin:2px 0 0;background:var(--surface);transition:background .2s,border-color .2s;flex:none;position:relative}
+.check::after{content:"";width:6px;height:11px;border:solid #fff;border-width:0 2.5px 2.5px 0;transform:rotate(45deg) translate(-1px,-1px) scale(0);transition:transform .15s}
+.check:checked{background:var(--observe);border-color:var(--observe)}
+.check:checked::after{transform:rotate(45deg) translate(-1px,-1px) scale(1)}
+.check-row{display:flex;gap:12px;align-items:flex-start;cursor:pointer}
+.progress{height:8px;border-radius:999px;background:var(--surface-2);overflow:hidden}
+.progress>i{display:block;height:100%;width:0;background:var(--observe);border-radius:999px;transition:width .5s cubic-bezier(.2,.8,.2,1)}
+.progress--think>i{background:var(--think)}
+.progress--act>i{background:var(--act)}
+.meter{display:grid;gap:6px}
+.meter__row{display:flex;justify-content:space-between;font-size:.85rem;color:var(--muted)}
+.meter__row b{color:var(--fg)}
+
+/* ---------- Quiz ---------- */
+.quiz{display:grid;gap:16px}
+.q{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-l);padding:20px;display:grid;gap:12px}
+.q__num{font-family:var(--font-display);font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:800}
+.q__text{font-weight:600;font-size:1.05rem}
+.opts{display:grid;gap:8px}
+.opt{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border:1px solid var(--line);border-radius:var(--r-m);background:var(--bg);cursor:pointer;text-align:left;transition:border-color .15s,background .15s}
+.opt:hover:not(:disabled){border-color:var(--think)}
+.opt:disabled{cursor:default}
+.opt__key{font-family:var(--font-mono);font-size:.8rem;font-weight:700;color:var(--muted);min-width:18px;padding-top:2px}
+.opt.is-correct{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 12%,var(--surface))}
+.opt.is-wrong{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 10%,var(--surface))}
+.q__why{padding:10px 12px;border-radius:var(--r-s);background:var(--surface-2);font-size:.95rem}
+.q__why b{color:var(--ok)}
+.q__why.is-bad b{color:var(--bad)}
+.quiz__result{display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:center;padding:20px;border-radius:var(--r-l);background:var(--surface);border:1px solid var(--line)}
+.quiz__score{font-family:var(--font-display);font-size:3rem;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
+.quiz__score small{font-size:1.2rem;color:var(--muted);font-weight:700}
+.reflect{display:grid;gap:10px}
+.reflect details{border:1px solid var(--line);border-radius:var(--r-m);background:var(--surface);padding:0 16px}
+.reflect summary{cursor:pointer;padding:12px 0;font-weight:600;list-style:none;display:flex;justify-content:space-between;gap:12px}
+.reflect summary::-webkit-details-marker{display:none}
+.reflect summary::after{content:"Show a model answer";font-size:.8rem;color:var(--think);font-weight:700;white-space:nowrap}
+.reflect details[open] summary::after{content:"Hide"}
+.reflect details p{padding-bottom:14px;color:var(--muted)}
+
+/* ---------- Wrap-up footer ---------- */
+.wrapup{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-l);padding:24px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:22px;align-items:center}
+.wrapup__stats{display:flex;gap:22px;flex-wrap:wrap}
+.stat{display:grid;gap:2px}
+.stat b{font-family:var(--font-display);font-size:1.6rem;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
+.stat span{font-size:.8rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-weight:700}
+.pager{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;padding-block:28px}
+.pager a{text-decoration:none;display:grid;gap:2px;padding:12px 16px;border:1px solid var(--line);border-radius:var(--r-m);background:var(--surface);min-width:200px}
+.pager a span{font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.pager a b{font-family:var(--font-display)}
+.pager a:last-child{text-align:right}
+.weeks{display:flex;gap:6px;flex-wrap:wrap}
+.weeks a{display:inline-grid;place-items:center;width:34px;height:34px;border-radius:10px;border:1px solid var(--line);background:var(--surface);text-decoration:none;font-family:var(--font-display);font-weight:800;font-size:.85rem;color:var(--muted)}
+.weeks a.is-current{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.weeks a:hover{color:var(--fg)}
+footer.site{padding-block:32px 48px;color:var(--muted);font-size:.9rem;display:grid;gap:14px}
+@media (max-width:720px){.wrapup{grid-template-columns:1fr}}
+
+/* ---------- Day tabs (five days a week) ---------- */
+/* five day tabs */
+.days{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin-top:22px}
+@media (max-width:820px){.days{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:6px;scrollbar-width:thin}.days .dayt{min-width:170px;scroll-snap-align:start}}
+.dayt{display:grid;gap:4px;text-align:left;padding:12px 34px 12px 14px;border:1px solid var(--line);border-radius:var(--r-m);background:var(--surface);cursor:pointer;position:relative;transition:border-color .2s,background .2s;min-width:0;color:var(--fg)}
+.dayt:hover{border-color:color-mix(in srgb,var(--fg) 30%,var(--line))}
+.dayt.is-on{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.dayt__n{font-family:var(--font-display);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;font-weight:800;color:var(--muted)}
+.dayt__t{font-size:.78rem;color:var(--muted)}
+.dayt.is-on .dayt__n,.dayt.is-on .dayt__t{color:color-mix(in srgb,var(--bg) 72%,transparent)}
+.dayt b{font-family:var(--font-display);font-size:.98rem;line-height:1.2}
+.dayt__dot{position:absolute;right:12px;top:13px;width:9px;height:9px;border-radius:50%;background:var(--line)}
+.dayt.is-on .dayt__dot{background:color-mix(in srgb,var(--bg) 40%,transparent)}
+.dayt.is-done .dayt__dot{background:var(--observe);box-shadow:0 0 0 3px color-mix(in srgb,var(--observe) 25%,transparent)}
+.daypanel{border-top:0;padding-top:30px}
+.today{margin-top:28px;border:1px solid color-mix(in srgb,var(--observe) 45%,var(--line));border-radius:var(--r-l);background:linear-gradient(180deg,color-mix(in srgb,var(--observe) 6%,var(--surface)),var(--surface));padding:20px;display:grid;gap:14px}
+.today__head{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:center}
+.today__head .meter{min-width:220px}
+.today .step__body textarea{min-height:76px;margin-top:6px;font-size:.92rem}
+.today pre.code{margin-top:4px}
+.daynav{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:26px}
+.part{padding-top:40px;margin-top:40px;border-top:1px dashed var(--line)}
+
+/* ---------- Live (Claude) blocks ---------- */
+.live{border:1px solid color-mix(in srgb,var(--think) 45%,var(--line));border-radius:var(--r-l);background:linear-gradient(180deg,color-mix(in srgb,var(--think) 7%,var(--surface)),var(--surface));padding:20px;display:grid;gap:14px}
+.live__head{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.live__head .chip{background:var(--think);color:#fff}
+.live__out{min-height:64px;padding:14px 16px;border-radius:var(--r-m);background:var(--surface);border:1px solid var(--line);white-space:pre-wrap;font-size:.95rem;line-height:1.55;max-height:420px;overflow:auto}
+.live__out.is-busy{color:var(--muted);font-style:italic}
+.live__missing{font-size:.9rem;color:var(--muted)}
+
+/* ---------- Motion ---------- */
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
+@keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@keyframes dash{to{stroke-dashoffset:-40}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes popin{from{transform:scale(.85);opacity:0}to{transform:scale(1);opacity:1}}
+.anim-pulse{animation:pulse 1.6s ease-in-out infinite}
+.anim-float{animation:floaty 3s ease-in-out infinite}
+.anim-dash{stroke-dasharray:6 6;animation:dash 1.2s linear infinite}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(20px);background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:999px;font-weight:600;opacity:0;transition:opacity .25s,transform .25s;z-index:50;pointer-events:none;max-width:calc(100vw - 32px)}
+.toast.is-on{opacity:1;transform:translateX(-50%) translateY(0)}
+.confetti{position:fixed;inset:0;pointer-events:none;z-index:40}
+@media (prefers-reduced-motion:reduce){
+  .anim-pulse,.anim-float,.anim-dash{animation:none}
+  *{scroll-behavior:auto!important}
+}
+
+</style>
+<style>
+/* Week 7 specifics */
+@keyframes w7pop{from{opacity:0;transform:translateY(4px) scale(.96)}to{opacity:1;transform:none}}
+.aside{padding:12px 14px;border-left:3px solid var(--think);background:var(--surface-2);border-radius:0 var(--r-m) var(--r-m) 0;font-size:.95rem;color:var(--muted)}
+.aside b{color:var(--fg)}
+.concept__text p+p{margin-top:2px}
+.w7-ok{color:var(--ok)}.w7-bad{color:var(--bad)}
+.w7-bank{display:flex;gap:6px;flex-wrap:wrap}
+.w7-bank .btn{padding:6px 10px;font-size:.84rem}
+.w7-ctrl{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.w7-ctrl label{display:flex;gap:8px;align-items:center;font-size:.85rem;color:var(--muted)}
+.w7-ctrl input[type=range]{width:120px}
+.w7-scorebar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.w7-scorebar b{font-family:var(--font-display);font-size:1.6rem;font-variant-numeric:tabular-nums}
+/* 1. loop simulator */
+.w7-sim{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px;align-items:start}
+.w7-ring{width:100%;aspect-ratio:1;max-width:300px;margin:0 auto;display:block}
+.w7-ring .st{transition:opacity .3s}
+.w7-ring .st.is-on circle{stroke-width:4}
+.w7-ring .st:not(.is-on){opacity:.45}
+.w7-transcript{display:grid;gap:8px;max-height:340px;overflow:auto;padding:4px;min-width:0}
+.w7-msg{padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--surface);font-size:.9rem;animation:w7pop .3s ease;min-width:0;overflow-wrap:anywhere}
+.w7-msg--think{border-color:color-mix(in srgb,var(--think) 50%,var(--line));background:color-mix(in srgb,var(--think) 8%,var(--surface))}
+.w7-msg--act{border-color:color-mix(in srgb,var(--act) 50%,var(--line));background:color-mix(in srgb,var(--act) 8%,var(--surface))}
+.w7-msg--observe{border-color:color-mix(in srgb,var(--observe) 50%,var(--line));background:color-mix(in srgb,var(--observe) 8%,var(--surface))}
+.w7-msg--final{border-color:var(--fg)}
+.w7-msg code{display:block;margin-top:6px;white-space:pre-wrap;font-size:.8rem;background:transparent;padding:0}
+.w7-msg .chip{margin-bottom:4px}
+/* 2. the AI Agent node */
+.w7-node{display:grid;gap:10px}
+.w7-node__box{border:2px solid var(--think);border-radius:16px;padding:14px 16px;background:var(--surface);display:grid;gap:4px}
+.w7-node__box b{font-family:var(--font-display)}
+.w7-sockets{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
+.w7-socket{border:2px dashed var(--line);border-radius:12px;padding:10px;min-height:86px;display:grid;gap:6px;align-content:start;font-size:.85rem;min-width:0}
+.w7-socket h5{margin:0;font-family:var(--font-display);font-size:.74rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.w7-socket.is-filled{border-style:solid}
+.w7-socket--model.is-filled{border-color:var(--think)}
+.w7-socket--memory.is-filled{border-color:var(--observe)}
+.w7-socket--tools.is-filled{border-color:var(--act)}
+.w7-plug{display:inline-flex;align-items:center;gap:6px;padding:4px 8px;border-radius:8px;font-size:.8rem;font-weight:600;background:var(--surface-2);animation:w7pop .25s ease;max-width:100%;min-width:0}
+.w7-plug span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.w7-plug--model{background:var(--think-soft);color:var(--think)}
+.w7-plug--memory{background:var(--observe-soft);color:var(--observe)}
+.w7-plug--tool{background:var(--act-soft);color:var(--act)}
+.w7-plug button{border:0;background:transparent;cursor:pointer;color:inherit;font-weight:800;padding:0 2px;line-height:1;font-size:1rem}
+.w7-readout{padding:10px 12px;border-radius:var(--r-m);background:var(--surface-2);font-size:.9rem;min-height:44px}
+.w7-model{display:grid;gap:6px;font-size:.85rem;color:var(--muted)}
+.w7-model select{padding:6px 10px;font-family:var(--font-mono);font-size:.85rem}
+/* 3. memory window */
+.w7-chat{display:grid;gap:6px;font-size:.9rem}
+.w7-chat .b{padding:8px 10px;border-radius:12px;max-width:85%;background:var(--surface-2);min-width:0;overflow-wrap:anywhere;transition:opacity .3s}
+.w7-chat .b.me{justify-self:end;background:var(--think-soft)}
+.w7-chat .b.faded{opacity:.3;text-decoration:line-through}
+.w7-chat .b.reply{border:1px solid var(--observe);background:var(--observe-soft)}
+.w7-memstat{display:flex;gap:14px;flex-wrap:wrap;font-size:.85rem;color:var(--muted)}
+.w7-memstat b{color:var(--fg);font-family:var(--font-mono)}
+/* 4. description tester and 8. standing orders */
+.w7-calls{display:grid;gap:8px}
+.w7-call{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;padding:8px 12px;border:1px solid var(--line);border-radius:12px;background:var(--surface);font-size:.88rem;min-width:0;transition:opacity .3s}
+.w7-call>span:first-child{flex:1 1 180px;min-width:0;overflow-wrap:anywhere}
+.w7-call .verdict{font-weight:800;font-family:var(--font-display);min-width:48px}
+.w7-outcome{font-size:.8rem;flex:1 1 160px;min-width:0;overflow-wrap:anywhere}
+.w7-call.is-pending{opacity:.45}
+.w7-desc pre.code,.w7-http pre.code,.w7-parser pre.code{white-space:pre-wrap;font-size:12px}
+.w7-rules{display:grid;gap:6px;font-size:.88rem}
+.w7-rules label{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:start;cursor:pointer}
+.w7-rules .check{width:20px;height:20px;border-radius:6px}
+/* 5. parser */
+.w7-parser{display:grid;gap:10px}
+.w7-parser pre.code{min-height:130px}
+.w7-valid{display:flex;gap:10px;align-items:center;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--surface);font-weight:600;font-size:.9rem}
+.w7-valid i{width:12px;height:12px;border-radius:50%;background:var(--line);flex:none}
+.w7-valid.is-ok i{background:var(--ok)}.w7-valid.is-bad i{background:var(--bad)}
+/* 6. narrow vs wide */
+.w7-wf{width:100%;height:auto;display:block}
+.w7-wf text{font-family:var(--font-body);font-size:11px;fill:var(--muted)}
+.w7-wf text.t{font-family:var(--font-display);font-weight:800;font-size:13px}
+/* 7. http request */
+.w7-http{display:grid;gap:10px}
+.w7-http pre.code{min-height:56px}
+.w7-http__obs{padding:10px 12px;border-radius:var(--r-m);background:var(--observe-soft);font-size:.9rem}
+/* 9. fix the run and 10. who decides */
+.w7-cards{display:grid;gap:10px}
+.w7-fix{border:1px solid var(--line);border-radius:var(--r-m);background:var(--surface);padding:12px 14px;display:grid;gap:8px;min-width:0;transition:border-color .3s}
+.w7-fix.is-right{border-color:var(--ok)}.w7-fix.is-wrong{border-color:var(--bad)}
+.w7-fix__q{font-size:.92rem}
+.w7-log{display:grid;gap:4px;font-family:var(--font-mono);font-size:.76rem}
+.w7-log span{padding:3px 8px;border-radius:6px;background:var(--surface-2);overflow-wrap:anywhere}
+.w7-log span.act{background:var(--act-soft)}.w7-log span.observe{background:var(--observe-soft)}.w7-log span.think{background:var(--think-soft)}
+.w7-fix__btns{display:flex;gap:6px;flex-wrap:wrap}
+.w7-fix .btn.is-pick,.w7-dol .seg button.is-pick{outline:2px solid var(--fg);outline-offset:1px}
+.w7-why{font-size:.86rem;color:var(--muted);border-top:1px dashed var(--line);padding-top:8px}
+.w7-dol{display:grid;gap:8px;padding:10px 12px;border:1px solid var(--line);border-radius:var(--r-m);background:var(--surface);font-size:.9rem;transition:border-color .3s;min-width:0}
+.w7-dol.is-right{border-color:var(--ok)}.w7-dol.is-wrong{border-color:var(--bad)}.w7-dol.is-alt{border-color:var(--warn)}
+.w7-dol .seg{justify-self:start}
+.w7-dol .seg button{padding:5px 9px;font-size:.78rem}
+/* lab and practice */
+.w7-tbl table.tbl{min-width:760px}
+.dlog{display:grid;gap:10px}
+.dlog textarea{min-height:72px}
+.w7-builder{display:grid;gap:12px}
+.w7-builder .field textarea{min-height:64px}
+.w7-lint{display:flex;gap:6px;flex-wrap:wrap}
+.w7-playcard{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;align-items:center;background:var(--stage);color:var(--stage-fg);border-radius:var(--r-l);padding:20px;border:1px solid var(--stage-line)}
+.w7-playcard .muted{color:var(--stage-muted)}
+.w7-playcard .btn--primary{background:var(--accent);border-color:var(--accent);color:#fff}
+@media (max-width:640px){.w7-playcard{grid-template-columns:1fr}}
+</style>
+
+<header class="rail">
+  <div class="wrap">
+    <span class="rail__badge">Week 7</span>
+    <span class="rail__title">Your First Agent</span>
+    <nav class="rail__nav" aria-label="Days">
+      <a class="rail__pill" href="#day1"><i class="rail__dot"></i>Day 1</a>
+      <a class="rail__pill" href="#day2"><i class="rail__dot"></i>Day 2</a>
+      <a class="rail__pill" href="#day3"><i class="rail__dot"></i>Day 3</a>
+      <a class="rail__pill" href="#day4"><i class="rail__dot"></i>Day 4</a>
+      <a class="rail__pill" href="#day5"><i class="rail__dot"></i>Day 5</a>
+    </nav>
+    <div class="rail__links">
+      <a data-href="hub">Course hub</a>
+      <a data-href="doc">Course doc</a>
+    </div>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap">
+    <div class="hero__text">
+      <span class="eyebrow">Week 7 · Module 8 · five days · about 6 hours in total</span>
+      <h1>This is the week Claude stops answering and starts acting.</h1>
+      <p class="lede">Until now you have asked Claude questions and read the replies. In Week 6 you built n8n workflows that ran the same path every time. This week we put the two together. An agent is Claude inside an n8n node, with a memory and a handful of tools, deciding for itself which tool to use next until the job is done. I have cut the week into five days, from 45 minutes to about two hours. By Day 5 you will have built a support agent that looks customers up in a mock CRM and emails the right person, and only when it should.</p>
+      <div class="hero__actions">
+        <a class="btn btn--primary" href="#day1">Start Day 1</a>
+        <a class="btn" href="#day5">Go to Day 5, the lab</a>
+      </div>
+    </div>
+    <div class="stage" aria-label="Animated: a support agent handles an outage report. A pulse travels around a ring of three stations, think, act and observe: it looks up the customer in the CRM, reads the result, sends an alert to the account manager, reads the result, and writes a final reply.">
+      <canvas id="heroCanvas"></canvas>
+      <span class="stage__label">live · the agent loop</span>
+      <div class="stage__hud"><span class="chip chip--think" id="heroPass">pass 1</span><button class="btn btn--small" id="heroReplay" type="button">Replay</button></div>
+    </div>
+  </div>
+</section>
+
+<main class="wrap">
+
+  <nav class="days" id="dayTabs" aria-label="The five days of Week 7" role="tablist">
+    <button class="dayt" type="button" role="tab" id="dayt1" aria-controls="day1" aria-selected="false"><span class="dayt__n">Day 1</span><b>The loop and the node</b><span class="dayt__t">about 45 min</span><i class="dayt__dot"></i></button>
+    <button class="dayt" type="button" role="tab" id="dayt2" aria-controls="day2" aria-selected="false"><span class="dayt__n">Day 2</span><b>Memory and descriptions</b><span class="dayt__t">about 55 min</span><i class="dayt__dot"></i></button>
+    <button class="dayt" type="button" role="tab" id="dayt3" aria-controls="day3" aria-selected="false"><span class="dayt__n">Day 3</span><b>Parsers, workflows, APIs</b><span class="dayt__t">about 60 min</span><i class="dayt__dot"></i></button>
+    <button class="dayt" type="button" role="tab" id="dayt4" aria-controls="day4" aria-selected="false"><span class="dayt__n">Day 4</span><b>Rules and reading a run</b><span class="dayt__t">about 75 min</span><i class="dayt__dot"></i></button>
+    <button class="dayt" type="button" role="tab" id="dayt5" aria-controls="day5" aria-selected="false"><span class="dayt__n">Day 5</span><b>People, then the lab</b><span class="dayt__t">about 125 min</span><i class="dayt__dot"></i></button>
+  </nav>
+
+  <section class="scene daypanel" id="day1" role="tabpanel" aria-labelledby="dayt1" hidden>
+    <div class="scene__head">
+      <span class="scene__kicker scene__kicker--learn">Day 1 · about 45 minutes</span>
+      <h2>What an agent is, and the node that holds one</h2>
+      <p>Two ideas today. First the loop every agent runs: think, act, observe, repeat. Then the n8n node that runs that loop, with its three sockets. By the end you will have built the smallest possible agent in n8n and watched it reach for a calculator instead of guessing. Every visual on this page is live; poke it.</p>
+    </div>
+    <!-- 1. The agent loop -->
+    <article class="concept">
+      <div class="concept__viz">
+        <div class="w7-sim">
+          <svg class="w7-ring" viewBox="0 0 300 300" role="img" aria-label="A ring with three stations, Think, Act and Observe, and a pass counter in the middle" id="simRing">
+            <circle cx="150" cy="150" r="104" fill="none" stroke="var(--line)" stroke-width="2"></circle>
+            <g class="st" data-st="think"><circle cx="150" cy="46" r="34" fill="var(--think-soft)" stroke="var(--think)" stroke-width="2"></circle><text x="150" y="51" text-anchor="middle" font-family="Bricolage Grotesque, sans-serif" font-weight="800" font-size="15" fill="var(--think)">Think</text></g>
+            <g class="st" data-st="act"><circle cx="240" cy="202" r="34" fill="var(--act-soft)" stroke="var(--act)" stroke-width="2"></circle><text x="240" y="207" text-anchor="middle" font-family="Bricolage Grotesque, sans-serif" font-weight="800" font-size="15" fill="var(--act)">Act</text></g>
+            <g class="st" data-st="observe"><circle cx="60" cy="202" r="34" fill="var(--observe-soft)" stroke="var(--observe)" stroke-width="2"></circle><text x="60" y="207" text-anchor="middle" font-family="Bricolage Grotesque, sans-serif" font-weight="800" font-size="15" fill="var(--observe)">Observe</text></g>
+            <text x="150" y="146" text-anchor="middle" font-family="Figtree, sans-serif" font-size="12" fill="var(--muted)">pass</text>
+            <text x="150" y="178" text-anchor="middle" font-family="Bricolage Grotesque, sans-serif" font-weight="800" font-size="30" fill="var(--fg)" id="simPass">0</text>
+          </svg>
+          <div class="stack">
+            <div class="row" style="justify-content:space-between">
+              <span class="chip" id="simStep">Step 0 of 14</span>
+              <span class="row"><button class="btn btn--small" id="simPrev" type="button">Back</button><button class="btn btn--small btn--think" id="simNext" type="button">Next step</button><button class="btn btn--small" id="simAuto" type="button">Auto-play</button></span>
+            </div>
+            <div class="w7-transcript" id="simTranscript" aria-live="polite"></div>
+          </div>
+        </div>
+        <div class="viz-caption"><span>Goal: "Check my three open tickets and email me about the urgent one." Step through it and count the passes.</span><span class="row chip chip--think">14 steps · 5 passes</span></div>
+      </div>
+      <div class="concept__text">
+        <h3>The loop every agent runs</h3>
+        <p>Think about how you handle a request like "check my three open tickets and tell me which one is urgent". You do not answer from memory. You open the ticket system, read the list, open the ones that look serious, and only then write back. Each step depends on what the last one showed you. That is the shape of an agent's work, and it is why a plain chat reply cannot do it: a chat reply is one pass, and this job takes several.</p>
+        <p>Here is the loop. Claude reads the goal and thinks: can I answer now, or do I need something first? If it needs something, it acts, by writing the name of a tool and the inputs for it as a small JSON object. It does not run the tool. n8n runs the node and hands the result back. Claude observes the result and thinks again. Round and round, until it decides it has enough and writes a final answer. People in the trade call this think, act, observe; you will also hear "reasoning and acting". Same idea.</p>
+        <p>Step through the simulator on the left. The ticket job takes five passes: one to list the tickets, two to open the suspicious ones, one to send the email, one to write the reply. "What are your opening hours?" takes a single pass, because nothing needs looking up. You do not fix the number of passes. The model decides as it goes, and that is exactly what makes this an agent rather than the Week 6 workflow where you drew every arrow yourself.</p>
+        <div class="aside"><b>Where the picture breaks.</b> Claude is not sitting there waiting between passes. Each pass is a fresh request to the model with the whole conversation so far, every tool result included, pasted in again. The "memory" between passes is text, and you pay for it in tokens every time. That is why a twenty-pass agent is expensive, and why Day 4 caps the loop.</div>
+        <div class="key"><p>An agent is a model in a loop: think, act, observe, repeat, until it writes a final answer. The model chooses the path. n8n runs the tools.</p></div>
+      </div>
+    </article>
+    <!-- 2. The AI Agent node -->
+    <article class="concept">
+      <div class="concept__viz">
+        <div class="w7-node">
+          <div class="w7-node__box"><b>AI Agent</b><span class="muted" style="font-size:.85rem">System message: support triage agent for Stride Shoes · Max Iterations 10</span></div>
+          <div class="w7-sockets">
+            <div class="w7-socket w7-socket--model" id="sockModel"><h5>Chat Model</h5><span class="muted">empty</span></div>
+            <div class="w7-socket w7-socket--memory" id="sockMemory"><h5>Memory</h5><span class="muted">empty</span></div>
+            <div class="w7-socket w7-socket--tools" id="sockTools"><h5>Tool</h5><span class="muted">empty</span></div>
+          </div>
+          <div class="w7-bank" id="plugBank" aria-label="Sub-nodes to plug in">
+            <button class="btn" type="button" id="plugModel" data-plug="model" data-name="Anthropic Chat Model">+ Anthropic Chat Model</button>
+            <button class="btn" type="button" id="plugMemory" data-plug="memory" data-name="Simple Memory">+ Simple Memory</button>
+            <button class="btn" type="button" id="plugCalc" data-plug="tool" data-name="Calculator">+ Calculator</button>
+            <button class="btn" type="button" id="plugGmail" data-plug="tool" data-name="Gmail">+ Gmail</button>
+            <button class="btn" type="button" id="plugSheets" data-plug="tool" data-name="Google Sheets">+ Google Sheets</button>
+            <button class="btn" type="button" id="plugHttp" data-plug="tool" data-name="HTTP Request">+ HTTP Request</button>
+            <button class="btn" type="button" id="plugWf" data-plug="tool" data-name="Call n8n Workflow">+ Call n8n Workflow</button>
+          </div>
+          <div class="w7-model"><label for="modelPick"><span class="muted">Model in the Anthropic Chat Model sub-node</span></label><select id="modelPick" aria-label="Model"><option value="sonnet">claude-sonnet-5-5</option><option value="haiku">claude-haiku-5-5</option><option value="opus">claude-opus-5-5</option></select><span id="modelNote"></span></div>
+          <div class="w7-readout" id="nodeReadout" aria-live="polite"></div>
+        </div>
+        <div class="viz-caption"><span>Plug sub-nodes into the three sockets and read what the agent can do with that setup. Click × to unplug.</span><span class="row chip chip--act">one node, three sockets</span></div>
+      </div>
+      <div class="concept__text">
+        <h3>One node, three sockets</h3>
+        <p>In Week 6 every node did one job and you drew the path between them. The AI Agent node is different. Drop it on the canvas and three sockets hang underneath, labelled Chat Model, Memory and Tool. The node itself is the loop from the last concept. What you plug into the sockets decides what the loop can do.</p>
+        <p>The Chat Model socket takes exactly one sub-node, and for us that is the Anthropic Chat Model. You attach your API key as an n8n credential, never typed into the node itself, and pick a model from the list. Use <code>claude-sonnet-5-5</code> for this course: quick enough for a chat, reliable at choosing tools. <code>claude-haiku-5-5</code> is cheaper for high-volume routing and <code>claude-opus-5-5</code> is for decisions where a wrong call is expensive. Model names change every few months; the syllabus this course grew from still says Claude 3.5 Sonnet. Pick whatever the current Sonnet-class model is called on the day you build.</p>
+        <p>The Memory socket takes a memory sub-node, which keeps recent messages so the agent can follow a conversation; that is tomorrow's first concept. The Tool socket takes as many tools as you like: a Calculator, Gmail, Google Sheets, an HTTP Request, even a whole other workflow. Each one appears to Claude as a name and a description it may choose to call. Plug things in on the left and read the line under the node. It tells you what that agent can and cannot do.</p>
+        <p>One honest note on names. n8n renames things between versions. The memory node was called Window Buffer Memory for a long time and is now Simple Memory; the Tool socket has been labelled Tools. The jobs of the three sockets have not changed, so when a label on your screen differs from this page, look for the job, not the word.</p>
+        <div class="key"><p>The AI Agent node is the loop. Chat Model is the brain, Memory is what it remembers, Tool is what it can do. The key lives in a credential.</p></div>
+      </div>
+    </article>
+    <div class="today">
+      <div class="today__head"><span class="scene__kicker scene__kicker--try">Do today</span><div class="meter" data-meter-for="d1"><div class="meter__row"><span>Progress</span><b data-meter-label>0 / 3</b></div><div class="progress"><i></i></div></div></div>
+      <p class="muted" style="font-size:.95rem">One experiment on this page, two in n8n, about 25 minutes. You need your n8n workspace from Week 6 and an Anthropic API key stored as a credential.</p>
+      <ol class="steps steps--numbered" data-persist="d1">
+        <li><span class="step__num"></span><input class="check" type="checkbox" id="d1-1" aria-label="Done"><div class="step__body"><p>Step through all 14 steps of the loop simulator with Next step, then press Auto-play and watch the pass counter. Count how many times the agent went round before it answered.</p><p class="step__notice"><strong>Notice:</strong> every act is followed by an observe. The model never sees a tool run; it only sees what came back.</p></div></li>
+        <li><span class="step__num"></span><input class="check" type="checkbox" id="d1-2" aria-label="Done"><div class="step__body"><p>In n8n, build a new workflow: Chat Trigger → AI Agent. Under the agent, plug in the Anthropic Chat Model (your credential, model <code>claude-sonnet-5-5</code>) and the Calculator tool. Open the chat and type: "What is 48,219 × 7,731?" Then open the execution log and click the Calculator node.</p><p class="step__notice"><strong>Notice:</strong> the agent called the calculator before it answered. The log shows the expression it sent and the number that came back: 372,781,089.</p></div></li>
+        <li><span class="step__num"></span><input class="check" type="checkbox" id="d1-3" aria-label="Done"><div class="step__body"><p>Unplug the Calculator and ask the same question. Compare the two answers, then write one line below on what changed.</p><p class="step__notice"><strong>Notice:</strong> without the tool the model predicts digits, and it may be confidently wrong, exactly as in Week 1. This is why agents need tools, and why Week 8 is about them.</p><textarea data-note="d1-tool" id="d1Note" placeholder="With the calculator it… · Without it the answer was… · The log showed…"></textarea></div></li>
+      </ol>
+    </div>
+    <div class="daynav"><span></span><button class="btn btn--primary" type="button" data-go="2" id="goNext1">Day 2 · Memory and descriptions →</button></div>
+  </section>
+
+  <section class="scene daypanel" id="day2" role="tabpanel" aria-labelledby="dayt2" hidden>
+    <div class="scene__head">
+      <span class="scene__kicker scene__kicker--learn">Day 2 · about 55 minutes</span>
+      <h2>Memory, and the words that steer a tool</h2>
+      <p>Today is about the two things that most often go wrong in a first agent: it forgets what you told it, or it reaches for the wrong tool. By the end you will know exactly what a memory window keeps, you will have rewritten a tool description until the agent behaves, and you will have run a real Claude agent in the Agent Playground.</p>
+    </div>
+    <!-- 3. The memory window -->
+    <article class="concept">
+      <div class="concept__viz">
+        <div class="stack">
+          <div class="w7-ctrl">
+            <label for="memWin">Window: last <b id="memWinVal">10</b> messages <input type="range" id="memWin" min="1" max="12" value="10" aria-label="Memory window, number of past messages the model is sent"></label>
+            <button class="btn btn--small" type="button" id="memAdd">+ Add a turn</button>
+            <button class="btn btn--small" type="button" id="memReset">Reset</button>
+          </div>
+          <div class="w7-chat" id="memChat" aria-live="polite"></div>
+          <div class="w7-memstat"><span>Sent to the model this turn: <b id="memSeen">0</b> of <b id="memTotal">0</b> messages</span><span>about <b id="memTokens">0</b> tokens</span></div>
+        </div>
+        <div class="viz-caption"><span>Greyed-out messages are on your screen but not in the request. Add turns until the introduction falls out, then read the reply.</span><span class="row chip" id="memVerdict">remembers the name</span></div>
+      </div>
+      <div class="concept__text">
+        <h3>What a memory window actually keeps</h3>
+        <p>Picture a colleague who covers your support chat but works under a strict rule: before answering each message, they may read only the last ten messages in the thread, nothing older. Most of the time nobody notices. Then a customer writes "as I said at the start, my name is Priya", and the colleague has no idea who Priya is. That rule is a memory window, and it is exactly what the memory sub-node gives your agent.</p>
+        <p>Here is the thing that confuses almost everyone the first time. The chat on your screen shows the whole conversation. The model sees none of it unless it is sent again. Every pass of the loop is a fresh request, and the memory node decides how many past messages get pasted into that request. Set the window to ten and the agent "remembers" ten messages. Set it to one and it sees only what you just typed.</p>
+        <p>Why not keep everything? Because every message you keep is tokens you pay for on every pass, and because the context window from Week 1 is finite. A support agent handling a hundred chats a day with full history would be slow and expensive for no benefit; nobody needs the opening pleasantry from forty messages ago. The window is a budget. Slide it on the left, add turns, and watch which messages fall out of view. Then read what the agent says when asked its customer's name.</p>
+        <p>Two things the window does not do. It does not survive a new session: tomorrow's chat starts empty unless you store something yourself, which is Week 9's topic. And it does not hold tool results from earlier turns unless they were written into the conversation, so an agent that looked a customer up ten messages ago may need to look them up again. That second lookup is cheap. Guessing instead is not.</p>
+        <div class="key"><p>Memory is the last N messages pasted into every pass. The screen shows everything; the model sees only the window.</p></div>
+      </div>
+    </article>
+    <!-- 4. Tool descriptions are prompts -->
+    <article class="concept">
+      <div class="concept__viz">
+        <div class="w7-desc stack">
+          <div class="row" style="justify-content:space-between">
+            <div class="seg" role="group" aria-label="Description quality"><button type="button" class="is-on" id="descBad">"Send email"</button><button type="button" id="descHalf">Half a description</button><button type="button" id="descGood">The full one</button></div>
+            <button class="btn btn--small btn--think" id="descRun" type="button">Send 6 messages</button>
+          </div>
+          <pre class="code" id="descText">send_alert: "Send email"</pre>
+          <div class="w7-calls" id="descCalls" aria-live="polite"></div>
+        </div>
+        <div class="viz-caption"><span>Right decisions out of six. Illustrative: a real model is less tidy, but the pattern holds.</span><span class="row chip" id="descScore">0 / 6</span></div>
+      </div>
+      <div class="concept__text">
+        <h3>The agent decides from the description alone</h3>
+        <p>Imagine handing a new temp a desk phone with a sticky note that says "phone". They know what it does. They do not know when you want them to use it, who to call, or what to say. So they either never touch it or they call the finance director about a stapler. A tool description is that sticky note, and Claude is the temp. It reads the description at the moment it decides, and that is all it has.</p>
+        <p>So a description has four parts. What the tool does. When to use it. When not to use it. And what each input means, in plain words, with the shape it expects. "Send email" fails on three of the four. "Email the customer's account manager. Use only when the customer reports an outage or asks to cancel. Never use for general questions. Inputs: to (the manager's email from lookup_customer), subject (short), body (under 100 words)." answers all four and is still short enough to read in one breath.</p>
+        <p>Run the tester on the left with each version. With "Send email" the agent alerts the account manager about opening hours, because nothing told it not to. The half description fixes some messages and not others. The full one gets all six. In my experience this is where half of all agent debugging happens: not in the model, not in the workflow, but in the words of the description. When your agent misbehaves, read the description first and ask whether a temp would have done the same.</p>
+        <div class="aside"><b>An honest caveat.</b> A good description lowers wrong calls; it does not make them impossible. The model is still predicting, and an ambiguous message ("I might cancel if this keeps up") can go either way. Day 4 adds a second layer, rules in the system prompt, and the lab adds the third: a test table you fill in.</div>
+        <div class="key"><p>A description says what, when, when not, and what each input means. The agent decides from those words alone.</p></div>
+      </div>
+    </article>
+    <div class="today">
+      <div class="today__head"><span class="scene__kicker scene__kicker--try">Do today</span><div class="meter" data-meter-for="d2"><div class="meter__row"><span>Progress</span><b data-meter-label>0 / 3</b></div><div class="progress"><i></i></div></div></div>
+      <p class="muted" style="font-size:.95rem">One experiment in n8n, then a live agent in the Agent Playground, about 30 minutes. Made-up names only.</p>
+      <ol class="steps steps--numbered" data-persist="d2">
+        <li><span class="step__num"></span><input class="check" type="checkbox" id="d2-1" aria-label="Done"><div class="step__body"><p>In yesterday's n8n workflow, plug Simple Memory into the Memory socket and leave its window at 10. In the chat, type: "My name is Priya Nair and I run the finance team at Meridian Logistics." Ask two unrelated questions, then: "What is my name?" Now open the memory node, set the window (Context Window Length) to 1, and repeat the four messages.</p><p class="step__notice"><strong>Notice:</strong> the chat panel still shows your introduction both times. The second time the agent cannot see it. The screen is not the window.</p></div></li>
+        <li><span class="step__num"></span><input class="check" type="checkbox" id="d2-2" aria-label="Done"><div class="step__body"><p>Open the Agent Playground and run missions 1, 2, 3 and 5. Send "Routine: opening hours" and check that the trace shows <code>lookup_customer</code> and no alert. Send "Outage report" and check the outbox for an alert to ops@stride.example. Then change the <code>send_alert</code> description to just "Send email", resend the routine question, and watch for a misfire before you restore the full description. Finish with "Introduce yourself", "Ask your name back", memory set to 1, and ask again.</p><p class="step__notice"><strong>Notice:</strong> every tool call appears in the trace as it happens, with the JSON the model wrote. Alerts land in the page's outbox, never in anyone's inbox. Live runs spend your own Claude usage, and the first run asks your permission.</p>
+          <div class="w7-playcard" style="margin-top:10px"><div class="stack"><b style="font-family:var(--font-display)">The Agent Playground</b><p class="muted" style="font-size:.9rem">A live Claude agent with the mock CRM, the send_alert tool and a calculator from this week's lab. Edit the descriptions and the system prompt and watch what changes.</p></div><a class="btn btn--primary" data-href="playground">Open the playground</a></div></div></li>
+        <li><span class="step__num"></span><input class="check" type="checkbox" id="d2-3" aria-label="Done"><div class="step__body"><p>Write down the two <code>send_alert</code> descriptions from mission 3, the one that misfired and the one that fixed it, and one line on what the fix added.</p><textarea data-note="d2-desc" id="d2Note" placeholder="Before: Send email · After: Email the customer's account manager. Use only when… · What fixed it: it now says when not to"></textarea></div></li>
+      </ol>
+    </div>
+    <div class="daynav"><button class="btn" type="button" data-go="1" id="goPrev2">← Day 1 · The loop and the node</button><button class="btn btn--primary" type="button" data-go="3" id="goNext2">Day 3 · Parsers, workflows, APIs →</button></div>
+  </section>
+
+  <section class="scene daypanel" id="day3" role="tabpanel" aria-labelledby="dayt3" hidden>
+    <div class="scene__head">
+      <span class="scene__kicker scene__kicker--learn">Day 3 · about 60 minutes</span>
+      <h2>Data out, and tools that reach outside n8n</h2>
+      <p>Three ideas today, all about the edges of the agent. How to make its final answer data instead of prose, how to give it a whole workflow as a tool, and how to let it call any system on the web with the HTTP Request tool. By the end your agent will return a tidy JSON object and will have fetched something real from outside n8n.</p>
+    </div>
+    <!-- 5. Output parsers -->
+    <article class="concept">
+      <div class="concept__viz">
+        <div class="w7-parser">
+          <div class="row" style="justify-content:space-between">
+            <div class="seg" role="group" aria-label="Output mode"><button type="button" class="is-on" id="outProse">Plain prose</button><button type="button" id="outJson">Structured Output Parser</button></div>
+            <button class="btn btn--small btn--think" id="outRun" type="button">Ask the agent</button>
+          </div>
+          <pre class="code" id="outSchema"><span class="c">// schema the next node expects</span>
+{ "customer": string, "action_taken": string, "needs_followup": boolean }</pre>
+          <pre class="code" id="outText">The final answer appears here.</pre>
+          <div class="w7-valid" id="outValid"><i></i><span>Validator: waiting</span></div>
+        </div>
+        <div class="viz-caption"><span>Message: "This is Priya Nair, the site is down." Ask in both modes and watch the validator.</span><span class="row chip chip--observe">three fields, typed</span></div>
+      </div>
+      <div class="concept__text">
+        <h3>When the next node needs fields, not a paragraph</h3>
+        <p>Think about what happens after the agent. In a real workflow its answer is rarely the end. Something has to log the case to a sheet, set a priority flag, or decide whether a person should look. Those nodes cannot read "I looked up Priya and emailed her manager, someone will follow up". They need <code>customer</code>, <code>action_taken</code> and <code>needs_followup</code>, each in its own field, each of the right type.</p>
+        <p>That is what an output parser does. You attach a Structured Output Parser to the agent, give it a schema (the fields you want and their types), and switch on "Require specific output format" in the node. The agent is now told to answer in that shape, and n8n checks the result against the schema. If a field is missing, or a boolean comes back as the word "maybe", the parser can send the answer back to the model to fix. Press the button on the left in both modes and watch the validator do its job.</p>
+        <p>Two cautions. A schema is a contract, so keep it small: three to six fields the next node really uses, no more. And do not confuse this with the tools' inputs. Tools also take structured data, but that is Claude filling in a tool's form during the loop. The parser is about the final answer, after the loop ends. Week 8 goes deeper into schemas when you write tool definitions by hand in the Console.</p>
+        <div class="key"><p>Prose is for people. A Structured Output Parser makes the final answer a fixed data shape the next node can read, and n8n validates it.</p></div>
+      </div>
+    </article>
+    <!-- 6. Workflows as tools -->
+    <article class="concept">
+      <div class="concept__viz">
+        <svg class="w7-wf" viewBox="0 0 420 260" role="img" aria-label="A main agent connected to its tools. In narrow mode, two tools: a lookup workflow and an order-status API, each call landing where it should. In wide mode, one tool that does everything, with calls going astray." id="wfSvg">
+          <defs><marker id="wfArr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--muted)"></path></marker></defs>
+          <rect x="16" y="95" width="130" height="70" rx="14" fill="var(--think-soft)" stroke="var(--think)" stroke-width="2"></rect>
+          <text class="t" x="81" y="124" text-anchor="middle" fill="var(--think)" style="fill:var(--think)">Main agent</text>
+          <text x="81" y="144" text-anchor="middle">support triage</text>
+          <g id="wfNarrowG">
+            <path id="wfP1" d="M146 115 C 200 60, 220 60, 270 60" fill="none" stroke="var(--line)" stroke-width="2" marker-end="url(#wfArr)"></path>
+            <path id="wfP2" d="M146 145 C 200 200, 220 200, 270 200" fill="none" stroke="var(--line)" stroke-width="2" marker-end="url(#wfArr)"></path>
+            <rect x="270" y="30" width="136" height="60" rx="14" fill="var(--act-soft)" stroke="var(--act)" stroke-width="2"></rect>
+            <text class="t" x="338" y="55" text-anchor="middle" style="fill:var(--act)">lookup_customer</text>
+            <text x="338" y="74" text-anchor="middle">Call n8n Workflow Tool</text>
+            <rect x="270" y="170" width="136" height="60" rx="14" fill="var(--observe-soft)" stroke="var(--observe)" stroke-width="2"></rect>
+            <text class="t" x="338" y="195" text-anchor="middle" style="fill:var(--observe)">get_order_status</text>
+            <text x="338" y="214" text-anchor="middle">HTTP Request tool</text>
+            <circle r="6" fill="var(--act)"><animateMotion dur="2.4s" repeatCount="indefinite" begin="0s"><mpath href="#wfP1"></mpath></animateMotion></circle>
+            <circle r="6" fill="var(--observe)"><animateMotion dur="2.4s" repeatCount="indefinite" begin="1.2s"><mpath href="#wfP2"></mpath></animateMotion></circle>
+          </g>
+          <g id="wfWideG" hidden>
+            <path id="wfP3" d="M146 130 C 200 130, 220 130, 270 130" fill="none" stroke="var(--line)" stroke-width="2" marker-end="url(#wfArr)"></path>
+            <path id="wfP4" d="M146 118 C 190 40, 300 20, 396 36" fill="none" stroke="var(--bad)" stroke-width="2" stroke-dasharray="5 5"></path>
+            <path id="wfP5" d="M146 142 C 190 230, 300 240, 396 226" fill="none" stroke="var(--bad)" stroke-width="2" stroke-dasharray="5 5"></path>
+            <rect x="270" y="100" width="136" height="60" rx="14" fill="var(--surface-2)" stroke="var(--muted)" stroke-width="2"></rect>
+            <text class="t" x="338" y="125" text-anchor="middle" style="fill:var(--fg)">do_customer_stuff</text>
+            <text x="338" y="144" text-anchor="middle">looks up, updates, emails, refunds</text>
+            <text x="396" y="30" text-anchor="end" style="fill:var(--bad)">refund issued by mistake</text>
+            <text x="396" y="244" text-anchor="end" style="fill:var(--bad)">record updated by mistake</text>
+            <circle r="6" fill="var(--muted)"><animateMotion dur="2.4s" repeatCount="indefinite" begin="0s"><mpath href="#wfP3"></mpath></animateMotion></circle>
+            <circle r="6" fill="var(--bad)"><animateMotion dur="3s" repeatCount="indefinite" begin="0.8s"><mpath href="#wfP4"></mpath></animateMotion></circle>
+            <circle r="6" fill="var(--bad)"><animateMotion dur="3s" repeatCount="indefinite" begin="2s"><mpath href="#wfP5"></mpath></animateMotion></circle>
+          </g>
+        </svg>
+        <div class="row" style="justify-content:space-between">
+          <div class="seg" role="group" aria-label="Tool width"><button type="button" class="is-on" id="wfNarrow">Two narrow tools</button><button type="button" id="wfWide">One wide tool</button></div>
+          <span class="chip chip--ok" id="wfWrong">0 wrong calls in 10</span>
+        </div>
+        <div class="viz-caption"><span id="wfCaption">Two narrow tools with one verb each. Every call lands where it should.</span></div>
+      </div>
+      <div class="concept__text">
+        <h3>A whole workflow can be a tool</h3>
+        <p>At work you do not do everything yourself. You pass the invoice question to accounts payable and the contract clause to legal, and you trust each to come back with an answer. An agent can work the same way. In n8n, any workflow that starts with an Execute Workflow trigger can be attached under the agent's Tool socket with the Call n8n Workflow Tool. To Claude it looks like any other tool: a name, a description, a few inputs. Behind it there can be twenty nodes.</p>
+        <p>This is how you build specialists. A lookup workflow that reads the CRM, cleans the row and returns only the fields that matter. A writing workflow that drafts and formats an email in the company style. Each one can be tested on its own, pinned, versioned and reused by other agents, and the main agent stays small and readable. The diagram on the left shows the shape: one main agent, two narrow tools, every call landing where it should.</p>
+        <p>Now switch the diagram to one wide tool. A single "do_customer_stuff" workflow that looks up, updates, emails and refunds has to be described in one paragraph, and the agent then guesses which part it is triggering. Wrong calls follow, and some of them change records. The rule I use: one tool, one verb. If you cannot describe a tool in two sentences, split it.</p>
+        <div class="key"><p>The Call n8n Workflow Tool turns any workflow into a tool. Keep each one narrow: one tool, one verb.</p></div>
+      </div>
+    </article>
+    <!-- 7. The HTTP Request tool -->
+    <article class="concept">
+      <div class="concept__viz">
+        <div class="w7-http">
+          <div class="row" style="justify-content:space-between">
+            <label class="field" style="flex:1 1 200px;min-width:0"><span>Endpoint the tool calls</span><select id="httpPick" aria-label="Endpoint"><option value="fx">Exchange rates · public, no key</option><option value="order">Order status · Stride Shoes mock API</option><option value="holiday">Public holidays · public, no key</option></select></label>
+            <button class="btn btn--small btn--think" id="httpSend" type="button">Send the request</button>
+          </div>
+          <pre class="code" id="httpDesc"></pre>
+          <pre class="code" id="httpReq"></pre>
+          <div class="row" style="justify-content:space-between"><span class="muted" style="font-size:.85rem">Response</span><span class="chip" id="httpState">not sent</span></div>
+          <pre class="code" id="httpRes">Press Send to see what comes back.</pre>
+          <div class="w7-http__obs" id="httpObs" hidden></div>
+        </div>
+        <div class="viz-caption"><span>A simulated exchange: nothing leaves this page. Values are illustrative. Notice how little of the response the agent needs.</span><span class="row chip chip--observe">request → JSON → observe</span></div>
+      </div>
+      <div class="concept__text">
+        <h3>Reaching any system on the web</h3>
+        <p>Most of what your company runs has an address that programs can talk to: the CRM, the ticketing system, the carrier that ships your parcels, the bank's exchange-rate feed. That interface is called a REST API, and it works the way your browser does. You send a request to a URL, usually with a few headers (an API key, the format you want), and you get JSON back. In Week 6 you watched JSON move between nodes. This is the same JSON arriving from outside.</p>
+        <p>The HTTP Request tool hands that ability to the agent. You set the method and the URL, add any headers, and write a description. The agent decides when to call it and what to put in the parameters. The JSON that comes back becomes the observe step of the loop. Pick an endpoint on the left and send a request, then read the line at the bottom: out of a response with hundreds of values, the agent needs one or two.</p>
+        <p>Three habits keep this safe. Put the API key in an n8n credential, not in the URL, so it never appears in a log. Prefer GET requests for a first agent; a tool that can POST can change records, and you want to decide deliberately which of those you allow. And trim the response: the tool's own options or a Set node can cut a 400-line reply down to the three fields the agent needs, which saves tokens and stops the model being distracted by the rest.</p>
+        <div class="aside"><b>Where it breaks.</b> An API can be down, slow, or changed since you built the tool. Give the agent a rule for what to say when a tool returns an error, and set the node to continue on failure with an error branch, exactly as you did in Week 6.</div>
+        <div class="key"><p>The HTTP Request tool lets the agent call any REST API. Keys in credentials, GET before POST, trim what comes back.</p></div>
+      </div>
+    </article>
+    <div class="today">
+      <div class="today__head"><span class="scene__kicker scene__kicker--try">Do today</span><div class="meter" data-meter-for="d3"><div class="meter__row"><span>Progress</span><b data-meter-label>0 / 3</b></div><div class="progress"><i></i></div></div></div>
+      <p class="muted" style="font-size:.95rem">Three experiments in n8n on the Day 1 workflow, about 30 minutes. Keep the memory window at 10.</p>
+      <ol class="steps steps--numbered" data-persist="d3">
+        <li><span class="step__num"></span><input class="check" type="checkbox" id="d3-1" aria-label="Done"><div class="step__body"><p>Attach a Structured Output Parser under the agent and switch on "Require specific output format". Paste this example into the parser and let it infer the schema: <code>{"customer": "Priya Nair", "action_taken": "looked up account", "needs_followup": true}</code>. Then type: "This is Priya Nair. Did my refund go through?" and open the agent's output in the log.</p><p class="step__notice"><strong>Notice:</strong> the answer is a JSON object, not a sentence. If a field is missing the run shows the parser asking again. That object is what a Google Sheets node could log without any cleaning.</p></div></li>
+        <li><span class="step__num"></span><input class="check" type="checkbox" id="d3-2" aria-label="Done"><div class="step__body"><p>Add an HTTP Request tool. Method GET, URL <code>https://open.er-api.com/v6/latest/USD</code> (a free exchange-rate feed that needs no key; if it is down, any free JSON endpoint will do). Description: "Fetch today's exchange rates with US dollars as the base. Use when a customer asks for a price in another currency. No inputs. Returns a rates object keyed by currency code." Keep the Calculator plugged in. Ask: "What is 2,400 dollars in euros today?"</p><p class="step__notice"><strong>Notice:</strong> two tool calls in the log, the request and then the calculator. The agent read one number out of a response with about 160 of them. Write the rate it used below.</p><textarea data-note="d3-http" id="d3Note" placeholder="Rate used: 1 USD = … EUR · Tools called, in order: … · Response size roughly …"></textarea></div></li>
+        <li><span class="step__num"></span><input class="check" type="checkbox" id="d3-3" aria-label="Done"><div class="step__body"><p>Create a second workflow: Execute Workflow Trigger → Edit Fields that sets <code>name</code> to "Tom Becker", <code>plan</code> to "Pro" and <code>account_manager</code> to "ops@stride.example". Save it. Back in the agent, add a Call n8n Workflow Tool pointing at it, named <code>lookup_customer</code>, described: "Find a customer's plan and account manager. Use before any decision about a customer. Input: name." Ask: "Tom Becker here, who is my account manager?"</p><p class="step__notice"><strong>Notice:</strong> the agent called your workflow like any other tool and quoted the result. A mock CRM in a sub-workflow is a fine substitute for a Google Sheet in tomorrow's lab if you have no Google account to spare.</p></div></li>
+      </ol>
+    </div>
+    <div class="daynav"><button class="btn" type="button" data-go="2" id="goPrev3">← Day 2 · Memory and descriptions</button><button class="btn btn--primary" type="button" data-go="4" id="goNext3">Day 4 · Rules and reading a run →</button></div>
+  </section>
+
+  <section class="scene daypanel" id="day4" role="tabpanel" aria-labelledby="dayt4" hidden>
+    <div class="scene__head">
+      <span class="scene__kicker scene__kicker--learn">Day 4 · about 75 minutes</span>
+      <h2>Standing orders, and reading a run that went wrong</h2>
+      <p>Tomorrow you build the lab agent. Today you learn the two skills that make it work first time: writing the standing orders in the system prompt, and reading an execution log to see which part to fix. By the end you will have drafted the system prompt you will paste into the lab.</p>
+    </div>
+    <!-- 8. Standing orders -->
+    <article class="concept">
+      <div class="concept__viz">
+        <div class="stack">
+          <div class="w7-rules" id="soRules" aria-label="Rules in the system prompt">
+            <label><input class="check" type="checkbox" id="ruleLookup" checked><span>1. Always call <code>lookup_customer</code> before deciding anything about a customer.</span></label>
+            <label><input class="check" type="checkbox" id="ruleAlertOnly" checked><span>2. Call <code>send_alert</code> only for an outage or a cancellation threat.</span></label>
+            <label><input class="check" type="checkbox" id="ruleNoGeneral" checked><span>3. Never send an alert for a general question. Answer it instead.</span></label>
+            <label><input class="check" type="checkbox" id="ruleUnknown" checked><span>4. If the customer is not in the CRM, say so and ask for the name on the account.</span></label>
+            <label><input class="check" type="checkbox" id="ruleConfirm" checked><span>5. After acting, tell the customer exactly what you did.</span></label>
+          </div>
+          <div class="w7-ctrl"><label for="iterPick">Max Iterations <select id="iterPick" aria-label="Max Iterations" style="width:auto;padding:4px 8px"><option value="3">3</option><option value="10" selected>10</option></select></label><button class="btn btn--small btn--think" type="button" id="soRun">Run 6 messages</button></div>
+          <div class="w7-calls" id="soRows" aria-live="polite"></div>
+        </div>
+        <div class="viz-caption"><span>Untick a rule, or drop Max Iterations to 3, and see which message was quietly relying on it.</span><span class="row chip" id="soScore">0 / 6 handled well</span></div>
+      </div>
+      <div class="concept__text">
+        <h3>The system prompt is the agent's standing orders</h3>
+        <p>A good team lead does not brief a new hire on every ticket. They give standing orders once: always check the account before promising anything; escalate outages to the duty manager; never promise a refund over a certain amount without sign-off. After that, the hire decides case by case. The AI Agent node has a place for exactly this, the system message in its options. Everything Week 2 taught you about structured prompts applies here, with one difference: these rules are about which tool to use, and when.</p>
+        <p>The rules I give a triage agent are short, and you can read them on the left. Always call lookup_customer before deciding anything about a customer. Call send_alert only for an outage or a cancellation threat. Never send an alert for a general question. If the customer is not in the CRM, say so and ask for the name on the account. After acting, tell the customer exactly what you did. Untick each rule in turn and run the six messages. You will see which message each rule was quietly protecting.</p>
+        <p>One more setting in the node belongs with the rules: Max Iterations, the ceiling on how many passes the loop may run before n8n stops it. The default is ten. Set it too low and a legitimate multi-step job stops half done, as the last message in the tester shows. Leave it very high and a confused agent can go round forty times at your expense. Ten is a sensible place to start for a support agent.</p>
+        <div class="aside"><b>Rules and descriptions overlap on purpose.</b> The description tells the model what a tool is for at the moment it looks at that tool. The system prompt tells it how to behave across the whole conversation. When both say "never alert for a general question", you get far fewer misfires than with either alone.</div>
+        <div class="key"><p>The system prompt carries the standing orders: which tool, when, what to do when a lookup fails, and how to report back. Max Iterations caps the loop.</p></div>
+      </div>
+    </article>
+    <!-- 9. Reading a run -->
+    <article class="concept">
+      <div class="concept__viz">
+        <div class="w7-scorebar"><div><span class="muted">Score</span> <b id="fixScore">0 / 4</b></div><div class="row"><span class="chip" id="fixState">4 to go</span><button class="btn btn--small" type="button" id="fixReset">Reset</button></div></div>
+        <div class="w7-cards" id="fixList"></div>
+        <p class="muted" id="fixSummary" style="font-size:.9rem" hidden></p>
+        <div class="viz-caption"><span>Four execution logs, one wrong outcome each. Pick the part you would fix first.</span><span class="row chip chip--act">description · prompt · memory · tool</span></div>
+      </div>
+      <div class="concept__text">
+        <h3>When it goes wrong, the log tells you which part to fix</h3>
+        <p>Every run of an n8n workflow leaves an execution log, and for an agent the log is unusually readable. You can see each pass, the tool it chose, the inputs it filled in, and the result that came back. When a colleague makes a bad call you ask them what they were thinking. With an agent, you can simply read it.</p>
+        <p>Four parts can be at fault, and each leaves a different trace. If the agent called a tool it should not have, or skipped one it should have used, read the tool description first. If it called the right tools in the right order but drew the wrong conclusion, or forgot to say what it did, look at the system prompt. If it lost track of something said earlier in the conversation, that is the memory window. And if it called the right tool with the right inputs and the result was wrong or empty, the tool itself is broken: a sheet column renamed, a filter on the wrong field, a credential that expired.</p>
+        <p>Work through the four runs on the left and pick the part you would fix first. The order matters, because the cheapest fix is usually the right one: a description is one sentence, a system prompt is a paragraph, a tool is a node you have to re-test. Week 8 turns this into a habit called execution monitoring, where every run writes a summary row to a sheet so you can audit a week of decisions in a minute.</p>
+        <div class="key"><p>Wrong tool: the description. Right tools, wrong conclusion: the system prompt. Forgot something: memory. Right call, wrong result: the tool itself.</p></div>
+      </div>
+    </article>
+    <div class="today">
+      <div class="today__head"><span class="scene__kicker scene__kicker--try">Do today</span><div class="meter" data-meter-for="d4"><div class="meter__row"><span>Progress</span><b data-meter-label>0 / 3</b></div><div class="progress"><i></i></div></div></div>
+      <p class="muted" style="font-size:.95rem">Two exercises on this page and one piece of writing, about 35 minutes. The writing becomes step 5 of tomorrow's lab.</p>
+      <ol class="steps steps--numbered" data-persist="d4">
+        <li><span class="step__num"></span><input class="check" type="checkbox" id="d4-1" aria-label="Done"><div class="step__body"><p>In the standing-orders tester, untick one rule at a time, run the six messages, and tick the rule back on before you try the next. Then set Max Iterations to 3 with all five rules on.</p><p class="step__notice"><strong>Notice:</strong> each rule protects a different message, and the iteration cap breaks only the multi-step job. A rule that never changes an outcome is a rule you can cut.</p></div></li>
+        <li><span class="step__num"></span><input class="check" type="checkbox" id="d4-2" aria-label="Done"><div class="step__body"><p>Score four out of four in "which part do you fix". If you miss one, press Reset and read the log again before you pick.</p><p class="step__notice"><strong>Notice:</strong> the log answers the question before you touch anything. Right tool, wrong tool, missing step or empty result: each points at one part.</p></div></li>
+        <li><span class="step__num"></span><input class="check" type="checkbox" id="d4-3" aria-label="Done"><div class="step__body"><p>Draft the system prompt for tomorrow's lab agent in the box below: a role line, five rules in the style of the tester (which tool, when, when not, what to do when the lookup fails, how to report back), and one line on tone and length. Use the XML tags from Week 2.</p><p class="step__notice"><strong>Notice:</strong> you are writing standing orders, not a conversation. Every rule should name a tool or a situation. Tomorrow you paste this into the AI Agent node's system message.</p><textarea data-note="d4-system" id="d4Sys" placeholder="&lt;role&gt;You are the support triage agent for Stride Shoes.&lt;/role&gt;&#10;&lt;rules&gt;&#10;1. Always call lookup_customer before…&#10;&lt;/rules&gt;&#10;&lt;style&gt;Short, calm, friendly. Under 80 words.&lt;/style&gt;" style="min-height:140px;font-family:var(--font-mono);font-size:.85rem"></textarea></div></li>
+      </ol>
+    </div>
+    <div class="daynav"><button class="btn" type="button" data-go="3" id="goPrev4">← Day 3 · Parsers, workflows, APIs</button><button class="btn btn--primary" type="button" data-go="5" id="goNext4">Day 5 · People, then the lab →</button></div>
+  </section>
+
+  <section class="scene daypanel" id="day5" role="tabpanel" aria-labelledby="dayt5" hidden>
+    <div class="scene__head">
+      <span class="scene__kicker scene__kicker--learn">Day 5 · about 125 minutes</span>
+      <h2>Decide what stays with people, then build the agent</h2>
+      <p>The longest day. One idea from the MIT course about where an agent's intelligence ends and a person's begins, then Lab 3.2: a Claude-powered n8n agent that reads a mock CRM and sends Gmail alerts, tested against eight messages. Then design-log entry 7, the quiz and a practice round.</p>
+    </div>
+    <!-- 10. Computers in the group -->
+    <article class="concept">
+      <div class="concept__viz">
+        <div class="w7-scorebar"><div><span class="muted">Agreement with my allocation</span> <b id="dolScore">– / 8</b></div><div class="row"><span class="chip" id="dolState">sort all eight</span><button class="btn btn--small btn--think" type="button" id="dolCheck">Check</button><button class="btn btn--small" type="button" id="dolReset">Reset</button></div></div>
+        <div class="w7-cards" id="dolList" aria-label="Eight decisions in the support workflow"></div>
+        <p class="muted" id="dolSummary" style="font-size:.9rem" hidden></p>
+        <div class="viz-caption"><span>Eight decisions from the triage workflow. For each, who should make it: the agent, the agent proposing with a person deciding, or a person only?</span><span class="row chip chip--think">from MIT xPRO, Module 6</span></div>
+      </div>
+      <div class="concept__text">
+        <h3>From humans in the loop to computers in the group</h3>
+        <p>Think about the support team your agent is joining. It is not one person at one screen. It is a group: a triage lead, account managers, someone on call, a finance person who signs off refunds. The MIT xPRO course this week borrows from, Designing and Building AI Products and Services, spends a module on what its instructor, Thomas Malone, calls superminds: groups of people acting together in ways that seem intelligent. His argument is that almost everything we have achieved was done by such groups, and that the useful question about AI is not "people or computers" but what people and computers can do together.</p>
+        <p>The distinction that makes this practical is between two kinds of intelligence. Specialised intelligence achieves specific goals in a particular environment; general intelligence achieves a wide range of goals across many environments. The course's example is IBM's Watson, which beat the best human Jeopardy players and could not play noughts and crosses. A five-year-old has more general intelligence than any computer, and human-level general AI, Malone notes, has been "about twenty years away" for the last sixty. So every use of computers has to involve people. His slogan: move from humans in the loop, one person checking one computer, to computers in the group, where the computer does the specialised parts it does better and the people keep everything else.</p>
+        <p>For your agent this is a design decision, not a philosophy. Looking up a record, classifying a message, drafting a reply, doing arithmetic: specialised, measurable, give it to the agent. Deciding to close a long-standing account, approving a refund over a threshold, judging whether a complaint about tone is fair: general, consequential, keep it with a person and have the agent prepare the case. Sort the eight decisions on the left and compare your allocation with mine. Some are judgement calls, and I say which.</p>
+        <p>One more idea from the same module is worth stealing. Malone describes cyber-human learning loops: the computer watches the decisions people make, learns the pattern, starts suggesting, and once people have accepted its suggestion many times in a row it stops asking. That is a sensible path for an agent at work. Start with the agent proposing and a person approving. Promote a decision to the agent only once a test table like today's shows it gets that decision right. Design-log entry 7 asks you to write this down for your own product.</p>
+        <div class="aside"><b>An honest caveat.</b> Malone's examples predate language models, and Claude is far more general than Watson was. The line between specialised and general has moved. The decision has not: an agent should own what it does reliably and measurably, and people should own what carries judgement, consequence or accountability.</div>
+        <div class="key"><p>Computers in the group: give the agent the specialised, measurable work; keep judgement with people; promote a decision to the agent only after the test table says you can.</p></div>
+      </div>
+    </article>
+    <div class="part" id="lab">
+    <div class="scene__head">
+      <span class="scene__kicker scene__kicker--lab">Lab 3.2 · about 75 minutes</span>
+      <h2>An agent that reads a mock CRM and sends Gmail alerts</h2>
+      <p>You build a support triage agent for Stride Shoes, a pretend online shoe shop. A message arrives, the agent looks the customer up in a mock CRM, and emails the account manager only when the message is an outage or a cancellation threat. A company builds this so that every outage reaches the right person within a minute, without the alert channel filling up with questions about opening hours. Everything here is made up: the customers, the addresses, the company.</p>
+    </div>
+    <div class="note note--warn" style="margin-bottom:18px"><strong>Before you start.</strong><span>Use a dedicated test Gmail account, never your own or your employer's. Store the Anthropic key and the Google credentials as n8n credentials, never typed into a node. Every CRM row below is invented, and every address points back at your test inbox.</span></div>
+    <div class="meter" data-meter-for="lab" style="margin-bottom:14px"><div class="meter__row"><span>Lab progress</span><b data-meter-label>0 / 8</b></div><div class="progress progress--act"><i></i></div></div>
+    <div data-persist="lab">
+      <ol class="steps steps--numbered">
+        <li><span class="step__num"></span><input class="check" type="checkbox" id="lab-1" aria-label="Done lab step 1"><div class="step__body"><p><strong>The mock CRM.</strong> Create a Google Sheet called CRM with ten made-up customers: name, plan, open_tickets, account_manager. Paste the rows below. Every manager address is a plus alias of your test account, so every alert lands in one inbox you control.</p>
+          <details class="hint"><summary>Copy the ten rows, or build the CRM without Google</summary><pre class="code" id="crmCsv">name,plan,open_tickets,account_manager
+Priya Nair,Pro,2,yourname+ops@gmail.com
+Marcus Lee,Starter,0,yourname+sales@gmail.com
+Aisha Khan,Enterprise,5,yourname+enterprise@gmail.com
+Tom Becker,Pro,1,yourname+ops@gmail.com
+Lucia Romero,Starter,3,yourname+sales@gmail.com
+Wei Zhang,Enterprise,0,yourname+enterprise@gmail.com
+Fatima Said,Pro,4,yourname+ops@gmail.com
+Noah Wright,Starter,1,yourname+sales@gmail.com
+Elena Petrova,Enterprise,2,yourname+enterprise@gmail.com
+Sam Okafor,Pro,0,yourname+ops@gmail.com</pre><p class="muted">Gmail delivers yourname+anything@gmail.com to yourname@gmail.com; replace "yourname" with your test account. No Google account to spare? Put the ten rows in an Edit Fields node inside a second workflow that starts with an Execute Workflow trigger, filter by name, and attach it with the Call n8n Workflow Tool, as you did on Day 3.</p></details></div></li>
+        <li><span class="step__num"></span><input class="check" type="checkbox" id="lab-2" aria-label="Done lab step 2"><div class="step__body"><p><strong>The workflow.</strong> Chat Trigger → AI Agent. Under the agent: Anthropic Chat Model with your credential and <code>claude-sonnet-5-5</code>, and Simple Memory with a window of 10. Set Max Iterations to 10 in the agent's options.</p>
+          <details class="hint"><summary>Where the credential goes</summary><p>Open the Anthropic Chat Model sub-node, click the credential field and choose Create new. Paste the key there once. From then on every node that needs it selects the credential by name, and the key never appears on the canvas or in an exported workflow.</p></details></div></li>
+        <li><span class="step__num"></span><input class="check" type="checkbox" id="lab-3" aria-label="Done lab step 3"><div class="step__body"><p><strong>Tool 1, <code>lookup_customer</code>.</strong> A Google Sheets Tool under the Tool socket: operation Get Row(s), your CRM document and sheet, filter on the name column. For the filter value, click the small button that lets the model define the parameter, so Claude fills in the name it heard.</p><pre class="code">Description: Find a customer's plan, number of open tickets and account manager email.
+Use before any decision about a customer. Input: customer name (string, full or partial).</pre>
+          <details class="hint"><summary>The lookup returns nothing</summary><p>Test the tool on its own first with a name you know is in the sheet. Nine times out of ten the filter is on the wrong column, the sheet name has a stray space, or the header row was not read as a header. This is also the "tool itself" case from Day 4.</p></details></div></li>
+        <li><span class="step__num"></span><input class="check" type="checkbox" id="lab-4" aria-label="Done lab step 4"><div class="step__body"><p><strong>Tool 2, <code>send_alert</code>.</strong> A Gmail Tool, operation Send, signed in with the test account. Let the model define To, Subject and Message.</p><pre class="code">Description: Email the customer's account manager.
+Use only when the customer reports an outage or asks to cancel.
+Never use for general questions. Inputs: to (the manager's email from lookup_customer),
+subject (short), body (under 100 words).</pre></div></li>
+        <li><span class="step__num"></span><input class="check" type="checkbox" id="lab-5" aria-label="Done lab step 5"><div class="step__body"><p><strong>The standing orders.</strong> Paste your Day 4 draft, or the starting prompt below, into the agent's system message. Role, five rules, tone.</p>
+          <details class="hint"><summary>Copy a starting system prompt</summary><pre class="code">&lt;role&gt;You are the support triage agent for Stride Shoes, an online shoe shop.&lt;/role&gt;
+&lt;rules&gt;
+1. Always call lookup_customer before deciding anything about a customer. Ask for the name if you do not have it.
+2. Call send_alert only when the customer reports an outage or asks to cancel. Send it to the account manager from the CRM.
+3. Never call send_alert for a general question. Answer it instead.
+4. If the customer is not in the CRM, say so and ask for the name on the account.
+5. After acting, tell the customer exactly what you did and why.
+&lt;/rules&gt;
+&lt;style&gt;Short, calm, friendly. Under 80 words.&lt;/style&gt;</pre></details></div></li>
+        <li><span class="step__num"></span><input class="check" type="checkbox" id="lab-6" aria-label="Done lab step 6"><div class="step__body"><p><strong>Eight test messages.</strong> Send the eight messages in the table below, one chat each: three routine questions, three outage reports, two cancellation threats. After each, open the execution log and write down which tools were called, in what order, with what inputs, and what landed in the test inbox. When you are done the inbox must hold exactly five emails.</p><p class="step__notice"><strong>Notice:</strong> "correct" means the right tools, in the right order, with the right inputs. A good reply after a wrong tool call is still a fail.</p></div></li>
+        <li><span class="step__num"></span><input class="check" type="checkbox" id="lab-7" aria-label="Done lab step 7"><div class="step__body"><p><strong>Break it, then fix it.</strong> Change the <code>send_alert</code> description to "Send email" and send the three routine questions again. Count the misfires. Restore a precise description and send them a third time. Record both descriptions in the deliverable box.</p>
+          <details class="hint"><summary>It did not misfire</summary><p>Newer models resist the easy version. Make it harder: also remove rule 3 from the system prompt, or send a routine message with an anxious tone ("I really need this sorted today, what are your hours?"). If it still behaves after three tries, write that down; knowing what the agent reliably gets right is part of the test.</p></details></div></li>
+        <li><span class="step__num"></span><input class="check" type="checkbox" id="lab-8" aria-label="Done lab step 8"><div class="step__body"><p><strong>Hand-in.</strong> Export the workflow as JSON from the editor menu (Download), finish the test table, keep both descriptions, and write design-log entry 7 below.</p></div></li>
+      </ol>
+    </div>
+
+    <h3 style="margin:28px 0 8px">The eight-message test log</h3>
+    <p class="muted" style="margin-bottom:10px">Edit the messages if you like, record what the log showed, and mark each run. Everything saves in this browser.</p>
+    <div class="table-wrap w7-tbl">
+      <table class="tbl" id="testTable">
+        <thead><tr><th style="width:30px">#</th><th style="width:26%">Message you sent</th><th style="width:17%">Expected tools</th><th>Tools the agent called</th><th>Outcome</th><th style="width:110px">Correct?</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <div class="meter" style="margin-top:10px"><div class="meter__row"><span>Correct runs</span><b id="testScore">0 / 8</b></div><div class="progress progress--act"><i id="testBar"></i></div></div>
+
+    <div class="card dlog" style="margin-top:18px">
+      <h3>Design-log entry 7</h3>
+      <p class="muted">Back to the product you chose in Week 1. This week's entry is about the agent it would need: its tools, the decisions that stay with people, and what it has to remember.</p>
+      <label class="field"><span>The tools your product's agent needs: for each, a name, what it does and when to use it, in plain English</span><textarea data-note="dlog7-tools" id="dlogTools" placeholder="lookup_invoice: finds one supplier invoice by number; use before answering any question about an invoice. · draft_reconciliation_note: writes the note a person approves; use after the lookup. · …"></textarea></label>
+      <label class="field"><span>The decisions that stay with a person, and how the agent prepares each one</span><textarea data-note="dlog7-people" id="dlogPeople" placeholder="Approving any payment: the agent attaches the matched invoice, the PO and the difference, a person clicks approve. · Rejecting a supplier's invoice: the agent drafts the reason, a person sends it. · …"></textarea></label>
+      <label class="field"><span>The memory it needs between turns: what must survive within a conversation, and what must not</span><textarea data-note="dlog7-memory" id="dlogMemory" placeholder="Within a chat: the invoice number and supplier being discussed, the last lookup result. Across chats: nothing personal; the case record lives in the sheet, not in the agent."></textarea></label>
+    </div>
+
+    <div class="deliverable" style="margin-top:18px">
+      <h4>What you hand in</h4>
+      <p>Four things. The exported workflow JSON. The eight-message test log above, with every run marked. The two <code>send_alert</code> descriptions, before and after. And design-log entry 7.</p>
+      <div class="grid-2">
+        <label class="field"><span>send_alert description, before (the version that misfired)</span><textarea data-note="desc-before" id="descBefore" placeholder="Send email"></textarea></label>
+        <label class="field"><span>send_alert description, after (the version that fixed it)</span><textarea data-note="desc-after" id="descAfter" placeholder="Email the customer's account manager. Use only when…"></textarea></label>
+      </div>
+      <label class="field"><span>Notes for your learning log (saved in this browser)</span><textarea data-note="lab" id="labNote" placeholder="What I built · what broke first · the description change that mattered most · what I would never let this agent decide"></textarea></label>
+    </div>
+    </div>
+    <div class="part" id="quiz">
+    <div class="scene__head">
+      <span class="scene__kicker scene__kicker--quiz">Check yourself</span>
+      <h2>Eight quick questions</h2>
+      <p>Pick an answer to see why it is right or wrong. Score 80 percent or more to pass. Nobody is watching; the point is to find out what did not stick.</p>
+    </div>
+    <div id="quizBox"></div>
+    <h3 style="margin:28px 0 12px">Think it through</h3>
+    <div class="reflect">
+      <details><summary>Why does the agent need a memory node when the chat trigger already shows the whole conversation?</summary><p>The chat panel shows the history to you, not to the model. Every pass of the loop is a fresh request, and only what the memory node supplies is sent along with it. Without memory each message arrives alone, so the agent cannot connect "my name is Priya" to "what is my name?" three messages later. The window is also a budget: every kept message is tokens paid for on every pass.</p></details>
+      <details><summary>A tool description says "Does stuff with customers." What three problems will this cause?</summary><p>The agent cannot tell when to use it, so it calls it for the wrong requests and skips it for the right ones. It cannot tell what inputs to pass, so inputs arrive empty or invented. And it cannot tell the tool apart from the other customer tools, so when two could fit it picks between them at random. The fix is the four-part description: what, when, when not, and what each input means.</p></details>
+      <details><summary>Your agent emailed the account manager about opening hours. Which part of the system do you fix first?</summary><p>The send_alert description, because the model reads it at the moment it decides and the fix is one sentence: "Never use for general questions; answer them instead." Then add the same rule to the system prompt so the two layers agree. Only if it still misfires do you look further, at the memory window or at the tool's own inputs. Cheapest fix first, and re-run the eight tests after every change.</p></details>
+      <details><summary>Your agent can look customers up and send alerts. Name one decision you would refuse to automate, and say why in the MIT course's terms.</summary><p>Closing an account because a customer asked to cancel. It is irreversible, it has financial and emotional weight, and someone has to be accountable for it, which makes it general intelligence in Malone's sense, not the specialised kind a computer does better. The agent should still do the specialised part: confirm the request, look up the account, draft the summary, and hand the decision to a person. If the test table later shows the hand-offs are always approved unchanged, you can consider promoting the decision, which is the cyber-human learning loop the course describes.</p></details>
+    </div>
+    </div>
+    <div class="part" id="build">
+    <div class="scene__head">
+      <span class="scene__kicker scene__kicker--build">Practice</span>
+      <h2>Write a tool description that works</h2>
+      <p>The tool is <code>escalate_ticket</code>. Fill the four parts and the checker scores the description the way Claude would read it: what, when, when not, and the inputs. Five checks; get all five and it is ready to paste into a real tool.</p>
+    </div>
+    <div class="grid-2">
+      <div class="card w7-builder">
+        <h3>Tool: <code>escalate_ticket</code></h3>
+        <label class="field"><span>1. What it does</span><textarea id="bWhat" data-note="bld-what" placeholder="Raise a support ticket's priority and notify the on-call engineer."></textarea></label>
+        <label class="field"><span>2. When to use it</span><textarea id="bWhen" data-note="bld-when" placeholder="Use when a customer on the Pro or Enterprise plan reports that a paid feature is broken."></textarea></label>
+        <label class="field"><span>3. When not to use it</span><textarea id="bNot" data-note="bld-not" placeholder="Do not use for how-to questions, billing questions or Starter plan customers."></textarea></label>
+        <label class="field"><span>4. The inputs and what each means</span><textarea id="bInputs" data-note="bld-inputs" placeholder="Inputs: ticket_id (string, from the CRM), reason (one sentence), severity (low or high)."></textarea></label>
+        <div class="row"><button class="btn btn--primary" id="bCheck" type="button">Check my description</button><button class="btn" id="bModel" type="button">Show a model answer</button><button class="btn" id="bReset" type="button">Reset</button></div>
+      </div>
+      <div class="stack">
+        <div class="card">
+          <h4>Assembled description</h4>
+          <pre class="code" id="bOut" style="min-height:140px;white-space:pre-wrap">Your description appears here as you type.</pre>
+        </div>
+        <div class="card">
+          <h4>Checker <span class="chip" id="bScore">0 / 5</span></h4>
+          <div class="w7-lint" id="bLint"></div>
+          <p class="muted" style="margin-top:10px;font-size:.9rem" id="bAdvice">Fill the four boxes, then press Check.</p>
+        </div>
+      </div>
+    </div>
+    </div>
+    <div class="daynav"><button class="btn" type="button" data-go="4" id="goPrev5">← Day 4 · Rules and reading a run</button><a class="btn btn--primary" href="#wrapup">Record the week in the tracker ↓</a></div>
+  </section>
+
+  <section class="scene" id="wrapup">
+    <div class="wrapup">
+      <div class="stack">
+        <h2>Your progress this week</h2>
+        <div class="wrapup__stats">
+          <div class="stat"><b data-stat="checks">0/0</b><span>Steps ticked</span></div>
+          <div class="stat"><b data-stat="quiz">–</b><span>Best quiz score</span></div>
+        </div>
+        <div class="progress"><i data-stat-bar></i></div>
+        <p class="muted">Ticks, notes and scores live in this browser. Record the week in the course tracker so it counts everywhere you open the course.</p>
+      </div>
+      <a class="btn btn--primary" data-href="track">Record in the tracker</a>
+    </div>
+    <nav class="pager" aria-label="Previous and next week">
+      <a data-href="prev"><span>Previous</span><b>Week 6 · n8n Workflows</b></a>
+      <a data-href="next"><span>Next</span><b>Week 8 · Tool Calling</b></a>
+    </nav>
+    <footer class="site">
+      <div class="row" style="justify-content:space-between">
+        <div class="weeks" data-weeks aria-label="All weeks"></div>
+        <div class="row"><a data-href="hub">Course hub</a> · <a data-href="playground">Agent playground</a> · <a data-href="doc">Course doc</a></div>
+      </div>
+      <p>Build Your Own AI Agents · a 10-week course. Use made-up data in every lab. Week 7 draws on MIT xPRO's Designing and Building AI Products and Services, Module 6.</p>
+    </footer>
+  </section>
+</main>
+
+<script>window.COURSE_URLS={"hub": "index.html", "doc": "https://claude.ai/artifact/NNeZy8NSwNpWpGtkV2yNnU", "playground": "playground.html", "weeks": ["w1.html", "w2.html", "w3.html", "w4.html", "w5.html", "w6.html", "w7.html", "w8.html", "w9.html", "w10.html"]};</script>
+<script>
+/* Course runtime shared by every module page. Exposes window.Course. */
+(function(){
+  'use strict';
+  var Course = window.Course = {};
+  var PREFIX = 'aiagents:';
+  Course.urls = window.COURSE_URLS || {};
+  Course.motionOK = !(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  Course.cfg = {week: 0, title: ''};
+  Course.sample = null;
+  var listeners = [];
+
+  /* ---------- storage (per-browser convenience; never the record of truth) ---------- */
+  Course.store = {
+    key: function(k){ return PREFIX + (Course.cfg.week != null ? 'w' + Course.cfg.week + ':' : '') + k; },
+    get: function(k, d){ try { var v = localStorage.getItem(this.key(k)); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+    set: function(k, v){ try { localStorage.setItem(this.key(k), JSON.stringify(v)); } catch (e) {} Course.emit('store', k, v); }
+  };
+  Course.on = function(fn){ listeners.push(fn); };
+  Course.emit = function(){ var a = arguments; listeners.forEach(function(fn){ try { fn.apply(null, a); } catch (e) {} }); };
+
+  /* ---------- tiny DOM helper ---------- */
+  Course.el = function(tag, attrs, children){
+    var n = document.createElement(tag);
+    if (attrs) Object.keys(attrs).forEach(function(k){
+      var v = attrs[k];
+      if (k === 'class') n.className = v;
+      else if (k === 'html') n.innerHTML = v;
+      else if (k === 'text') n.textContent = v;
+      else if (k.slice(0,2) === 'on') n.addEventListener(k.slice(2), v);
+      else if (v === false || v == null) {}
+      else n.setAttribute(k, v === true ? '' : v);
+    });
+    (children || []).forEach(function(c){ if (c == null) return; n.appendChild(typeof c === 'string' ? document.createTextNode(c) : c); });
+    return n;
+  };
+  Course.$ = function(s, root){ return (root || document).querySelector(s); };
+  Course.$$ = function(s, root){ return Array.prototype.slice.call((root || document).querySelectorAll(s)); };
+  Course.esc = function(s){ return String(s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); };
+  Course.clamp = function(v, a, b){ return Math.max(a, Math.min(b, v)); };
+  Course.lerp = function(a, b, t){ return a + (b - a) * t; };
+  Course.ease = function(t){ return t < .5 ? 2*t*t : -1 + (4 - 2*t)*t; };
+  Course.fmt = function(n){ return Number(n).toLocaleString('en-US'); };
+  Course.cssVar = function(name){ return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); };
+
+  /* ---------- init: rail, weeks strip, checklists, footer ---------- */
+  Course.init = function(cfg){
+    Course.cfg = Object.assign({week: 0, title: '', sections: null, live: null}, cfg || {});
+    document.documentElement.classList.toggle('no-motion', !Course.motionOK);
+    renderWeeks();
+    wireRail();
+    Course.checklists();
+    Course.notes();
+    Course.summary();
+    Course.sampleReady();
+    Course.on(function(){ Course.summary(); updateRailDots(); });
+    updateRailDots();
+  };
+
+  function renderWeeks(){
+    var u = Course.urls, cur = Course.cfg.week;
+    Course.$$('.weeks[data-weeks]').forEach(function(box){
+      box.innerHTML = '';
+      for (var i = 1; i <= 10; i++) {
+        var href = (u.weeks && u.weeks[i-1]) || '#';
+        var a = Course.el('a', {href: href, title: 'Week ' + i, class: i === cur ? 'is-current' : ''}, [String(i)]);
+        if (i === cur) a.setAttribute('aria-current', 'page');
+        box.appendChild(a);
+      }
+    });
+    Course.$$('[data-href]').forEach(function(a){
+      var k = a.getAttribute('data-href'), href = '#';
+      if (k === 'hub') href = u.hub || '#';
+      else if (k === 'doc') href = u.doc || '#';
+      else if (k === 'playground') href = u.playground || '#';
+      else if (/^w\d+$/.test(k)) href = (u.weeks && u.weeks[parseInt(k.slice(1),10)-1]) || '#';
+      else if (k === 'prev') href = (cur > 1 && u.weeks && u.weeks[cur-2]) || u.hub || '#';
+      else if (k === 'next') href = (cur < 10 && u.weeks && u.weeks[cur]) || u.hub || '#';
+      else if (k === 'track') href = (u.hub || '#') + (u.hub ? '#w' + cur : '');
+      var hash = a.getAttribute('data-hash'); a.setAttribute('href', href + (hash && href !== '#' ? hash : ''));
+      if (href === '#') a.classList.add('is-unlinked');
+      if (/^https?:/.test(href)) { a.setAttribute('target', '_blank'); a.setAttribute('rel', 'noopener'); }
+    });
+  }
+
+  function wireRail(){
+    var pills = Course.$$('.rail__pill');
+    if (!pills.length) return;
+    var secs = pills.map(function(p){ var id = (p.getAttribute('href') || '').slice(1); return document.getElementById(id); }).filter(Boolean);
+    if ('IntersectionObserver' in window) {
+      var seen = Course.store.get('seen', {});
+      var io = new IntersectionObserver(function(es){
+        es.forEach(function(e){
+          if (e.isIntersecting) {
+            pills.forEach(function(p){ p.classList.toggle('is-active', p.getAttribute('href') === '#' + e.target.id); });
+            if (e.target.id === 'learn' && e.intersectionRatio > 0.05) { if (!seen.learn) { seen.learn = true; Course.store.set('seen', seen); } }
+          }
+        });
+      }, {rootMargin: '-40% 0px -50% 0px', threshold: [0, .05, .2]});
+      secs.forEach(function(s){ io.observe(s); });
+    }
+    pills.forEach(function(p){ p.addEventListener('click', function(ev){
+      var id = (p.getAttribute('href') || '').slice(1), t = document.getElementById(id);
+      if (t) { ev.preventDefault(); t.scrollIntoView({behavior: Course.motionOK ? 'smooth' : 'auto', block: 'start'}); }
+    }); });
+  }
+
+  function updateRailDots(){
+    var seen = Course.store.get('seen', {});
+    Course.$$('.rail__pill').forEach(function(p){
+      var id = (p.getAttribute('href') || '').slice(1), done = false;
+      if (id === 'learn') done = !!seen.learn;
+      else if (id === 'quiz') { var q = Course.store.get('quiz', null); done = !!(q && q.total && q.score / q.total >= 0.8); }
+      else {
+        var sec = document.getElementById(id);
+        if (sec) { var boxes = Course.$$('input.check', sec); done = boxes.length > 0 && boxes.every(function(b){ return b.checked; }); }
+      }
+      p.classList.toggle('is-done', done);
+    });
+  }
+
+  /* ---------- persisted checklists: any [data-persist] container with input.check[id] ---------- */
+  Course.checklists = function(){
+    Course.$$('[data-persist]').forEach(function(box){
+      var key = 'ck:' + box.getAttribute('data-persist');
+      var state = Course.store.get(key, {});
+      Course.$$('input.check', box).forEach(function(cb){
+        if (!cb.id) return;
+        if (state[cb.id]) cb.checked = true;
+        syncLi(cb);
+        cb.addEventListener('change', function(){
+          state[cb.id] = cb.checked; if (!cb.checked) delete state[cb.id];
+          Course.store.set(key, state); syncLi(cb);
+          var all = Course.$$('input.check', box);
+          if (cb.checked && all.length > 1 && all.every(function(b){ return b.checked; })) { Course.toast('All done here. Nice work.'); Course.confetti(); }
+        });
+      });
+      renderMeter(box);
+      box.addEventListener('change', function(){ renderMeter(box); });
+    });
+    function syncLi(cb){ var li = cb.closest('li'); if (li) li.classList.toggle('done', cb.checked); }
+    function renderMeter(box){
+      var m = Course.$('[data-meter-for="' + box.getAttribute('data-persist') + '"]'); if (!m) return;
+      var all = Course.$$('input.check', box), n = all.filter(function(b){ return b.checked; }).length;
+      var bar = Course.$('.progress>i', m), lab = Course.$('[data-meter-label]', m);
+      if (bar) bar.style.width = (all.length ? 100*n/all.length : 0) + '%';
+      if (lab) lab.textContent = n + ' / ' + all.length;
+    }
+  };
+
+  /* ---------- persisted notes: textarea[data-note] or input[data-note] ---------- */
+  Course.notes = function(){
+    Course.$$('[data-note]').forEach(function(t){
+      var key = 'note:' + t.getAttribute('data-note');
+      var v = Course.store.get(key, null); if (v != null) t.value = v;
+      var timer;
+      t.addEventListener('input', function(){ clearTimeout(timer); timer = setTimeout(function(){ Course.store.set(key, t.value); }, 350); });
+    });
+  };
+
+  /* ---------- quiz ---------- */
+  Course.quiz = function(sel, opts){
+    var root = typeof sel === 'string' ? Course.$(sel) : sel; if (!root) return;
+    var qs = opts.questions || [], key = opts.key || 'quiz', passPct = opts.passPct || 80;
+    var answers = {}, result;
+    root.classList.add('quiz'); root.innerHTML = '';
+    qs.forEach(function(q, i){
+      var card = Course.el('div', {class: 'q', id: 'q-' + i});
+      card.appendChild(Course.el('div', {class: 'q__num', text: 'Question ' + (i+1) + ' of ' + qs.length}));
+      card.appendChild(Course.el('div', {class: 'q__text', text: q.q}));
+      var opts_ = Course.el('div', {class: 'opts', role: 'group', 'aria-label': 'Answers for question ' + (i+1)});
+      q.options.forEach(function(o, j){
+        var b = Course.el('button', {class: 'opt', type: 'button', id: 'q' + i + 'o' + j}, [Course.el('span', {class: 'opt__key', text: 'ABCD'[j]}), Course.el('span', {text: o})]);
+        b.addEventListener('click', function(){ pick(i, j, card); });
+        opts_.appendChild(b);
+      });
+      card.appendChild(opts_);
+      root.appendChild(card);
+    });
+    result = Course.el('div', {class: 'quiz__result', hidden: true});
+    root.appendChild(result);
+    var best = Course.store.get(key, null);
+    if (best && best.total) { var note = Course.el('p', {class: 'muted', text: 'Your best score so far: ' + best.score + ' of ' + best.total + '.'}); root.insertBefore(note, root.firstChild); }
+
+    function pick(i, j, card){
+      if (answers[i] != null) return;
+      answers[i] = j;
+      var q = qs[i], ok = j === q.answer;
+      Course.$$('.opt', card).forEach(function(b, k){
+        b.disabled = true;
+        if (k === q.answer) b.classList.add('is-correct');
+        if (k === j && !ok) b.classList.add('is-wrong');
+      });
+      var why = Course.el('div', {class: 'q__why' + (ok ? '' : ' is-bad')});
+      why.innerHTML = '<b>' + (ok ? 'Correct.' : 'Not quite.') + '</b> ' + Course.esc(q.why);
+      card.appendChild(why);
+      if (Object.keys(answers).length === qs.length) finish();
+    }
+    function finish(){
+      var score = qs.reduce(function(s, q, i){ return s + (answers[i] === q.answer ? 1 : 0); }, 0);
+      var pct = Math.round(100 * score / qs.length), pass = pct >= passPct;
+      var prev = Course.store.get(key, null);
+      if (!prev || score > prev.score) Course.store.set(key, {score: score, total: qs.length, ts: Date.now()}); else Course.emit('store', key, prev);
+      result.hidden = false; result.innerHTML = '';
+      result.appendChild(Course.el('div', {class: 'quiz__score', html: score + '<small> / ' + qs.length + '</small>'}));
+      var msg = pass ? (opts.passText || 'You passed this week\'s check. The tracker counts a score of ' + passPct + '% or more.') : (opts.failText || 'Read the explanations above, then reset and try again. You need ' + passPct + '% to pass.');
+      var box = Course.el('div', {class: 'stack'});
+      box.appendChild(Course.el('p', {html: '<strong>' + (pass ? 'Passed' : 'Keep going') + '</strong> · ' + Course.esc(msg)}));
+      var reset = Course.el('button', {class: 'btn btn--small', type: 'button', text: 'Reset quiz'});
+      reset.addEventListener('click', function(){ Course.quiz(root, opts); root.scrollIntoView({behavior: Course.motionOK ? 'smooth' : 'auto', block: 'start'}); });
+      box.appendChild(reset);
+      result.appendChild(box);
+      result.scrollIntoView({behavior: Course.motionOK ? 'smooth' : 'auto', block: 'nearest'});
+      if (pass) Course.confetti();
+    }
+  };
+
+  /* ---------- summary footer ---------- */
+  Course.summary = function(){
+    var boxes = Course.$$('[data-persist]');
+    var all = 0, done = 0;
+    boxes.forEach(function(b){ Course.$$('input.check', b).forEach(function(c){ all++; if (c.checked) done++; }); });
+    var q = Course.store.get('quiz', null);
+    var set = function(name, v){ Course.$$('[data-stat="' + name + '"]').forEach(function(e){ e.textContent = v; }); };
+    set('checks', done + '/' + all);
+    set('checkspct', all ? Math.round(100*done/all) + '%' : '0%');
+    set('quiz', q && q.total ? q.score + '/' + q.total : '–');
+    var bar = Course.$('[data-stat-bar]'); if (bar) bar.style.width = (all ? 100*done/all : 0) + '%';
+  };
+
+  /* ---------- toast + confetti ---------- */
+  var toastEl, toastT;
+  Course.toast = function(msg){
+    if (!toastEl) { toastEl = Course.el('div', {class: 'toast', role: 'status'}); document.body.appendChild(toastEl); }
+    toastEl.textContent = msg; toastEl.classList.add('is-on');
+    clearTimeout(toastT); toastT = setTimeout(function(){ toastEl.classList.remove('is-on'); }, 2200);
+  };
+  Course.confetti = function(){
+    if (!Course.motionOK) return;
+    var c = Course.el('canvas', {class: 'confetti'}); document.body.appendChild(c);
+    var ctx = c.getContext('2d'), W = c.width = innerWidth, H = c.height = innerHeight;
+    var cols = [Course.cssVar('--think'), Course.cssVar('--act'), Course.cssVar('--observe'), Course.cssVar('--warn')];
+    var ps = []; for (var i = 0; i < 90; i++) ps.push({x: W/2 + (Math.random()-.5)*W*.4, y: H*.35, vx: (Math.random()-.5)*14, vy: -Math.random()*12-4, r: 4+Math.random()*5, c: cols[i%cols.length], a: Math.random()*6, s: (Math.random()-.5)*.3});
+    var t0 = performance.now();
+    (function f(now){
+      var t = (now - t0)/1000; ctx.clearRect(0,0,W,H);
+      ps.forEach(function(p){ p.vy += .35; p.x += p.vx; p.y += p.vy; p.vx *= .99; p.a += p.s; ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.a); ctx.fillStyle = p.c; ctx.globalAlpha = Math.max(0, 1 - t/1.6); ctx.fillRect(-p.r/2,-p.r/2,p.r,p.r*.6); ctx.restore(); });
+      if (t < 1.7) requestAnimationFrame(f); else c.remove();
+    })(t0);
+  };
+
+  /* ---------- canvas loop with DPR + visibility handling ---------- */
+  Course.canvas = function(canvas, draw, opts){
+    opts = opts || {};
+    var ctx = canvas.getContext('2d'), w = 0, h = 0, dpr = 1, running = false, visible = true, last = 0, raf = 0, t0 = performance.now(), paused = false;
+    function resize(){
+      var r = canvas.getBoundingClientRect(); dpr = Math.min(2, window.devicePixelRatio || 1);
+      w = Math.max(1, r.width); h = Math.max(1, r.height);
+      canvas.width = Math.round(w*dpr); canvas.height = Math.round(h*dpr); ctx.setTransform(dpr,0,0,dpr,0,0);
+      api.once();
+    }
+    function frame(now){
+      var dt = Math.min(.05, (now - last)/1000 || 0); last = now;
+      try { draw(ctx, w, h, (now - t0)/1000, dt); } catch (e) { running = false; console.error(e); return; }
+      if (running && visible && !document.hidden && !paused) raf = requestAnimationFrame(frame); else running = false;
+    }
+    var api = {
+      start: function(){ paused = false; if (running || !Course.motionOK && !opts.force) { if (!running) api.once(); return; } running = true; last = performance.now(); raf = requestAnimationFrame(frame); },
+      stop: function(){ running = false; paused = true; cancelAnimationFrame(raf); },
+      once: function(){ try { draw(ctx, w, h, (performance.now()-t0)/1000, 0); } catch (e) { console.error(e); } },
+      resetTime: function(){ t0 = performance.now(); },
+      get w(){ return w; }, get h(){ return h; }, get ctx(){ return ctx; }, get running(){ return running; }
+    };
+    api.resize = resize; canvas.__course = api;   /* lets a page re-measure a canvas it has just un-hidden */
+    if ('ResizeObserver' in window) new ResizeObserver(resize).observe(canvas); else window.addEventListener('resize', resize);
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver(function(es){ visible = es[0].isIntersecting; if (visible && opts.auto !== false && !paused) api.start(); }).observe(canvas);
+    }
+    document.addEventListener('visibilitychange', function(){ if (!document.hidden && visible && opts.auto !== false && !paused) api.start(); });
+    resize();
+    if (opts.auto !== false) api.start();
+    return api;
+  };
+  Course.roundRect = function(ctx, x, y, w, h, r){ if (!(w > 0) || !(h > 0)) { ctx.beginPath(); return; } r = Math.max(0, Math.min(r, w/2, h/2)); ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); };
+
+  /* ---------- typewriter ---------- */
+  Course.typewrite = function(el, text, cps){
+    cps = cps || 40; el.textContent = '';
+    if (!Course.motionOK) { el.textContent = text; return Promise.resolve(); }
+    return new Promise(function(res){ var i = 0; (function step(){ el.textContent = text.slice(0, ++i); if (i < text.length) setTimeout(step, 1000/cps); else res(); })(); });
+  };
+
+  /* ---------- simple tabs: [data-tabs] > [role=tablist] button[data-tab] + [data-panel] ---------- */
+  Course.tabs = function(){
+    Course.$$('[data-tabs]').forEach(function(box){
+      var btns = Course.$$('[data-tab]', box), panels = Course.$$('[data-panel]', box);
+      function show(id){ btns.forEach(function(b){ b.classList.toggle('is-on', b.getAttribute('data-tab') === id); b.setAttribute('aria-selected', b.getAttribute('data-tab') === id); }); panels.forEach(function(p){ p.hidden = p.getAttribute('data-panel') !== id; }); }
+      btns.forEach(function(b){ b.addEventListener('click', function(){ show(b.getAttribute('data-tab')); }); });
+      var first = btns.filter(function(b){ return b.classList.contains('is-on'); })[0] || btns[0]; if (first) show(first.getAttribute('data-tab'));
+    });
+  };
+
+  /* ---------- day tabs: #dayTabs .dayt buttons, section#dayN panels, rail pills #dayN, [data-go] buttons ---------- */
+  Course.days = function(){
+    var $ = Course.$, $$ = Course.$$;
+    var DAYS = $$('section[id^="day"][role="tabpanel"]').length; if (!DAYS) return;
+    var panels = {}, tabs = {}, pills = {}, cur = 0;
+    for (var i = 1; i <= DAYS; i++) { panels[i] = $('#day' + i); tabs[i] = $('#dayt' + i); pills[i] = $('.rail__pill[href="#day' + i + '"]'); }
+    function show(n, scroll){
+      n = Course.clamp(n, 1, DAYS);
+      if (n !== cur) {
+        cur = n;
+        for (var i = 1; i <= DAYS; i++) { panels[i].hidden = i !== n; if (tabs[i]) { tabs[i].classList.toggle('is-on', i === n); tabs[i].setAttribute('aria-selected', i === n ? 'true' : 'false'); } if (pills[i]) pills[i].classList.toggle('is-active', i === n); }
+        Course.store.set('day', n);
+        setTimeout(function(){ $$('canvas', panels[n]).forEach(function(c){ if (c.__course) c.__course.resize(); }); }, 0);
+      }
+      if (scroll) { var strip = $('#dayTabs'); (strip || panels[n]).scrollIntoView({behavior: Course.motionOK ? 'smooth' : 'auto', block: 'start'}); }
+    }
+    function dots(){ for (var i = 1; i <= DAYS; i++) { if (!tabs[i]) continue; var cks = $$('input.check', panels[i]); tabs[i].classList.toggle('is-done', cks.length > 0 && cks.every(function(c){ return c.checked; })); } }
+    for (var i = 1; i <= DAYS; i++) (function(i){
+      if (tabs[i]) tabs[i].addEventListener('click', function(){ show(i, true); });
+      if (pills[i]) pills[i].addEventListener('click', function(ev){ ev.preventDefault(); show(i, true); });
+    })(i);
+    $$('[data-go]').forEach(function(b){ b.addEventListener('click', function(){ show(parseInt(b.getAttribute('data-go'), 10), true); }); });
+    document.addEventListener('change', function(e){ if (e.target && e.target.classList && e.target.classList.contains('check')) dots(); });
+    function fromHash(){ var m = /^#(?:day([1-9])|(lab|quiz|build))$/.exec(location.hash || ''); if (!m) return 0; return m[1] ? parseInt(m[1], 10) : DAYS; }
+    function innerTarget(){ return /^#(lab|quiz|build)$/.test(location.hash || '') ? $(location.hash) : null; }
+    show(fromHash() || Course.store.get('day', 1), false);
+    var t0 = innerTarget(); if (t0) setTimeout(function(){ t0.scrollIntoView({block: 'start'}); }, 60);
+    window.addEventListener('hashchange', function(){ var n = fromHash(); if (!n) return; show(n, !innerTarget()); var t = innerTarget(); if (t) setTimeout(function(){ t.scrollIntoView({behavior: Course.motionOK ? 'smooth' : 'auto', block: 'start'}); }, 80); });
+    dots();
+    Course.showDay = show;
+  };
+
+  /* ---------- live Claude (sample capability) ---------- */
+  var sampleP = null;
+  /* Live Claude is opt-in: a page passes Course.init({live: 'sample'}) when it declares that capability. Other pages never probe it. */
+  Course.sampleReady = function(){
+    if (!sampleP) {
+      var cap = Course.cfg.live;
+      sampleP = (cap && window.claude && typeof window.claude.use === 'function') ? window.claude.use(cap).catch(function(){ return null; }) : Promise.resolve(null);
+      sampleP.then(function(s){
+        Course.sample = s;
+        document.documentElement.classList.toggle('has-live', !!s);
+        Course.$$('[data-live-btn]').forEach(function(b){ b.disabled = !s; if (b.getAttribute('data-live-label')) b.textContent = b.getAttribute('data-live-label'); });
+        Course.$$('[data-live-missing]').forEach(function(el){ el.hidden = !!s; });
+        Course.$$('[data-live-only]').forEach(function(el){ el.hidden = !s; });
+      });
+    }
+    return sampleP;
+  };
+  Course.friendly = function(code){
+    return ({
+      unavailable: 'Live Claude is not available in this view. Open the page inside Claude (claude.ai or the Claude app) to run it.',
+      not_granted: 'You did not allow this page to use Claude. Allow it from the page menu, then try again.',
+      rate_limited: 'Claude is busy or you reached a usage limit. Wait a minute, then try again.',
+      cancelled: 'Stopped.',
+      refused: 'Claude declined that request. Change the wording and try again.',
+      prompt_too_large: 'That is too much text. Shorten it and try again.',
+      invalid_json: 'Claude did not answer in the expected shape. Try again.',
+      tools_unavailable: 'This view cannot run page tools yet. Open the page inside Claude on the web or in the app.',
+      sampling_disabled: 'Claude is not available for this account.',
+      empty_completion: 'Claude returned nothing. Simplify the request and try again.',
+      session_expired: 'Your Claude session expired. Sign in again, then retry.'
+    })[code] || 'Something went wrong talking to Claude. Try again in a moment.';
+  };
+  /* Course.ask(input, options) -> Promise<{text, truncated}>; rejects {code, message, friendly, text?} */
+  Course.ask = function(input, options){
+    return Course.sampleReady().then(function(s){
+      if (!s) return Promise.reject({code: 'unavailable', message: 'sample unavailable', friendly: Course.friendly('unavailable')});
+      return s(input, options || {}).catch(function(e){ e = e || {}; e.friendly = Course.friendly(e.code); throw e; });
+    });
+  };
+  Course.askJSON = function(input, options){
+    return Course.sampleReady().then(function(s){
+      if (!s) return Promise.reject({code: 'unavailable', message: 'sample unavailable', friendly: Course.friendly('unavailable')});
+      return s.json(input, options || {}).catch(function(e){ e = e || {}; e.friendly = Course.friendly(e.code); throw e; });
+    });
+  };
+  /* Convenience: run a prompt into an output element with busy state, streaming and a stop button. */
+  Course.runLive = function(cfg){
+    var out = cfg.out, btn = cfg.button, stop = cfg.stop, ctl = new AbortController();
+    if (stop) { stop.hidden = false; stop.onclick = function(){ ctl.abort(); }; }
+    if (btn) btn.disabled = true;
+    out.textContent = 'Thinking…'; out.classList.add('is-busy');
+    return Course.ask(cfg.input, Object.assign({signal: ctl.signal, onText: function(u){ out.classList.remove('is-busy'); out.textContent = u.text; }}, cfg.options || {}))
+      .then(function(r){ out.classList.remove('is-busy'); out.textContent = r.text + (r.truncated ? '\n\n[cut short: ask for less at a time]' : ''); return r; })
+      .catch(function(e){ out.classList.remove('is-busy'); out.textContent = (e.text ? e.text + '\n\n' : '') + e.friendly; if (e.code === 'not_granted' || e.code === 'sampling_disabled' || e.code === 'unavailable') Course.$$('[data-live-btn]').forEach(function(b){ b.disabled = true; }); throw e; })
+      .finally(function(){ if (btn) btn.disabled = !Course.sample; if (stop) stop.hidden = true; });
+  };
+
+  document.addEventListener('DOMContentLoaded', function(){ Course.tabs(); });
+})();
+
+</script>
+<script>
+/* The eight-message test log is built before Course.init so its data-note fields are restored and saved like every other note. */
+(function buildTestTable(){
+  var ROWS = [
+    {m: 'Hi, this is Marcus Lee. What are your opening hours?', e: 'lookup_customer'},
+    {m: 'Noah Wright here. How do I reset my password?', e: 'lookup_customer'},
+    {m: 'Lucia Romero. Is the Starter plan billed monthly?', e: 'lookup_customer'},
+    {m: 'This is Priya Nair. Our website has been down since 9am.', e: 'lookup_customer → send_alert'},
+    {m: 'Fatima Said. Nobody can log in, the whole team is blocked.', e: 'lookup_customer → send_alert'},
+    {m: 'Sam Okafor. The checkout page shows a 500 error for every customer.', e: 'lookup_customer → send_alert'},
+    {m: 'Aisha Khan. I want to cancel our Enterprise subscription.', e: 'lookup_customer → send_alert'},
+    {m: 'Elena Petrova. If this is not fixed today we are leaving.', e: 'lookup_customer → send_alert'}
+  ];
+  var tb = document.querySelector('#testTable tbody'); if (!tb) return;
+  ROWS.forEach(function(r, k){
+    var tr = document.createElement('tr');
+    tr.innerHTML = '<td class="num">' + (k + 1) + '</td>' +
+      '<td><input type="text" id="tm' + k + '" data-note="test-msg-' + k + '" value="' + r.m.replace(/"/g, '&quot;') + '" aria-label="Message ' + (k + 1) + '"></td>' +
+      '<td class="mono" style="font-size:.8rem">' + r.e + '</td>' +
+      '<td><input type="text" id="tc' + k + '" data-note="test-called-' + k + '" placeholder="from the execution log" aria-label="Tools called for message ' + (k + 1) + '"></td>' +
+      '<td><input type="text" id="to' + k + '" data-note="test-outcome-' + k + '" placeholder="email sent? reply ok?" aria-label="Outcome for message ' + (k + 1) + '"></td>' +
+      '<td><div class="seg" role="group" aria-label="Correct for message ' + (k + 1) + '"><button type="button" id="ty' + k + '" data-k="' + k + '" data-v="1">Yes</button><button type="button" id="tn' + k + '" data-k="' + k + '" data-v="0">No</button></div></td>';
+    tb.appendChild(tr);
+  });
+})();
+
+Course.init({week: 7, title: 'Your First Agent'});
+var $ = Course.$, $$ = Course.$$, el = Course.el;
+var MONO = '"JetBrains Mono", monospace', SANS = 'Figtree, sans-serif', DISPLAY = '"Bricolage Grotesque", sans-serif';
+var STAGE_FG = '#EAF0FF', STAGE_MUTED = '#8E9BBE';
+function cv(name, fallback){ return Course.cssVar(name) || fallback; }
+function stationColor(k){ return k === 'think' ? cv('--think', '#8F7BFF') : k === 'act' ? cv('--act', '#FF7A58') : cv('--observe', '#2CD2B2'); }
+function wrapText(ctx, text, x, y, maxW, lh, maxLines){
+  var words = String(text).split(' '), line = '', lines = 0;
+  for (var i = 0; i < words.length; i++) {
+    var test = line + words[i] + ' ';
+    if (ctx.measureText(test).width > maxW && line) {
+      ctx.fillText(line, x, y); y += lh; line = words[i] + ' ';
+      if (maxLines && ++lines >= maxLines - 1) { var rest = words.slice(i).join(' '); while (ctx.measureText(rest + '…').width > maxW && rest.length) rest = rest.slice(0, -1); if (rest !== words.slice(i).join(' ')) rest += '…'; ctx.fillText(rest, x, y); return y; }
+    } else line = test;
+  }
+  ctx.fillText(line, x, y); return y;
+}
+
+/* ---------- HERO: the agent loop handling an outage report ---------- */
+var HT = [
+  {kind: 'goal', dur: 1.4, text: 'Goal: "This is Priya Nair. The site is down. Help."'},
+  {kind: 'think', dur: 1.3, text: 'Look up the customer first.'},
+  {kind: 'move', from: 'think', to: 'act', dur: .6},
+  {kind: 'act', dur: 1.4, text: 'lookup_customer', json: '{"name": "Priya Nair"}'},
+  {kind: 'move', from: 'act', to: 'observe', dur: .6},
+  {kind: 'observe', dur: 1.4, text: 'tool result', json: '{"plan": "Pro", "open_tickets": 2,\n "account_manager": "ops@stride.example"}'},
+  {kind: 'move', from: 'observe', to: 'think', dur: .6},
+  {kind: 'think', dur: 1.3, text: 'Outage on a Pro plan. Alert the account manager.'},
+  {kind: 'move', from: 'think', to: 'act', dur: .6},
+  {kind: 'act', dur: 1.4, text: 'send_alert', json: '{"to": "ops@stride.example",\n "subject": "Outage reported by Priya Nair"}'},
+  {kind: 'move', from: 'act', to: 'observe', dur: .6},
+  {kind: 'observe', dur: 1.2, text: 'tool result', json: '{"sent": true}'},
+  {kind: 'move', from: 'observe', to: 'think', dur: .6},
+  {kind: 'think', dur: 1.2, text: 'Done. Tell the customer what happened.'},
+  {kind: 'final', dur: 2.8, text: '"I have alerted your account manager and logged the outage. You will hear back within the hour."'},
+  {kind: 'pause', dur: 1.2}
+];
+var HERO_TOTAL = HT.reduce(function(s, x){ return s + x.dur; }, 0);
+var ANG = {think: -Math.PI / 2, act: Math.PI / 6, observe: 5 * Math.PI / 6};
+var heroPassShown = -1;
+function lerpAngle(a, b, t){ var d = b - a; while (d < 0) d += Math.PI * 2; return a + d * t; }
+function heroDraw(ctx, w, h, t){
+  if (w < 60 || h < 60) return;   /* hidden or not laid out yet */
+  if (!Course.motionOK) t = 1.4 + 1.3 + 0.6 + 0.7;   /* a still of the first tool call */
+  var tm = t % HERO_TOTAL, acc = 0, cur = HT[0], prog = 0, pass = 0, i;
+  for (i = 0; i < HT.length; i++) { if (tm < acc + HT[i].dur) { cur = HT[i]; prog = (tm - acc) / HT[i].dur; break; } acc += HT[i].dur; }
+  acc = 0; for (i = 0; i < HT.length; i++) { if (acc > tm) break; if (HT[i].kind === 'think') pass++; acc += HT[i].dur; }
+  pass = Math.max(1, pass);
+  if (pass !== heroPassShown) { heroPassShown = pass; $('#heroPass').textContent = 'pass ' + pass; }
+  ctx.clearRect(0, 0, w, h);
+  var small = w < 440, cx = w * 0.5, cy = h * 0.4, R = Math.min(w, h) * 0.26;
+  ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI * 2); ctx.strokeStyle = 'rgba(142,155,190,.35)'; ctx.lineWidth = 2; ctx.stroke();
+  var activeK = null, pulseA = ANG.think;
+  if (cur.kind === 'think' || cur.kind === 'act' || cur.kind === 'observe') { activeK = cur.kind; pulseA = ANG[cur.kind]; }
+  else if (cur.kind === 'move') pulseA = lerpAngle(ANG[cur.from], ANG[cur.to], Course.ease(prog));
+  else if (cur.kind === 'final') activeK = 'think';
+  if (cur.kind === 'move') { ctx.beginPath(); ctx.arc(cx, cy, R, ANG[cur.from], pulseA); ctx.strokeStyle = stationColor(cur.to); ctx.lineWidth = 4; ctx.lineCap = 'round'; ctx.stroke(); }
+  ['think', 'act', 'observe'].forEach(function(k){
+    var a = ANG[k], x = cx + Math.cos(a) * R, y = cy + Math.sin(a) * R, col = stationColor(k), on = activeK === k;
+    var r = Math.min(w, h) * 0.085 * (on && Course.motionOK ? 1 + 0.08 * Math.sin(t * 6) : 1);
+    if (on) { var g = ctx.createRadialGradient(x, y, r * 0.6, x, y, r * 2.2); g.addColorStop(0, col + 'aa'); g.addColorStop(1, col + '00'); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, r * 2.2, 0, Math.PI * 2); ctx.fill(); }
+    ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fillStyle = on ? col : '#141D36'; ctx.fill(); ctx.strokeStyle = col; ctx.lineWidth = on ? 3 : 2; ctx.stroke();
+    ctx.fillStyle = on ? '#fff' : col; ctx.font = '800 ' + Math.round(r * 0.5) + 'px ' + DISPLAY; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(k === 'think' ? 'Think' : k === 'act' ? 'Act' : 'Observe', x, y);
+  });
+  if (cur.kind === 'move') { var px = cx + Math.cos(pulseA) * R, py = cy + Math.sin(pulseA) * R; ctx.beginPath(); ctx.arc(px, py, 7, 0, Math.PI * 2); ctx.fillStyle = '#fff'; ctx.fill(); }
+  ctx.fillStyle = STAGE_MUTED; ctx.font = '600 12px ' + SANS; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('pass', cx, cy - R * 0.22);
+  ctx.fillStyle = STAGE_FG; ctx.font = '800 ' + Math.round(R * 0.5) + 'px ' + DISPLAY; ctx.fillText(String(pass), cx, cy + R * 0.12);
+  /* the card: what is happening right now */
+  var pad = small ? 10 : 14, cardH = Math.min(h * 0.27, 100), cardY = h - cardH - pad, cardX = pad, cardW = w - pad * 2;
+  var col2 = cur.kind === 'think' || cur.kind === 'final' ? stationColor('think') : cur.kind === 'act' ? stationColor('act') : cur.kind === 'observe' ? stationColor('observe') : cur.kind === 'move' ? stationColor(cur.to) : STAGE_FG;
+  ctx.globalAlpha = cur.kind === 'pause' ? 0.4 : 1;
+  Course.roundRect(ctx, cardX, cardY, cardW, cardH, 12); ctx.fillStyle = 'rgba(7,11,22,.85)'; ctx.fill(); ctx.strokeStyle = col2; ctx.lineWidth = 1.5; ctx.stroke();
+  ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+  var label = cur.kind === 'goal' ? 'GOAL' : cur.kind === 'think' ? 'THINK' : cur.kind === 'act' ? 'ACT · tool call' : cur.kind === 'observe' ? 'OBSERVE · result' : cur.kind === 'final' ? 'FINAL ANSWER' : cur.kind === 'move' ? (cur.to === 'act' ? 'ACT · tool call' : cur.to === 'observe' ? 'OBSERVE · result' : 'THINK') : 'LOOP ENDS · replaying';
+  ctx.fillStyle = col2; ctx.font = '700 11px ' + MONO; ctx.fillText(label, cardX + 14, cardY + 20);
+  var txt = cur.kind === 'move' || cur.kind === 'pause' ? '' : (cur.text || '');
+  var shown = cur.kind === 'final' ? txt.slice(0, Math.floor(txt.length * Math.min(1, prog * 1.6))) : txt;
+  ctx.fillStyle = STAGE_FG; ctx.font = '600 13px ' + SANS;
+  if (shown) wrapText(ctx, shown, cardX + 14, cardY + 40, cardW - 28, 16, 2);
+  if (cur.json) { ctx.fillStyle = '#9AA8C9'; ctx.font = '12px ' + MONO; cur.json.split('\n').forEach(function(line, k){ var ly = cardY + 58 + k * 15; if (ly < cardY + cardH - 4) ctx.fillText(line, cardX + 14, ly); }); }
+  ctx.globalAlpha = 1;
+}
+var hero = Course.canvas(document.getElementById('heroCanvas'), heroDraw, {auto: true});
+document.getElementById('heroReplay').addEventListener('click', function(){ hero.resetTime(); hero.start(); });
+
+/* ---------- LEARN 1: the loop simulator ---------- */
+(function(){
+  var steps = [
+    {phase: 'goal', chip: 'Goal', text: 'Check my three open tickets and email me about the urgent one.'},
+    {phase: 'think', chip: 'Think · pass 1', text: 'I need the list of tickets first.'},
+    {phase: 'act', chip: 'Act', text: 'list_tickets', json: '{"owner": "me", "status": "open"}'},
+    {phase: 'observe', chip: 'Observe', text: '3 tickets', json: '[{"id": 101, "title": "Login fails for one user"},\n {"id": 102, "title": "Typo on invoice"},\n {"id": 103, "title": "Site down for all users"}]'},
+    {phase: 'think', chip: 'Think · pass 2', text: 'Three tickets. 102 is cosmetic. Open 101 and 103 to compare.'},
+    {phase: 'act', chip: 'Act', text: 'get_ticket', json: '{"id": 101}'},
+    {phase: 'observe', chip: 'Observe', text: 'priority: normal', json: '{"id": 101, "priority": "normal", "affected": "1 user"}'},
+    {phase: 'think', chip: 'Think · pass 3', text: 'One user, normal priority. Now 103.'},
+    {phase: 'act', chip: 'Act', text: 'get_ticket', json: '{"id": 103}'},
+    {phase: 'observe', chip: 'Observe', text: 'priority: urgent', json: '{"id": 103, "priority": "urgent", "affected": "all users"}'},
+    {phase: 'think', chip: 'Think · pass 4', text: 'Ticket 103 is the urgent one. Send the email.'},
+    {phase: 'act', chip: 'Act', text: 'send_email', json: '{"to": "me", "subject": "Urgent: ticket 103",\n "body": "Site down for all users since 09:12."}'},
+    {phase: 'observe', chip: 'Observe', text: 'sent', json: '{"sent": true}'},
+    {phase: 'final', chip: 'Final answer · pass 5', text: 'Ticket 103 (site down for all users) is the urgent one and I have emailed you the details. Tickets 101 and 102 are normal priority.'}
+  ];
+  var i = 0, timer = null, tr = $('#simTranscript'), ring = $('#simRing');
+  function render(){
+    tr.innerHTML = ''; var pass = 0;
+    for (var k = 0; k < i; k++) {
+      var s = steps[k]; if (s.phase === 'think' || s.phase === 'final') pass++;
+      var m = el('div', {class: 'w7-msg w7-msg--' + (s.phase === 'goal' ? 'final' : s.phase)});
+      m.appendChild(el('span', {class: 'chip chip--' + (s.phase === 'act' ? 'act' : s.phase === 'observe' ? 'observe' : 'think'), text: s.chip}));
+      m.appendChild(el('div', {text: s.text}));
+      if (s.json) m.appendChild(el('code', {text: s.json}));
+      tr.appendChild(m);
+    }
+    tr.scrollTop = tr.scrollHeight;
+    var curPhase = i > 0 ? steps[i - 1].phase : null;
+    $$('.st', ring).forEach(function(g){ g.classList.toggle('is-on', g.getAttribute('data-st') === (curPhase === 'final' ? 'think' : curPhase)); });
+    $('#simPass').textContent = String(pass);
+    $('#simStep').textContent = 'Step ' + i + ' of ' + steps.length + (i === steps.length ? ' · loop ended' : '');
+    $('#simNext').disabled = i >= steps.length; $('#simPrev').disabled = i <= 0;
+  }
+  function next(){ if (i < steps.length) { i++; render(); } if (i >= steps.length) stopAuto(); }
+  function stopAuto(){ if (timer) { clearInterval(timer); timer = null; $('#simAuto').textContent = 'Auto-play'; } }
+  $('#simNext').addEventListener('click', function(){ stopAuto(); next(); });
+  $('#simPrev').addEventListener('click', function(){ stopAuto(); if (i > 0) { i--; render(); } });
+  $('#simAuto').addEventListener('click', function(){ if (timer) return stopAuto(); if (i >= steps.length) { i = 0; render(); } $('#simAuto').textContent = 'Stop'; timer = setInterval(next, Course.motionOK ? 1100 : 1600); });
+  i = 1; render();
+})();
+
+/* ---------- LEARN 2: the AI Agent node ---------- */
+(function(){
+  var sockets = {model: $('#sockModel'), memory: $('#sockMemory'), tools: $('#sockTools')};
+  var filled = {model: 'Anthropic Chat Model', memory: null, tools: []};
+  var MODEL_NOTES = {sonnet: 'The everyday choice: quick, and reliable at picking tools. Names change; pick the current Sonnet-class model when you build.', haiku: 'Cheapest and fastest. Fine for high-volume routing, weaker on multi-step reasoning.', opus: 'The strongest judgement, at several times the price. Use it where a wrong call is expensive.'};
+  function readout(){
+    var tools = filled.tools;
+    if (!filled.model) return 'No chat model: the node cannot run at all. Plug in the Anthropic Chat Model.';
+    if (!filled.memory && !tools.length) return 'It can chat, one message at a time. It forgets each turn, and it can neither look anything up nor send anything.';
+    if (!tools.length) return 'It follows a conversation but can only talk. Ask it to multiply two big numbers and it will guess.';
+    if (!filled.memory) return 'It can act: ' + tools.join(', ') + '. But it forgets the previous turn, so "send it to the same manager as before" will fail.';
+    return 'A working agent. It remembers the last N messages and can call ' + tools.join(', ') + '. Each call is a decision Claude makes from that tool\'s description.';
+  }
+  function paint(){
+    Object.keys(sockets).forEach(function(k){
+      var s = sockets[k], h5 = s.querySelector('h5').outerHTML; s.innerHTML = h5;
+      var items = k === 'tools' ? filled.tools : (filled[k] ? [filled[k]] : []);
+      if (!items.length) { s.appendChild(el('span', {class: 'muted', text: 'empty'})); s.classList.remove('is-filled'); return; }
+      s.classList.add('is-filled');
+      items.forEach(function(name){
+        var sel = $('#modelPick'), label = k === 'model' ? name + ' · ' + sel.options[sel.selectedIndex].text : name;
+        var p = el('span', {class: 'w7-plug w7-plug--' + (k === 'tools' ? 'tool' : k)}, [el('span', {text: label})]);
+        var x = el('button', {type: 'button', id: 'unplug-' + k + '-' + name.toLowerCase().replace(/[^a-z0-9]+/g, '-'), 'aria-label': 'Unplug ' + name, text: '×'});
+        x.addEventListener('click', function(){ if (k === 'tools') filled.tools = filled.tools.filter(function(n){ return n !== name; }); else filled[k] = null; paint(); });
+        p.appendChild(x); s.appendChild(p);
+      });
+    });
+    $$('#plugBank button').forEach(function(b){ var k = b.getAttribute('data-plug'), n = b.getAttribute('data-name'); b.disabled = k === 'tool' ? filled.tools.indexOf(n) >= 0 : filled[k] === n; });
+    $('#nodeReadout').textContent = readout();
+  }
+  $$('#plugBank button').forEach(function(b){ b.addEventListener('click', function(){ var k = b.getAttribute('data-plug'), n = b.getAttribute('data-name'); if (k === 'tool') filled.tools.push(n); else filled[k] = n; paint(); }); });
+  $('#modelPick').addEventListener('change', function(){ $('#modelNote').textContent = MODEL_NOTES[this.value]; paint(); });
+  $('#modelNote').textContent = MODEL_NOTES.sonnet;
+  paint();
+})();
+
+/* ---------- LEARN 3: the memory window ---------- */
+(function(){
+  var BASE = [{me: true, t: 'Hi, I am Priya Nair from Meridian Logistics.'}, {me: false, t: 'Hello Priya. How can I help?'}];
+  var POOL = [['Is the Pro plan billed monthly?', 'Yes. Pro is billed monthly.'], ['Can I pause it over the summer?', 'You can pause for up to 60 days.'], ['Do you ship to Ireland?', 'Yes, in three to five working days.'], ['Can I add a second user?', 'Yes, from the Account page under Users.'], ['Can the invoice be in euros?', 'Yes. Choose EUR under Billing.']];
+  var turns = 2, win = $('#memWin'), chat = $('#memChat');
+  function paint(){
+    var n = parseInt(win.value, 10); $('#memWinVal').textContent = String(n);
+    var msgs = BASE.slice();
+    POOL.slice(0, turns).forEach(function(p){ msgs.push({me: true, t: p[0]}); msgs.push({me: false, t: p[1]}); });
+    msgs.push({me: true, t: 'What is my name?'});
+    var seenFrom = Math.max(0, msgs.length - n), remembers = seenFrom === 0;
+    chat.innerHTML = '';
+    msgs.forEach(function(m, k){ chat.appendChild(el('div', {class: 'b' + (m.me ? ' me' : '') + (k < seenFrom ? ' faded' : ''), text: m.t})); });
+    chat.appendChild(el('div', {class: 'b reply', html: remembers ? '<b>Your name is Priya Nair.</b>' : '<b>I do not have your name in this conversation.</b> <span class="muted">Could you tell me? (the introduction is outside the window)</span>'}));
+    var seen = Math.min(n, msgs.length);
+    $('#memSeen').textContent = String(seen); $('#memTotal').textContent = String(msgs.length); $('#memTokens').textContent = Course.fmt(seen * 14 + 180);
+    var chip = $('#memVerdict'); chip.textContent = remembers ? 'remembers the name' : 'the name fell out of the window'; chip.className = 'row chip ' + (remembers ? 'chip--ok' : 'chip--bad');
+    $('#memAdd').disabled = turns >= POOL.length;
+  }
+  win.addEventListener('input', paint);
+  $('#memAdd').addEventListener('click', function(){ if (turns < POOL.length) { turns++; paint(); } });
+  $('#memReset').addEventListener('click', function(){ turns = 2; win.value = 10; paint(); });
+  paint();
+})();
+
+/* ---------- LEARN 4: tool descriptions ---------- */
+(function(){
+  var MSGS = [
+    {t: 'Hi, this is Marcus Lee. What are your opening hours?', call: false},
+    {t: 'Priya Nair here. Our whole site is down!', call: true},
+    {t: 'Aisha Khan. I want to cancel our plan today.', call: true},
+    {t: 'Noah Wright. Can I change my billing email?', call: false},
+    {t: 'Sam Okafor. The checkout page shows a 500 error for every customer.', call: true},
+    {t: 'Tom Becker. Please send me a copy of last month\'s invoice.', call: false}
+  ];
+  var MODES = {
+    bad: {text: 'send_alert: "Send email"', calls: [true, true, false, true, true, true]},
+    half: {text: 'send_alert: "Email the customer\'s account manager about a problem with their account."', calls: [false, true, false, true, true, false]},
+    good: {text: 'send_alert: "Email the customer\'s account manager.\n  Use only when the customer reports an outage or asks to cancel.\n  Never use for general questions.\n  Inputs: to (the manager\'s email from lookup_customer), subject (short), body (under 100 words)."', calls: [false, true, true, false, true, false]}
+  };
+  var mode = 'bad', timer;
+  function setMode(m){ mode = m; $('#descText').textContent = MODES[m].text; $('#descBad').classList.toggle('is-on', m === 'bad'); $('#descHalf').classList.toggle('is-on', m === 'half'); $('#descGood').classList.toggle('is-on', m === 'good'); run(); }
+  function reset(){
+    clearTimeout(timer); var box = $('#descCalls'); box.innerHTML = ''; $('#descScore').textContent = '0 / 6'; $('#descScore').className = 'row chip';
+    MSGS.forEach(function(m, k){ box.appendChild(el('div', {class: 'w7-call is-pending', id: 'call' + k}, [el('span', {text: m.t}), el('span', {class: 'row'}, [el('span', {class: 'chip', text: '…'}), el('span', {class: 'verdict', text: ''})])])); });
+  }
+  function run(){
+    reset(); var k = 0, correct = 0;
+    (function step(){
+      if (k >= MSGS.length) { $('#descScore').className = 'row chip ' + (correct === 6 ? 'chip--ok' : correct >= 4 ? 'chip--warn' : 'chip--bad'); return; }
+      var m = MSGS[k], called = MODES[mode].calls[k], ok = called === m.call, row = $('#call' + k), chips = row.lastElementChild;
+      row.classList.remove('is-pending');
+      chips.firstElementChild.className = 'chip ' + (called ? 'chip--act' : 'chip--observe'); chips.firstElementChild.textContent = called ? 'called send_alert' : 'answered directly';
+      chips.lastElementChild.textContent = ok ? 'right' : 'wrong'; chips.lastElementChild.className = 'verdict ' + (ok ? 'w7-ok' : 'w7-bad');
+      if (ok) correct++; $('#descScore').textContent = correct + ' / 6';
+      k++; timer = setTimeout(step, Course.motionOK ? 550 : 0);
+    })();
+  }
+  $('#descBad').addEventListener('click', function(){ setMode('bad'); });
+  $('#descHalf').addEventListener('click', function(){ setMode('half'); });
+  $('#descGood').addEventListener('click', function(){ setMode('good'); });
+  $('#descRun').addEventListener('click', run);
+  setMode('bad');
+})();
+
+/* ---------- LEARN 5: output parsers ---------- */
+(function(){
+  var mode = 'prose', out = $('#outText'), val = $('#outValid'), busy = false, timer;
+  var PROSE = 'I looked up Priya Nair. She is on the Pro plan with two open tickets. Because she reported an outage I emailed her account manager at ops@stride.example. Someone will follow up within the hour.';
+  var BAD = '{\n  "customer": "Priya Nair",\n  "action_taken": "Emailed the account manager"\n}';
+  var GOOD = '{\n  "customer": "Priya Nair",\n  "action_taken": "Emailed the account manager (ops@stride.example)",\n  "needs_followup": true\n}';
+  function say(cls, msg){ val.className = 'w7-valid' + (cls ? ' ' + cls : ''); val.lastElementChild.textContent = msg; }
+  function setMode(m){ mode = m; $('#outProse').classList.toggle('is-on', m === 'prose'); $('#outJson').classList.toggle('is-on', m === 'json'); out.textContent = 'The final answer appears here.'; say('', 'Validator: waiting'); }
+  function done(){ busy = false; $('#outRun').disabled = false; }
+  function run(){
+    if (busy) return; busy = true; $('#outRun').disabled = true; clearTimeout(timer); say('', 'Validator: waiting');
+    if (mode === 'prose') { Course.typewrite(out, PROSE, 70).then(function(){ say('is-bad', 'Validator: prose has no fields. The next node cannot read needs_followup.'); done(); }); return; }
+    Course.typewrite(out, BAD, 70).then(function(){
+      say('is-bad', 'Validator: needs_followup is missing. Sending the answer back to the model…');
+      return new Promise(function(r){ timer = setTimeout(r, Course.motionOK ? 1300 : 0); });
+    }).then(function(){ return Course.typewrite(out, GOOD, 70); }).then(function(){ say('is-ok', 'Validator: all three fields present, with the right types. Passed to the next node.'); done(); });
+  }
+  $('#outProse').addEventListener('click', function(){ if (busy) return; setMode('prose'); run(); });
+  $('#outJson').addEventListener('click', function(){ if (busy) return; setMode('json'); run(); });
+  $('#outRun').addEventListener('click', run);
+  setMode('prose'); run();
+})();
+
+/* ---------- LEARN 6: narrow versus wide tools ---------- */
+(function(){
+  function set(narrow){
+    $('#wfNarrow').classList.toggle('is-on', narrow); $('#wfWide').classList.toggle('is-on', !narrow);
+    if (narrow) { $('#wfNarrowG').removeAttribute('hidden'); $('#wfWideG').setAttribute('hidden', ''); } else { $('#wfWideG').removeAttribute('hidden'); $('#wfNarrowG').setAttribute('hidden', ''); }
+    $('#wfCaption').textContent = narrow ? 'Two narrow tools with one verb each. Every call lands where it should.' : 'One wide "do_customer_stuff" tool. The agent guesses which part it is triggering, and some guesses change records.';
+    var chip = $('#wfWrong'); chip.textContent = narrow ? '0 wrong calls in 10' : '4 wrong calls in 10'; chip.className = 'chip ' + (narrow ? 'chip--ok' : 'chip--bad');
+  }
+  $('#wfNarrow').addEventListener('click', function(){ set(true); });
+  $('#wfWide').addEventListener('click', function(){ set(false); });
+  if (!Course.motionOK) $$('#wfSvg animateMotion').forEach(function(a){ a.parentNode.parentNode.removeChild(a.parentNode); });   /* no moving packets: a still diagram */
+  set(true);
+})();
+
+/* ---------- LEARN 7: the HTTP Request tool ---------- */
+(function(){
+  var EP = {
+    fx: {desc: 'get_exchange_rates: "Fetch today\'s exchange rates with US dollars as the base. Use when a customer asks for a price in another currency. No inputs. Returns a rates object keyed by currency code."',
+      req: 'GET https://open.er-api.com/v6/latest/USD\nAccept: application/json',
+      res: '{\n  "result": "success",\n  "base_code": "USD",\n  "time_last_update_utc": "Thu, 29 Oct 2026 00:02:31 +0000",\n  "rates": {\n    "AED": 3.67,\n    "AUD": 1.51,\n    "EUR": 0.92,\n    "GBP": 0.79,\n    "INR": 83.9,\n    "JPY": 149.6,\n    … 155 more currencies\n  }\n}', size: '4.1 KB · about 1,400 tokens',
+      obs: 'The agent needs one number out of about 160: rates.EUR = 0.92. Then it calls the calculator, 2400 * 0.92 = 2,208, and answers "about 2,208 euros at today\'s rate".'},
+    order: {desc: 'get_order_status: "Look up one Stride Shoes order by its number. Use when a customer asks where an order is or when it will arrive. Input: order_id (number, from the customer\'s message). Returns status, carrier and eta."',
+      req: 'GET https://api.stride.example/v1/orders/4471\nAuthorization: Bearer <from the n8n credential, never in the URL>\nAccept: application/json',
+      res: '{\n  "order_id": 4471,\n  "customer": "Priya Nair",\n  "status": "in_transit",\n  "carrier": "DPD",\n  "eta": "2026-10-31",\n  "items": [\n    {"sku": "ST-RUN-42", "qty": 1},\n    {"sku": "ST-SOCK-M", "qty": 3}\n  ],\n  "history": [ … 6 events … ]\n}', size: '1.2 KB · about 400 tokens',
+      obs: 'The agent needs status and eta. It answers: "Order 4471 is in transit with DPD and due on 31 October." The items and the history were noise.'},
+    holiday: {desc: 'get_public_holidays: "List the public holidays for a country and year. Use before promising a delivery or callback date. Inputs: country (two-letter code), year (number). Returns a list of dates with names."',
+      req: 'GET https://date.nager.at/api/v3/PublicHolidays/2026/GB\nAccept: application/json',
+      res: '[\n  {"date": "2026-01-01", "localName": "New Year\'s Day"},\n  {"date": "2026-04-03", "localName": "Good Friday"},\n  {"date": "2026-04-06", "localName": "Easter Monday"},\n  {"date": "2026-05-04", "localName": "Early May Bank Holiday"},\n  … 4 more …\n  {"date": "2026-12-25", "localName": "Christmas Day"},\n  {"date": "2026-12-28", "localName": "Boxing Day (substitute)"}\n]', size: '2.3 KB · about 800 tokens',
+      obs: 'The agent checks whether the callback date it is about to promise is in the list. 2 November is not, so it confirms "Monday 2 November" and moves on.'}
+  };
+  var timer;
+  function show(){ var e = EP[$('#httpPick').value]; clearTimeout(timer); $('#httpDesc').textContent = e.desc; $('#httpReq').textContent = e.req; $('#httpRes').textContent = 'Press Send to see what comes back.'; var st = $('#httpState'); st.textContent = 'not sent'; st.className = 'chip'; $('#httpObs').hidden = true; }
+  function send(){
+    var e = EP[$('#httpPick').value], st = $('#httpState'); clearTimeout(timer);
+    st.textContent = 'sending…'; st.className = 'chip chip--think'; $('#httpRes').textContent = '…'; $('#httpObs').hidden = true;
+    timer = setTimeout(function(){
+      st.textContent = '200 OK · ' + e.size; st.className = 'chip chip--ok'; $('#httpRes').textContent = e.res;
+      timer = setTimeout(function(){ $('#httpObs').textContent = 'What the agent observes: ' + e.obs; $('#httpObs').hidden = false; }, Course.motionOK ? 500 : 0);
+    }, Course.motionOK ? 700 : 0);
+  }
+  $('#httpPick').addEventListener('change', show);
+  $('#httpSend').addEventListener('click', send);
+  show();
+})();
+
+/* ---------- LEARN 8: standing orders ---------- */
+(function(){
+  var SO = [
+    {t: 'Hi, this is Marcus Lee. What are your opening hours?', needs: 'ruleNoGeneral', ok: 'looked up Marcus, answered directly', fail: 'alerted sales@stride.example about opening hours'},
+    {t: 'This is Priya Nair. Our site has been down since 9am.', needs: 'ruleLookup', ok: 'looked up Priya, alerted ops@stride.example', fail: 'alerted without a lookup: no manager address, so the email bounced'},
+    {t: 'Jordan here. Everything is broken, help!', needs: 'ruleUnknown', ok: 'no match in the CRM, asked for the name on the account', fail: 'invented a Pro plan and alerted the wrong manager'},
+    {t: 'Fatima Said. Can you escalate this? My dashboard has been slow all week.', needs: 'ruleAlertOnly', ok: 'looked up Fatima, answered and logged it; no alert', fail: 'alerted ops@stride.example about a slow dashboard'},
+    {t: 'Tom Becker. Did my refund go through?', needs: 'ruleConfirm', ok: 'looked up Tom, answered, and said what it checked', fail: 'replied "Yes" with no trace of what it did; Tom cannot tell a lookup from a guess'},
+    {t: 'Check all my open tickets and tell me which one is urgent.', needs: 'iter', ok: '5 passes: listed, opened two, emailed, replied', fail: 'stopped after 3 passes with half an answer'}
+  ];
+  var timer;
+  function state(k){ return k === 'iter' ? $('#iterPick').value === '10' : $('#' + k).checked; }
+  function reset(){ clearTimeout(timer); var box = $('#soRows'); box.innerHTML = ''; SO.forEach(function(m, k){ box.appendChild(el('div', {class: 'w7-call is-pending', id: 'so' + k}, [el('span', {text: m.t}), el('span', {class: 'w7-outcome muted', text: '…'}), el('span', {class: 'verdict', text: ''})])); }); }
+  function fill(k){ var m = SO[k], ok = state(m.needs), row = $('#so' + k); row.classList.remove('is-pending'); var o = row.children[1], v = row.children[2]; o.textContent = ok ? m.ok : m.fail; o.className = 'w7-outcome ' + (ok ? 'muted' : 'w7-bad'); v.textContent = ok ? 'right' : 'wrong'; v.className = 'verdict ' + (ok ? 'w7-ok' : 'w7-bad'); }
+  function score(){ var n = SO.filter(function(m){ return state(m.needs); }).length, chip = $('#soScore'); chip.textContent = n + ' / 6 handled well'; chip.className = 'row chip ' + (n === 6 ? 'chip--ok' : n >= 4 ? 'chip--warn' : 'chip--bad'); }
+  function run(animated){ reset(); var k = 0; (function step(){ if (k >= SO.length) { score(); return; } fill(k); k++; if (animated && Course.motionOK) timer = setTimeout(step, 450); else step(); })(); }
+  $$('#soRules input').forEach(function(cb){ cb.addEventListener('change', function(){ run(false); }); });
+  $('#iterPick').addEventListener('change', function(){ run(false); });
+  $('#soRun').addEventListener('click', function(){ run(true); });
+  run(false);
+})();
+
+/* ---------- LEARN 9: which part do you fix? ---------- */
+(function(){
+  var PARTS = [['desc', 'Tool description'], ['system', 'System prompt'], ['memory', 'Memory window'], ['tool', 'The tool itself']];
+  var FIX = [
+    {msg: '"Can I get a copy of last month\'s invoice?"', log: [['think', 'a billing question, alert the manager'], ['act', 'send_alert {"to": "ops@stride.example", "subject": "Invoice question"}'], ['observe', '{"sent": true}'], ['final', '"I have alerted your account manager about your invoice."']], fix: 'desc', why: 'The agent reached for a tool it should not have touched. Nothing in send_alert\'s description said when not to use it. One sentence fixes it: "Never use for general or billing questions."'},
+    {msg: '"This is Priya Nair, the site is down."', log: [['think', 'outage, look up the customer'], ['act', 'lookup_customer {"name": "Priya Nair"}'], ['observe', '{"plan": "Pro", "account_manager": "ops@stride.example"}'], ['act', 'send_alert {"to": "ops@stride.example", "subject": "Outage: Priya Nair"}'], ['observe', '{"sent": true}'], ['final', '"Done."']], fix: 'system', why: 'Right tools, right order, right inputs. The failure is the reply: "Done." tells the customer nothing. That is behaviour across the whole conversation, so it belongs in the system prompt: "After acting, tell the customer exactly what you did."'},
+    {msg: '"Send it to the same manager as before." (the lookup was 12 messages ago; the window is 10)', log: [['think', 'which manager? the customer mentioned one earlier'], ['act', 'send_alert {"to": "the same manager as before", "subject": "Follow-up"}'], ['observe', 'error: to must be an email address'], ['final', '"I could not send the alert."']], fix: 'memory', why: 'The lookup result fell outside the 10-message window, so the agent had nothing to copy and wrote nonsense into the field. Widen the window, or better, add a rule to look the customer up again whenever it needs an address it cannot see.'},
+    {msg: '"Wei Zhang here, we need to cancel." (Wei is in the CRM sheet)', log: [['think', 'look up the customer first'], ['act', 'lookup_customer {"name": "Wei Zhang"}'], ['observe', '[]  (no rows)'], ['think', 'not in the CRM, ask for the name'], ['final', '"I cannot find you in our records. What is the name on the account?"']], fix: 'tool', why: 'The agent did everything right and the tool returned nothing for a customer who exists. The Google Sheets tool is filtering on the wrong column, or the sheet was renamed. Fix the node, test it on its own, then re-run the eight tests.'}
+  ];
+  var picks = {};
+  function render(){
+    var list = $('#fixList'); list.innerHTML = ''; picks = {};
+    FIX.forEach(function(f, i){
+      var card = el('div', {class: 'w7-fix', id: 'fix-' + i});
+      card.appendChild(el('p', {class: 'w7-fix__q', html: '<b>Run ' + (i + 1) + '</b> · ' + Course.esc(f.msg)}));
+      var log = el('div', {class: 'w7-log'}); f.log.forEach(function(s){ log.appendChild(el('span', {class: s[0], text: s[0] + ' · ' + s[1]})); }); card.appendChild(log);
+      var btns = el('div', {class: 'w7-fix__btns'});
+      PARTS.forEach(function(p){ var b = el('button', {class: 'btn btn--small', type: 'button', id: 'fix-' + i + '-' + p[0], 'data-v': p[0], text: p[1]}); b.addEventListener('click', function(){ pick(i, p[0], card); }); btns.appendChild(b); });
+      card.appendChild(btns); list.appendChild(card);
+    });
+    score();
+  }
+  function pick(i, v, card){
+    if (picks[i]) return; picks[i] = v;
+    var ok = v === FIX[i].fix; card.classList.add(ok ? 'is-right' : 'is-wrong');
+    $$('button', card).forEach(function(b){ b.disabled = true; b.classList.toggle('is-pick', b.getAttribute('data-v') === v); });
+    var name = PARTS.filter(function(p){ return p[0] === FIX[i].fix; })[0][1];
+    card.appendChild(el('p', {class: 'w7-why', html: '<b class="' + (ok ? 'w7-ok' : 'w7-bad') + '">' + (ok ? 'Right.' : 'Not this one.') + '</b> Fix the ' + name.toLowerCase() + '. ' + Course.esc(FIX[i].why)}));
+    score();
+  }
+  function score(){
+    var n = Object.keys(picks).length, s = FIX.reduce(function(a, f, i){ return a + (picks[i] === f.fix ? 1 : 0); }, 0), done = n === FIX.length;
+    $('#fixScore').textContent = s + ' / 4';
+    var st = $('#fixState'); st.textContent = !done ? (FIX.length - n) + ' to go' : s === 4 ? 'you read logs well' : s >= 2 ? 'getting there' : 'read the key idea again';
+    st.className = 'chip ' + (!done ? '' : s === 4 ? 'chip--ok' : s >= 2 ? 'chip--warn' : 'chip--bad');
+    var sum = $('#fixSummary'); sum.hidden = !done;
+    if (done) { sum.textContent = 'The pattern: a wrong tool points at the description, a wrong conclusion at the system prompt, a lost detail at memory, and an empty result from the right call at the tool itself.'; if (s === 4) Course.confetti(); }
+  }
+  $('#fixReset').addEventListener('click', render);
+  render();
+})();
+
+/* ---------- LEARN 10: who decides? (MIT xPRO Module 6, Superminds) ---------- */
+(function(){
+  var OPTS = [['agent', 'Agent decides'], ['propose', 'Agent proposes'], ['person', 'Person only']];
+  var DOL = [
+    {t: 'Look the customer up in the CRM', a: 'agent', why: 'A lookup is specialised and checkable: the tool finds the row or it does not.'},
+    {t: 'Decide whether a message is an outage, a cancellation threat or a routine question', a: 'agent', alt: 'propose', why: 'Classification is what language models do well, and the test table measures it. Early on, let a person see the borderline cases.'},
+    {t: 'Send the outage alert to the account manager', a: 'agent', why: 'Cheap if wrong (one extra email to a colleague), costly if slow. Automate it and log every send.'},
+    {t: 'Draft the reply to the customer', a: 'agent', alt: 'propose', why: 'Drafting is prediction at its best. Whether a person reads it first depends on how public the channel is.'},
+    {t: 'Approve a refund above 10,000', a: 'person', why: 'Money leaves the company and someone is accountable. The agent prepares the case; a person decides.'},
+    {t: 'Close an account because the customer asked to cancel', a: 'propose', alt: 'person', why: 'Irreversible and emotional. The agent confirms the request, gathers the details and hands over; a person makes the call.'},
+    {t: 'Judge whether a complaint about the agent\'s own tone is fair', a: 'person', why: 'A judgement about people, with the agent as a party to it. Keep it human.'},
+    {t: 'Do the arithmetic on a pro-rated refund', a: 'agent', why: 'Arithmetic is the MIT course\'s own example of what computers do better. Use the calculator tool, never the model\'s guess.'}
+  ];
+  var picks = {};
+  function render(){
+    var list = $('#dolList'); list.innerHTML = ''; picks = {};
+    DOL.forEach(function(d, i){
+      var row = el('div', {class: 'w7-dol', id: 'dol-' + i});
+      row.appendChild(el('span', {text: d.t}));
+      var seg = el('div', {class: 'seg', role: 'group', 'aria-label': 'Who decides: ' + d.t});
+      OPTS.forEach(function(o){ var b = el('button', {type: 'button', id: 'dol-' + i + '-' + o[0], 'data-v': o[0], text: o[1]}); b.addEventListener('click', function(){ picks[i] = o[0]; $$('button', seg).forEach(function(x){ x.classList.toggle('is-on', x === b); }); state(); }); seg.appendChild(b); });
+      row.appendChild(seg); list.appendChild(row);
+    });
+    $('#dolScore').textContent = '– / 8'; $('#dolSummary').hidden = true; $('#dolCheck').disabled = false; state();
+  }
+  function state(){ var n = Object.keys(picks).length, st = $('#dolState'); st.textContent = n < DOL.length ? (DOL.length - n) + ' left to sort' : 'all sorted, press Check'; st.className = 'chip' + (n < DOL.length ? '' : ' chip--think'); }
+  function check(){
+    if (Object.keys(picks).length < DOL.length) { Course.toast('Sort all eight first.'); return; }
+    var agree = 0;
+    DOL.forEach(function(d, i){
+      var row = $('#dol-' + i), v = picks[i], exact = v === d.a, alt = v === d.alt;
+      row.classList.add(exact ? 'is-right' : alt ? 'is-alt' : 'is-wrong'); if (exact || alt) agree++;
+      $$('button', row).forEach(function(b){ b.disabled = true; b.classList.toggle('is-pick', b.getAttribute('data-v') === d.a); });
+      var mine = OPTS.filter(function(o){ return o[0] === d.a; })[0][1];
+      row.appendChild(el('p', {class: 'w7-why', html: '<b class="' + (exact ? 'w7-ok' : alt ? '' : 'w7-bad') + '">' + (exact ? 'Same as mine.' : alt ? 'Defensible; I lean the other way.' : 'I disagree.') + '</b> My allocation: ' + mine.toLowerCase() + '. ' + Course.esc(d.why)}));
+    });
+    $('#dolScore').textContent = agree + ' / 8'; $('#dolCheck').disabled = true;
+    var st = $('#dolState'); st.textContent = agree >= 7 ? 'we see it the same way' : agree >= 5 ? 'close; read the reasons' : 'read the concept again'; st.className = 'chip ' + (agree >= 7 ? 'chip--ok' : agree >= 5 ? 'chip--warn' : 'chip--bad');
+    var sum = $('#dolSummary'); sum.hidden = false; sum.textContent = 'The pattern: the agent owns what is specialised, measurable and cheap to undo. People own what is irreversible, financial, or a judgement about people. Write your own version into design-log entry 7.';
+    if (agree >= 7) Course.confetti();
+  }
+  $('#dolCheck').addEventListener('click', check);
+  $('#dolReset').addEventListener('click', render);
+  render();
+})();
+
+/* ---------- LAB: the test-log score ---------- */
+(function(){
+  var score = Course.store.get('testok', {});
+  function paint(){ var n = 0; for (var k = 0; k < 8; k++) { var y = $('#ty' + k), no = $('#tn' + k); if (!y) continue; y.classList.toggle('is-on', score[k] === true); no.classList.toggle('is-on', score[k] === false); if (score[k] === true) n++; } $('#testScore').textContent = n + ' / 8'; $('#testBar').style.width = (100 * n / 8) + '%'; }
+  $$('#testTable .seg button').forEach(function(b){ b.addEventListener('click', function(){ score[b.getAttribute('data-k')] = b.getAttribute('data-v') === '1'; Course.store.set('testok', score); paint(); }); });
+  paint();
+})();
+
+/* ---------- QUIZ ---------- */
+Course.quiz('#quizBox', {passPct: 80, questions: [
+  {q: 'What turns a chat model into an agent, the way this week uses the word?', options: ['A larger context window', 'A loop in which the model decides which tool to call, reads the result and decides again', 'Running the model inside n8n instead of claude.ai', 'A faster model'], answer: 1, why: 'The loop is the defining feature: think, act, observe, repeat, until the model writes a final answer. The model chooses the path; a workflow with fixed arrows is not an agent, however many AI nodes it has.'},
+  {q: 'Who actually runs a tool when the agent "calls" send_alert?', options: ['Claude runs it inside the model', 'n8n runs the Gmail node and feeds the result back into the loop', 'The customer runs it by replying', 'Nobody; the call is only text in the chat'], answer: 1, why: 'Claude writes the tool name and inputs as JSON. n8n executes the node and returns the result as the observe step. That is also why the API key never has to leave your n8n credentials.'},
+  {q: 'Simple Memory is set to a window of 1. The customer says "I am Priya", asks two questions, then "What is my name?". What happens?', options: ['The agent answers "Priya"; the chat shows the whole conversation', 'The agent cannot know: only the last message is sent to the model', 'The workflow stops with an error', 'The agent asks for an API key'], answer: 1, why: 'The screen shows everything; the model sees only the window. With a window of 1 the introduction dropped out two messages ago.'},
+  {q: 'Which send_alert description will cause the fewest wrong calls?', options: ['"Send email"', '"Does stuff with customers"', '"Email the account manager. Use only for an outage or a cancellation threat. Never for general questions. Inputs: to, subject, body."', '"Useful tool, call when needed"'], answer: 2, why: 'The agent decides from the description alone, so it needs what the tool does, when to use it, when not to, and what each input means.'},
+  {q: 'The agent\'s final answer must be a JSON object with customer, action_taken and needs_followup so a Google Sheets node can log it. What do you attach?', options: ['A bigger memory window', 'A Structured Output Parser with that schema, and "Require specific output format" switched on', 'A second Chat Model', 'A Calculator tool'], answer: 1, why: 'The parser tells the agent the shape of the final answer and n8n validates it, asking again if a field is missing. Prose is for people; schemas are for the next node.'},
+  {q: 'The CRM lookup needs six nodes of cleaning before the agent should see the row. How do you give the agent that lookup as one tool?', options: ['Attach the six nodes under the Tool socket one by one', 'Build it as its own workflow with an Execute Workflow trigger and attach it with the Call n8n Workflow Tool', 'Paste the sheet into the system prompt', 'Give the agent a plain Google Sheets node and hope'], answer: 1, why: 'Any workflow can become a tool. The main agent stays small, and the specialist can be tested and pinned on its own.'},
+  {q: 'A customer asks for a quote in euros and the rate changes daily. Which tool do you add to the agent?', options: ['A Structured Output Parser', 'An HTTP Request tool that GETs a public exchange-rate endpoint, with a calculator for the arithmetic', 'A bigger memory window', 'A second AI Agent node'], answer: 1, why: 'Live data outside n8n arrives through a REST API, and the HTTP Request tool is how the agent calls one. The rate is one field in the JSON; the multiplication goes to the calculator, never to the model\'s guess.'},
+  {q: 'The MIT course says today\'s computers have specialised intelligence and people have general intelligence. For your triage agent, what follows?', options: ['Automate every decision, since the agent is faster', 'Give the agent the specialised, measurable work (lookups, classification, drafting) and keep judgement calls such as account closures with a person', 'Keep every decision with people and use the agent only to write emails', 'Replace the support team with the agent'], answer: 1, why: '"Computers in the group": the computer does what it does better, people do everything else. Promote a decision to the agent only once your test table shows it gets that decision right.'}
+]});
+
+/* ---------- PRACTICE: the description builder ---------- */
+(function(){
+  var ids = ['bWhat', 'bWhen', 'bNot', 'bInputs'], out = $('#bOut'), lint = $('#bLint'), score = $('#bScore'), advice = $('#bAdvice');
+  function text(){ return ids.map(function(id){ return $('#' + id).value.trim(); }); }
+  function assemble(){ var p = text(); out.textContent = p.some(Boolean) ? 'escalate_ticket: "' + p.filter(Boolean).join(' ') + '"' : 'Your description appears here as you type.'; }
+  ids.forEach(function(id){ $('#' + id).addEventListener('input', assemble); });
+  function check(){
+    var p = text(), joined = p.join(' ').toLowerCase(), checks = [
+      {name: 'Says what it does', ok: p[0].length >= 20},
+      {name: 'Says when to use it', ok: /\b(use|call)\b[^.]*\b(when|for|if|only)\b/.test(p[1].toLowerCase()) || p[1].length >= 25},
+      {name: 'Says when not to use it', ok: /(do not|don't|never|not for|only)/.test(p[2].toLowerCase()) && p[2].length >= 15},
+      {name: 'Names every input with its meaning', ok: /ticket_id/.test(joined) && /reason/.test(joined) && /severity/.test(joined)},
+      {name: 'Short enough to read in one breath', ok: joined.trim().length > 0 && joined.length <= 500}
+    ];
+    lint.innerHTML = ''; var n = 0;
+    checks.forEach(function(c){ if (c.ok) n++; lint.appendChild(el('span', {class: 'chip ' + (c.ok ? 'chip--ok' : 'chip--bad'), text: (c.ok ? '✓ ' : '✕ ') + c.name})); });
+    score.textContent = n + ' / 5'; score.className = 'chip ' + (n === 5 ? 'chip--ok' : n >= 3 ? 'chip--warn' : 'chip--bad');
+    advice.textContent = n === 5 ? 'This reads like a description Claude can act on. Paste it into a real tool in Lab 3.2.' : n >= 3 ? 'Close. Fix the red checks: the agent decides from exactly these words.' : 'Write each part as one or two plain sentences. Name the inputs ticket_id, reason and severity.';
+    if (n === 5) Course.confetti();
+  }
+  function save(){ ids.forEach(function(id){ var t = $('#' + id); Course.store.set('note:' + t.getAttribute('data-note'), t.value); }); }
+  $('#bCheck').addEventListener('click', check);
+  $('#bModel').addEventListener('click', function(){
+    $('#bWhat').value = 'Raise a support ticket\'s priority and page the on-call engineer.';
+    $('#bWhen').value = 'Use when a customer on the Pro or Enterprise plan reports that a paid feature is broken for them or their users.';
+    $('#bNot').value = 'Do not use for how-to questions, billing questions, feature requests or Starter plan customers; answer those directly.';
+    $('#bInputs').value = 'Inputs: ticket_id (string, the id from lookup_customer), reason (one sentence in plain English), severity ("high" if all users are affected, otherwise "low").';
+    save(); assemble(); check();
+  });
+  $('#bReset').addEventListener('click', function(){ ids.forEach(function(id){ $('#' + id).value = ''; }); save(); assemble(); lint.innerHTML = ''; score.textContent = '0 / 5'; score.className = 'chip'; advice.textContent = 'Fill the four boxes, then press Check.'; });
+  assemble();
+})();
+
+Course.days();
+</script>
+</body></html>

@@ -1,0 +1,1840 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui}img{max-width:100%}[hidden]{display:none!important}</style></head><body><title>Embeddings and RAG</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: a sticky lesson rail over stacked "scenes"; every scene pairs one live visual with two to four plain sentences. */
+:root{
+  --bg:#F4F6FB; --surface:#FFFFFF; --surface-2:#E9EEF7; --line:#D6DEEC; --fg:#0E1626; --muted:#5B6882;
+  --think:#6A52F5; --act:#F2552E; --observe:#0E9F86;
+  --think-soft:#ECE8FF; --act-soft:#FFE9E2; --observe-soft:#DDF5EF;
+  --accent:var(--act); --accent-ink:#FFFFFF;
+  --ok:#1E9E5A; --warn:#D99400; --bad:#D63B3B;
+  --stage:#0B1020; --stage-2:#141D36; --stage-fg:#EAF0FF; --stage-muted:#8E9BBE; --stage-line:#26325A;
+  --shadow:0 10px 30px rgba(14,22,38,.08);
+  --font-display:"Bricolage Grotesque","Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-body:"Figtree",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --font-mono:"JetBrains Mono",ui-monospace,"Cascadia Code",Consolas,monospace;
+  --r-s:10px; --r-m:14px; --r-l:20px;
+  --wrap:1120px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0B1020; --surface:#121A2E; --surface-2:#1A2440; --line:#273253; --fg:#EAF0FF; --muted:#9AA8C9;
+    --think:#8F7BFF; --act:#FF7A58; --observe:#2CD2B2;
+    --think-soft:#231F4A; --act-soft:#3A2220; --observe-soft:#123A35;
+    --ok:#3CC27A; --warn:#F2B53C; --bad:#F26A6A;
+    --stage:#070B16; --stage-2:#0F1730; --stage-fg:#EAF0FF; --stage-muted:#8E9BBE; --stage-line:#26325A;
+    --shadow:0 10px 30px rgba(0,0,0,.35);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0B1020; --surface:#121A2E; --surface-2:#1A2440; --line:#273253; --fg:#EAF0FF; --muted:#9AA8C9;
+  --think:#8F7BFF; --act:#FF7A58; --observe:#2CD2B2;
+  --think-soft:#231F4A; --act-soft:#3A2220; --observe-soft:#123A35;
+  --ok:#3CC27A; --warn:#F2B53C; --bad:#F26A6A;
+  --stage:#070B16; --stage-2:#0F1730; --stage-fg:#EAF0FF; --stage-muted:#8E9BBE; --stage-line:#26325A;
+  --shadow:0 10px 30px rgba(0,0,0,.35);
+  color-scheme:dark;
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.6 var(--font-body);-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--bg)}
+h1,h2,h3,h4{font-family:var(--font-display);line-height:1.1;margin:0;text-wrap:balance;letter-spacing:-.01em}
+h1{font-size:clamp(2rem,4.5vw,3.25rem);font-weight:800}
+h2{font-size:clamp(1.6rem,3vw,2.25rem);font-weight:700}
+h3{font-size:1.35rem;font-weight:700}
+h4{font-size:1.05rem;font-weight:700}
+p{margin:0}
+a{color:inherit}
+button{font:inherit;color:inherit}
+img,canvas,svg{max-width:100%}
+code,kbd,pre{font-family:var(--font-mono)}
+code{font-size:.9em;background:var(--surface-2);padding:.1em .4em;border-radius:6px}
+pre.code{font-size:13px;line-height:1.55;background:var(--stage);color:var(--stage-fg);padding:14px 16px;border-radius:var(--r-m);overflow-x:auto;margin:0;white-space:pre}
+pre.code code{background:none;padding:0;font-size:inherit}
+pre.code .k{color:#8F7BFF}pre.code .s{color:#2CD2B2}pre.code .c{color:#8E9BBE}pre.code .n{color:#FFB38A}
+:focus-visible{outline:3px solid color-mix(in srgb,var(--think) 55%,transparent);outline-offset:2px;border-radius:6px}
+.visually-hidden{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+.wrap{max-width:var(--wrap);margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.muted{color:var(--muted)}
+.mono{font-family:var(--font-mono)}
+.num{font-variant-numeric:tabular-nums}
+.stack{display:grid;gap:14px}
+.stack-l{display:grid;gap:24px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.grid-2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.grid-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+@media (max-width:760px){.grid-2,.grid-3{grid-template-columns:1fr}}
+.eyebrow{font-family:var(--font-display);font-size:.78rem;letter-spacing:.14em;text-transform:uppercase;font-weight:700;color:var(--muted)}
+.lede{font-size:1.15rem;line-height:1.55;max-width:60ch}
+
+/* ---------- Rail (sticky header) ---------- */
+.rail{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:color-mix(in srgb,var(--bg) 86%,transparent);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.rail .wrap{display:flex;align-items:center;gap:12px;min-height:58px;flex-wrap:wrap;padding-block:8px}
+.rail__badge{font-family:var(--font-display);font-weight:800;font-size:.95rem;background:var(--fg);color:var(--bg);border-radius:9px;padding:4px 9px;letter-spacing:.02em;white-space:nowrap}
+.rail__title{font-family:var(--font-display);font-weight:700;font-size:1.05rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.rail__nav{display:flex;gap:6px;margin-left:auto;overflow-x:auto;scrollbar-width:none;max-width:100%}
+.rail__nav::-webkit-scrollbar{display:none}
+.rail__pill{display:inline-flex;align-items:center;gap:7px;padding:6px 11px;border-radius:999px;border:1px solid transparent;text-decoration:none;font-size:.88rem;font-weight:600;color:var(--muted);white-space:nowrap}
+.rail__pill:hover{color:var(--fg);background:var(--surface-2)}
+.rail__pill.is-active{color:var(--fg);border-color:var(--line);background:var(--surface)}
+.rail__dot{width:8px;height:8px;border-radius:50%;background:var(--line);flex:none;transition:background .3s,transform .3s}
+.rail__pill.is-done .rail__dot{background:var(--observe);transform:scale(1.25)}
+.rail__links{display:flex;gap:6px}
+.rail__links a{font-size:.85rem;font-weight:600;color:var(--muted);text-decoration:none;padding:6px 10px;border-radius:999px;border:1px solid var(--line);background:var(--surface);white-space:nowrap}
+.rail__links a:hover{color:var(--fg)}
+@media (max-width:720px){.rail__title{display:none}.rail__nav{margin-left:0;order:3;flex-basis:100%}}
+
+/* ---------- Hero / stage ---------- */
+.hero{background:var(--stage);color:var(--stage-fg);position:relative;overflow:hidden}
+.hero::after{content:"";position:absolute;inset:auto -20% -60% -20%;height:60%;background:radial-gradient(60% 100% at 50% 100%,color-mix(in srgb,var(--think) 35%,transparent),transparent 70%);pointer-events:none}
+.hero .wrap{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:32px;align-items:center;padding-block:40px;position:relative;z-index:1}
+.hero__text{display:grid;gap:16px}
+.hero__text .eyebrow{color:var(--stage-muted)}
+.hero__text .lede{color:color-mix(in srgb,var(--stage-fg) 82%,transparent)}
+.hero__actions{display:flex;gap:10px;flex-wrap:wrap}
+.stage{position:relative;width:100%;max-width:100%;aspect-ratio:4/3;background:var(--stage-2);border:1px solid var(--stage-line);border-radius:var(--r-l);overflow:hidden;box-shadow:0 30px 60px rgba(0,0,0,.35)}
+.stage canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.stage svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+.stage__label{position:absolute;left:14px;top:12px;font-family:var(--font-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--stage-muted)}
+.stage__hud{position:absolute;right:12px;bottom:12px;left:12px;display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;align-items:center}
+.stage--wide{aspect-ratio:16/9}
+@media (max-width:820px){.hero .wrap{grid-template-columns:1fr;padding-block:28px}.stage{aspect-ratio:16/11}}
+
+/* ---------- Buttons, chips ---------- */
+.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--fg);font-weight:600;font-size:.95rem;cursor:pointer;text-decoration:none;line-height:1.2;transition:transform .12s,background .2s,border-color .2s}
+.btn:hover{border-color:color-mix(in srgb,var(--fg) 30%,var(--line))}
+.btn:active{transform:translateY(1px)}
+.btn:disabled{opacity:.55;cursor:not-allowed}
+.btn--primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn--primary:hover{filter:brightness(1.05);border-color:var(--accent)}
+.btn--think{background:var(--think);border-color:var(--think);color:#fff}
+.btn--observe{background:var(--observe);border-color:var(--observe);color:#fff}
+.btn--small{padding:6px 11px;font-size:.85rem}
+.hero .btn{background:transparent;color:var(--stage-fg);border-color:var(--stage-line)}
+.hero input[type=text],.hero input[type=number],.hero textarea,.hero select{background:#FFFFFF;color:#0E1626;border-color:var(--stage-line)}
+.hero input::placeholder,.hero textarea::placeholder{color:#5B6882}
+.hero .btn--primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;font-size:.8rem;font-weight:700;letter-spacing:.02em;background:var(--surface-2);color:var(--fg)}
+.chip--think{background:var(--think-soft);color:var(--think)}
+.chip--act{background:var(--act-soft);color:var(--act)}
+.chip--observe{background:var(--observe-soft);color:var(--observe)}
+.chip--ok{background:color-mix(in srgb,var(--ok) 15%,var(--surface));color:var(--ok)}
+.chip--warn{background:color-mix(in srgb,var(--warn) 18%,var(--surface));color:var(--warn)}
+.chip--bad{background:color-mix(in srgb,var(--bad) 14%,var(--surface));color:var(--bad)}
+.kbd{font-family:var(--font-mono);font-size:.8rem;border:1px solid var(--line);border-bottom-width:2px;border-radius:6px;padding:1px 6px;background:var(--surface)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;padding:3px;background:var(--surface);gap:2px;flex-wrap:wrap}
+.seg button{border:0;background:transparent;padding:6px 12px;border-radius:999px;font-weight:600;font-size:.88rem;cursor:pointer;color:var(--muted)}
+.seg button.is-on{background:var(--fg);color:var(--bg)}
+input[type=range]{accent-color:var(--think);width:100%}
+input[type=text],input[type=number],input[type=email],textarea,select{font:inherit;color:inherit;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-s);padding:9px 12px;width:100%;max-width:100%}
+textarea{min-height:120px;resize:vertical;line-height:1.5}
+.field{display:grid;gap:6px}
+.field>span{font-size:.85rem;font-weight:600;color:var(--muted)}
+
+/* ---------- Scenes ---------- */
+.scene{padding-block:56px;border-top:1px solid var(--line)}
+.scene:first-of-type{border-top:0}
+.scene__head{display:grid;gap:10px;margin-bottom:28px;max-width:70ch}
+.scene__kicker{display:inline-flex;align-items:center;gap:8px;font-family:var(--font-display);font-size:.8rem;letter-spacing:.14em;text-transform:uppercase;font-weight:800}
+.scene__kicker::before{content:"";width:22px;height:4px;border-radius:2px;background:currentColor}
+.scene__kicker--learn{color:var(--think)}
+.scene__kicker--try{color:var(--observe)}
+.scene__kicker--lab{color:var(--act)}
+.scene__kicker--quiz{color:var(--fg)}
+.scene__kicker--build{color:var(--act)}
+.scene__head p{color:var(--muted);font-size:1.05rem}
+.concept{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:32px;align-items:center;padding-block:28px}
+.concept+.concept{border-top:1px dashed var(--line)}
+.concept:nth-of-type(even) .concept__viz{order:2}
+.concept__viz{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-l);padding:18px;min-height:240px;display:grid;align-content:center;gap:12px;overflow:hidden;box-shadow:var(--shadow);min-width:0}
+.concept__viz canvas{width:100%;display:block;border-radius:var(--r-m)}
+.concept__viz--dark{background:var(--stage);color:var(--stage-fg);border-color:var(--stage-line)}
+.concept__text{display:grid;gap:14px;min-width:0}
+.concept__text p{max-width:58ch;font-size:1.05rem}
+.key{display:grid;gap:4px;padding:14px 16px;border-radius:var(--r-m);background:var(--surface-2)}
+.key::before{content:"Key idea";font-family:var(--font-display);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:800}
+.key p{font-weight:600;font-size:1rem}
+@media (max-width:820px){.concept{grid-template-columns:1fr;gap:18px}.concept:nth-of-type(even) .concept__viz{order:0}}
+.viz-caption{font-size:.85rem;color:var(--muted);display:flex;gap:10px;justify-content:space-between;flex-wrap:wrap}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:.85rem;color:var(--muted)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:middle}
+
+/* ---------- Cards, notes ---------- */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-l);padding:20px;min-width:0}
+.card h3,.card h4{margin-bottom:8px}
+.note{padding:14px 16px;border-radius:var(--r-m);background:var(--surface-2);display:grid;gap:6px}
+.note--warn{background:color-mix(in srgb,var(--warn) 16%,var(--surface))}
+.note--think{background:var(--think-soft)}
+.note--observe{background:var(--observe-soft)}
+.note strong{font-family:var(--font-display)}
+.deliverable{border:2px dashed color-mix(in srgb,var(--act) 55%,var(--line));border-radius:var(--r-l);padding:20px;background:var(--surface);display:grid;gap:10px}
+.deliverable h4{color:var(--act)}
+.deliverable h4::before{content:"Deliverable · ";color:var(--muted);font-weight:600}
+details.hint{border:1px solid var(--line);border-radius:var(--r-m);background:var(--surface);padding:0 16px}
+details.hint summary{cursor:pointer;padding:12px 0;font-weight:600;list-style:none;display:flex;align-items:center;gap:8px}
+details.hint summary::-webkit-details-marker{display:none}
+details.hint summary::before{content:"+";display:inline-grid;place-items:center;width:20px;height:20px;border-radius:6px;background:var(--surface-2);font-weight:800}
+details.hint[open] summary::before{content:"\2013"}
+details.hint>*:not(summary){padding-bottom:14px}
+.table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r-m);background:var(--surface)}
+table.tbl{border-collapse:collapse;width:100%;font-size:.95rem;min-width:520px}
+table.tbl th,table.tbl td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+table.tbl th{font-family:var(--font-display);font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);background:var(--surface-2)}
+table.tbl tr:last-child td{border-bottom:0}
+table.tbl input[type=text],table.tbl textarea{min-height:0;padding:6px 8px;font-size:.9rem}
+
+/* ---------- Steps / checklists ---------- */
+.steps{list-style:none;padding:0;margin:0;display:grid;gap:10px;counter-reset:step}
+.steps>li{display:grid;grid-template-columns:auto 1fr;gap:14px;padding:14px 16px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-m);align-items:start;transition:opacity .25s}
+.steps>li.done{opacity:.6}
+.steps>li.done .step__body>:first-child{text-decoration:line-through;text-decoration-color:var(--observe)}
+.steps--numbered>li{counter-increment:step;grid-template-columns:auto auto 1fr}
+.steps--numbered>li .step__num{font-family:var(--font-display);font-weight:800;font-size:.85rem;color:var(--muted);min-width:22px;padding-top:4px}
+.steps--numbered>li .step__num::before{content:counter(step,decimal-leading-zero)}
+.step__body{display:grid;gap:6px;min-width:0}
+.step__body>p{margin:0}
+.step__notice{font-size:.9rem;color:var(--muted)}
+.step__notice strong{color:var(--observe)}
+.check{appearance:none;-webkit-appearance:none;width:24px;height:24px;border:2px solid var(--line);border-radius:8px;display:inline-grid;place-items:center;cursor:pointer;margin:2px 0 0;background:var(--surface);transition:background .2s,border-color .2s;flex:none;position:relative}
+.check::after{content:"";width:6px;height:11px;border:solid #fff;border-width:0 2.5px 2.5px 0;transform:rotate(45deg) translate(-1px,-1px) scale(0);transition:transform .15s}
+.check:checked{background:var(--observe);border-color:var(--observe)}
+.check:checked::after{transform:rotate(45deg) translate(-1px,-1px) scale(1)}
+.check-row{display:flex;gap:12px;align-items:flex-start;cursor:pointer}
+.progress{height:8px;border-radius:999px;background:var(--surface-2);overflow:hidden}
+.progress>i{display:block;height:100%;width:0;background:var(--observe);border-radius:999px;transition:width .5s cubic-bezier(.2,.8,.2,1)}
+.progress--think>i{background:var(--think)}
+.progress--act>i{background:var(--act)}
+.meter{display:grid;gap:6px}
+.meter__row{display:flex;justify-content:space-between;font-size:.85rem;color:var(--muted)}
+.meter__row b{color:var(--fg)}
+
+/* ---------- Quiz ---------- */
+.quiz{display:grid;gap:16px}
+.q{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-l);padding:20px;display:grid;gap:12px}
+.q__num{font-family:var(--font-display);font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:800}
+.q__text{font-weight:600;font-size:1.05rem}
+.opts{display:grid;gap:8px}
+.opt{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border:1px solid var(--line);border-radius:var(--r-m);background:var(--bg);cursor:pointer;text-align:left;transition:border-color .15s,background .15s}
+.opt:hover:not(:disabled){border-color:var(--think)}
+.opt:disabled{cursor:default}
+.opt__key{font-family:var(--font-mono);font-size:.8rem;font-weight:700;color:var(--muted);min-width:18px;padding-top:2px}
+.opt.is-correct{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 12%,var(--surface))}
+.opt.is-wrong{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 10%,var(--surface))}
+.q__why{padding:10px 12px;border-radius:var(--r-s);background:var(--surface-2);font-size:.95rem}
+.q__why b{color:var(--ok)}
+.q__why.is-bad b{color:var(--bad)}
+.quiz__result{display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:center;padding:20px;border-radius:var(--r-l);background:var(--surface);border:1px solid var(--line)}
+.quiz__score{font-family:var(--font-display);font-size:3rem;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
+.quiz__score small{font-size:1.2rem;color:var(--muted);font-weight:700}
+.reflect{display:grid;gap:10px}
+.reflect details{border:1px solid var(--line);border-radius:var(--r-m);background:var(--surface);padding:0 16px}
+.reflect summary{cursor:pointer;padding:12px 0;font-weight:600;list-style:none;display:flex;justify-content:space-between;gap:12px}
+.reflect summary::-webkit-details-marker{display:none}
+.reflect summary::after{content:"Show a model answer";font-size:.8rem;color:var(--think);font-weight:700;white-space:nowrap}
+.reflect details[open] summary::after{content:"Hide"}
+.reflect details p{padding-bottom:14px;color:var(--muted)}
+
+/* ---------- Wrap-up footer ---------- */
+.wrapup{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-l);padding:24px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:22px;align-items:center}
+.wrapup__stats{display:flex;gap:22px;flex-wrap:wrap}
+.stat{display:grid;gap:2px}
+.stat b{font-family:var(--font-display);font-size:1.6rem;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
+.stat span{font-size:.8rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-weight:700}
+.pager{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;padding-block:28px}
+.pager a{text-decoration:none;display:grid;gap:2px;padding:12px 16px;border:1px solid var(--line);border-radius:var(--r-m);background:var(--surface);min-width:200px}
+.pager a span{font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.pager a b{font-family:var(--font-display)}
+.pager a:last-child{text-align:right}
+.weeks{display:flex;gap:6px;flex-wrap:wrap}
+.weeks a{display:inline-grid;place-items:center;width:34px;height:34px;border-radius:10px;border:1px solid var(--line);background:var(--surface);text-decoration:none;font-family:var(--font-display);font-weight:800;font-size:.85rem;color:var(--muted)}
+.weeks a.is-current{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.weeks a:hover{color:var(--fg)}
+footer.site{padding-block:32px 48px;color:var(--muted);font-size:.9rem;display:grid;gap:14px}
+@media (max-width:720px){.wrapup{grid-template-columns:1fr}}
+
+/* ---------- Day tabs (five days a week) ---------- */
+/* five day tabs */
+.days{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin-top:22px}
+@media (max-width:820px){.days{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:6px;scrollbar-width:thin}.days .dayt{min-width:170px;scroll-snap-align:start}}
+.dayt{display:grid;gap:4px;text-align:left;padding:12px 34px 12px 14px;border:1px solid var(--line);border-radius:var(--r-m);background:var(--surface);cursor:pointer;position:relative;transition:border-color .2s,background .2s;min-width:0;color:var(--fg)}
+.dayt:hover{border-color:color-mix(in srgb,var(--fg) 30%,var(--line))}
+.dayt.is-on{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.dayt__n{font-family:var(--font-display);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;font-weight:800;color:var(--muted)}
+.dayt__t{font-size:.78rem;color:var(--muted)}
+.dayt.is-on .dayt__n,.dayt.is-on .dayt__t{color:color-mix(in srgb,var(--bg) 72%,transparent)}
+.dayt b{font-family:var(--font-display);font-size:.98rem;line-height:1.2}
+.dayt__dot{position:absolute;right:12px;top:13px;width:9px;height:9px;border-radius:50%;background:var(--line)}
+.dayt.is-on .dayt__dot{background:color-mix(in srgb,var(--bg) 40%,transparent)}
+.dayt.is-done .dayt__dot{background:var(--observe);box-shadow:0 0 0 3px color-mix(in srgb,var(--observe) 25%,transparent)}
+.daypanel{border-top:0;padding-top:30px}
+.today{margin-top:28px;border:1px solid color-mix(in srgb,var(--observe) 45%,var(--line));border-radius:var(--r-l);background:linear-gradient(180deg,color-mix(in srgb,var(--observe) 6%,var(--surface)),var(--surface));padding:20px;display:grid;gap:14px}
+.today__head{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:center}
+.today__head .meter{min-width:220px}
+.today .step__body textarea{min-height:76px;margin-top:6px;font-size:.92rem}
+.today pre.code{margin-top:4px}
+.daynav{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:26px}
+.part{padding-top:40px;margin-top:40px;border-top:1px dashed var(--line)}
+
+/* ---------- Live (Claude) blocks ---------- */
+.live{border:1px solid color-mix(in srgb,var(--think) 45%,var(--line));border-radius:var(--r-l);background:linear-gradient(180deg,color-mix(in srgb,var(--think) 7%,var(--surface)),var(--surface));padding:20px;display:grid;gap:14px}
+.live__head{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.live__head .chip{background:var(--think);color:#fff}
+.live__out{min-height:64px;padding:14px 16px;border-radius:var(--r-m);background:var(--surface);border:1px solid var(--line);white-space:pre-wrap;font-size:.95rem;line-height:1.55;max-height:420px;overflow:auto}
+.live__out.is-busy{color:var(--muted);font-style:italic}
+.live__missing{font-size:.9rem;color:var(--muted)}
+
+/* ---------- Motion ---------- */
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
+@keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@keyframes dash{to{stroke-dashoffset:-40}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes popin{from{transform:scale(.85);opacity:0}to{transform:scale(1);opacity:1}}
+.anim-pulse{animation:pulse 1.6s ease-in-out infinite}
+.anim-float{animation:floaty 3s ease-in-out infinite}
+.anim-dash{stroke-dasharray:6 6;animation:dash 1.2s linear infinite}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(20px);background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:999px;font-weight:600;opacity:0;transition:opacity .25s,transform .25s;z-index:50;pointer-events:none;max-width:calc(100vw - 32px)}
+.toast.is-on{opacity:1;transform:translateX(-50%) translateY(0)}
+.confetti{position:fixed;inset:0;pointer-events:none;z-index:40}
+@media (prefers-reduced-motion:reduce){
+  .anim-pulse,.anim-float,.anim-dash{animation:none}
+  *{scroll-behavior:auto!important}
+}
+
+</style>
+<style>
+/* Week 5 specifics */
+.aside{padding:12px 14px;border-left:3px solid var(--think);background:var(--surface-2);border-radius:0 var(--r-m) var(--r-m) 0;font-size:.95rem;color:var(--muted)}
+.aside b{color:var(--fg)}
+.dlog{display:grid;gap:10px}
+.dlog textarea{min-height:72px}
+.concept__text p+p{margin-top:2px}
+/* hero: the embedding space */
+.w5-space{aspect-ratio:1/1;cursor:grab;touch-action:none}
+.w5-space:active{cursor:grabbing}
+@media (min-width:821px){.hero .wrap{grid-template-columns:minmax(0,1fr) minmax(0,.92fr)}}
+.w5-tip{position:absolute;pointer-events:none;background:rgba(7,11,22,.92);color:#EAF0FF;border:1px solid #26325A;border-radius:8px;padding:4px 8px;font-size:12px;font-family:var(--font-body);transform:translate(-50%,-130%);white-space:nowrap;max-width:260px;overflow:hidden;text-overflow:ellipsis;z-index:2}
+.w5-query{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px}
+.w5-query input{font-size:.95rem;min-width:0}
+.w5-presets .btn{padding:6px 10px;font-size:.84rem}
+.w5-nn{display:grid;gap:6px;font-size:.88rem}
+.w5-nn>div{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center}
+.w5-nn .w5-nn__t{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block}
+.w5-nn .w5-bar{height:5px;border-radius:999px;background:rgba(255,255,255,.14);overflow:hidden;margin-top:3px}
+.w5-nn .w5-bar i{display:block;height:100%;background:var(--think)}
+.w5-nn .w5-rank{font-family:var(--font-display);font-weight:800;color:var(--stage-muted);width:18px}
+.w5-nn .w5-sim{font-family:var(--font-mono);font-size:.78rem;color:var(--stage-muted)}
+/* concept canvases and small controls */
+.w5-canvas{height:260px}
+#w5-netCanvas{height:300px}
+.w5-ctrl{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.w5-ctrl label{display:flex;gap:8px;align-items:center;font-size:.85rem;color:var(--muted)}
+.w5-ctrl input[type=range]{width:110px}
+.w5-between{display:flex;gap:8px;flex-wrap:wrap;justify-content:space-between;align-items:center}
+/* pair similarity */
+.w5-pair{display:grid;gap:10px}
+.w5-pair select{font-size:.9rem}
+.w5-simscore{display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;align-items:center}
+.w5-simscore>b{font-family:var(--font-display);font-size:2rem;font-variant-numeric:tabular-nums}
+/* k-means */
+.w5-km{position:relative}
+/* chunking */
+.w5-chunks{display:flex;flex-wrap:wrap;gap:4px;line-height:1.5;font-size:.82rem}
+.w5-chunk{padding:2px 6px;border-radius:6px;border:1px solid transparent}
+.w5-chunk.has{outline:2px solid var(--observe);outline-offset:1px}
+.w5-chunk.cut{outline:2px dashed var(--bad);outline-offset:1px}
+/* keyword versus semantic */
+.w5-kw{display:grid;gap:10px}
+.w5-kw__cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.w5-kw__col{display:grid;gap:6px;align-content:start;min-width:0}
+.w5-kw__col h5{margin:0;font-family:var(--font-display);font-size:.74rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.w5-hit{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;padding:8px 10px;border-radius:10px;border:1px solid var(--line);background:var(--bg);font-size:.82rem;min-width:0;align-items:start}
+.w5-hit code{display:block;font-size:.72rem;background:transparent;padding:0;color:var(--muted)}
+.w5-hit mark{background:var(--act-soft);color:inherit;border-radius:3px;padding:0 2px}
+.w5-hit .w5-sc{font-family:var(--font-mono);font-size:.74rem;color:var(--muted);white-space:nowrap}
+.w5-hit.is-right{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 10%,var(--surface))}
+.w5-hit.is-empty{color:var(--muted);font-style:italic;grid-template-columns:1fr}
+/* the RAG loop */
+.w5-rag{display:grid;gap:8px}
+.w5-rag__phase{font-family:var(--font-display);font-size:.76rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:800}
+.w5-rag__row{display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:6px}
+.w5-rag__node{padding:10px 8px;border-radius:12px;border:1px solid var(--line);background:var(--bg);text-align:center;font-size:.82rem;font-weight:600;transition:background .3s,border-color .3s,transform .3s;min-width:0}
+.w5-rag__node.is-on{background:var(--think-soft);border-color:var(--think);transform:translateY(-2px)}
+.w5-rag__node.is-done{border-color:var(--observe)}
+.w5-rag__msg{min-height:64px;padding:10px 12px;border-radius:12px;background:var(--surface-2);font-size:.9rem}
+/* citation tracking */
+.w5-cite{display:grid;gap:10px}
+.w5-cite__ctx{display:grid;gap:6px}
+.w5-chunkcard{padding:8px 10px;border-radius:10px;border:1px solid var(--line);background:var(--bg);font-size:.82rem;display:grid;gap:2px;min-width:0;transition:border-color .2s,background .2s}
+.w5-chunkcard code{font-size:.72rem;background:transparent;padding:0;color:var(--muted)}
+.w5-chunkcard.is-lit{border-color:var(--observe);background:var(--observe-soft)}
+.w5-cite__ans{padding:12px 14px;border-radius:12px;background:var(--surface-2);font-size:.92rem;line-height:1.7}
+.w5-src{display:inline-block;font-family:var(--font-mono);font-size:.72rem;padding:1px 7px;border-radius:999px;border:1px solid var(--line);background:var(--surface);cursor:pointer;vertical-align:1px;line-height:1.5}
+.w5-src.is-lit{background:var(--observe-soft);border-color:var(--observe)}
+.w5-src.is-ok{border-color:var(--ok);color:var(--ok)}
+.w5-src.is-bad{border-color:var(--bad);color:var(--bad);text-decoration:line-through}
+.w5-cite__user{margin:0;padding:0 0 0 18px;font-size:.85rem;color:var(--muted);display:grid;gap:4px}
+.w5-cite__user b{color:var(--fg)}
+/* failure modes */
+.w5-fail{display:grid;gap:10px}
+.w5-rankrow{display:flex;gap:4px;flex-wrap:wrap}
+.w5-rankrow span{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;font-family:var(--font-mono);font-size:.78rem;border:1px solid var(--line);background:var(--bg)}
+.w5-rankrow span.in{background:var(--observe-soft);border-color:var(--observe)}
+.w5-rankrow span.right{font-weight:800;color:var(--act);border-color:var(--act)}
+.w5-rankrow span.out{opacity:.45}
+.w5-rankrow span.stale{color:var(--warn);border-color:var(--warn);background:repeating-linear-gradient(45deg,var(--surface-2) 0 4px,var(--bg) 4px 8px)}
+.w5-rankrow span.noise{background:color-mix(in srgb,var(--bad) 12%,var(--surface));border-color:var(--bad);color:var(--bad)}
+.w5-legend{display:flex;gap:12px;flex-wrap:wrap;font-size:.78rem;color:var(--muted)}
+.w5-legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:middle;border:1px solid var(--line)}
+/* recall meter */
+.w5-rec{display:grid;gap:10px}
+.w5-rec table.tbl{min-width:0;font-size:.82rem}
+.w5-rec table.tbl th,.w5-rec table.tbl td{padding:5px 8px}
+.w5-rec td.hit{color:var(--ok);font-weight:700}
+.w5-rec td.miss{color:var(--bad)}
+.w5-recbars{display:grid;gap:6px}
+.w5-recbar{display:grid;grid-template-columns:96px minmax(0,1fr) 48px;gap:8px;align-items:center;font-size:.85rem}
+.w5-recbar .progress{height:12px}
+.w5-recbar .w5-n{font-family:var(--font-mono);font-size:.8rem;text-align:right;color:var(--muted)}
+/* lab scorecard */
+.w5-score input[type=number]{width:68px;text-align:center}
+.w5-score input[type=text]{min-width:220px}
+.w5-score tfoot th{font-size:.85rem;text-transform:none;letter-spacing:0}
+/* practice */
+.w5-pick{display:grid;gap:8px}
+.w5-pick button{text-align:left;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--bg);cursor:pointer;font-size:.9rem;display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px;min-width:0}
+.w5-pick button.is-sel{border-color:var(--think);background:var(--think-soft)}
+.w5-pick button.is-right{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 12%,var(--surface))}
+.w5-pick button.is-wrong{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 10%,var(--surface))}
+.w5-pick button.is-missed{border-style:dashed;border-color:var(--ok)}
+.w5-pick code{font-size:.75rem;color:var(--muted);background:transparent;padding:0}
+.w5-scorebar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.w5-scorebar b{font-family:var(--font-display);font-size:1.6rem;font-variant-numeric:tabular-nums}
+</style>
+
+<header class="rail">
+  <div class="wrap">
+    <span class="rail__badge">Week 5</span>
+    <span class="rail__title">Embeddings and RAG</span>
+    <nav class="rail__nav" aria-label="Days">
+      <a class="rail__pill" href="#day1"><i class="rail__dot"></i>Day 1</a>
+      <a class="rail__pill" href="#day2"><i class="rail__dot"></i>Day 2</a>
+      <a class="rail__pill" href="#day3"><i class="rail__dot"></i>Day 3</a>
+      <a class="rail__pill" href="#day4"><i class="rail__dot"></i>Day 4</a>
+      <a class="rail__pill" href="#day5"><i class="rail__dot"></i>Day 5</a>
+    </nav>
+    <div class="rail__links">
+      <a data-href="hub">Course hub</a>
+      <a data-href="doc">Course doc</a>
+    </div>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap">
+    <div class="hero__text">
+      <span class="eyebrow">Week 5 · Module 6 · five days · about 6 hours in total</span>
+      <h1>Your documents will never all fit in the window. Here is how an assistant finds the right paragraph anyway.</h1>
+      <p class="lede">Last week you learned to pack a context window well. This week the documents are too big to pack at all: a thousand pages of policies, contracts and tickets. The answer is to turn meaning into numbers, store those numbers, and pull out only the three paragraphs a question needs. I have cut the week into five days, from 45 minutes to a little over two hours for the lab. By the end you will have built a retrieval assistant that answers with sources, and measured how often it finds the right chunk.</p>
+      <div class="hero__actions">
+        <a class="btn btn--primary" href="#day1">Start Day 1</a>
+        <a class="btn" href="#day5">Go to Day 5, the lab</a>
+      </div>
+      <div class="w5-query">
+        <input type="text" id="w5-qText" value="I can't log in to my account" aria-label="A question to place in the map" autocomplete="off">
+        <button class="btn btn--primary" id="w5-qGo" type="button">Embed it</button>
+      </div>
+      <div class="row w5-presets" id="w5-qPresets" aria-label="Example questions">
+        <button class="btn btn--small" type="button" id="w5-qp1" data-q="Is a cab from the terminal reimbursable?">Is a cab from the terminal reimbursable?</button>
+        <button class="btn btn--small" type="button" id="w5-qp2" data-q="Where is my package?">Where is my package?</button>
+        <button class="btn btn--small" type="button" id="w5-qp3" data-q="Why was I charged twice?">Why was I charged twice?</button>
+        <button class="btn btn--small" type="button" id="w5-qp4" data-q="Sales grew last quarter">Sales grew last quarter</button>
+      </div>
+      <div class="w5-nn" id="w5-nnList" aria-live="polite"></div>
+    </div>
+    <div class="stage w5-space" id="w5-spaceStage" aria-label="Interactive 3D map of 40 workplace questions grouped by meaning into five topics. Drag to orbit, hover a point to read it, type a question to place it next to its nearest neighbours.">
+      <canvas id="heroCanvas"></canvas>
+      <div class="w5-tip" id="w5-spaceTip" hidden></div>
+      <span class="stage__label">live · 40 questions · 5 topics · drag to orbit</span>
+      <div class="stage__hud"><button class="btn btn--small" id="w5-spinBtn" type="button">Pause spin</button><button class="btn btn--small" id="w5-resetView" type="button">Reset view</button></div>
+    </div>
+  </div>
+</section>
+
+<main class="wrap">
+
+  <nav class="days" id="dayTabs" aria-label="The five days of Week 5" role="tablist">
+    <button class="dayt" type="button" role="tab" id="dayt1" aria-controls="day1" aria-selected="false"><span class="dayt__n">Day 1</span><b>Meaning as numbers</b><span class="dayt__t">about 45 min</span><i class="dayt__dot"></i></button>
+    <button class="dayt" type="button" role="tab" id="dayt2" aria-controls="day2" aria-selected="false"><span class="dayt__n">Day 2</span><b>Groups and chunks</b><span class="dayt__t">about 55 min</span><i class="dayt__dot"></i></button>
+    <button class="dayt" type="button" role="tab" id="dayt3" aria-controls="day3" aria-selected="false"><span class="dayt__n">Day 3</span><b>Store, search, loop</b><span class="dayt__t">about 60 min</span><i class="dayt__dot"></i></button>
+    <button class="dayt" type="button" role="tab" id="dayt4" aria-controls="day4" aria-selected="false"><span class="dayt__n">Day 4</span><b>Sources and failures</b><span class="dayt__t">about 70 min</span><i class="dayt__dot"></i></button>
+    <button class="dayt" type="button" role="tab" id="dayt5" aria-controls="day5" aria-selected="false"><span class="dayt__n">Day 5</span><b>Measure, then the lab</b><span class="dayt__t">about 130 min</span><i class="dayt__dot"></i></button>
+  </nav>
+
+  <section class="scene daypanel" id="day1" role="tabpanel" aria-labelledby="dayt1" hidden>
+    <div class="scene__head">
+      <span class="scene__kicker scene__kicker--learn">Day 1 · about 45 minutes</span>
+      <h2>Meaning as a place on a map</h2>
+      <p>Today I want you to feel one idea in your hands: a sentence can be turned into a list of numbers, and sentences that mean the same thing get similar numbers. By the end you can explain why a search for "cab" finds a rule written about "taxis", and you will know, roughly, where those numbers come from. Both visuals are live, and so is the map above.</p>
+    </div>
+    <!-- 1. Embeddings -->
+    <article class="concept">
+      <div class="concept__viz">
+        <div class="w5-pair">
+          <label class="field"><span>Sentence A</span><select id="w5-pairA" aria-label="Sentence A"></select></label>
+          <label class="field"><span>Sentence B</span><select id="w5-pairB" aria-label="Sentence B"></select></label>
+          <div class="w5-simscore"><b id="w5-pairScore">0.00</b><div class="meter"><div class="meter__row"><span>Similarity (1 = same meaning)</span><b id="w5-pairWords">0 shared words</b></div><div class="progress progress--think"><i id="w5-pairBar" style="width:0%"></i></div></div></div>
+          <p class="muted" id="w5-pairNote" style="font-size:.88rem"></p>
+        </div>
+        <div class="viz-caption"><span>Pick any two of the 40 questions from the map above.</span><span class="muted">Scores are illustrative, from the 3D distance.</span></div>
+      </div>
+      <div class="concept__text">
+        <h3>Why does the policy search miss "cab" when the rule says "taxi"?</h3>
+        <p>Picture the search box on your company intranet. A colleague types "is an airport cab reimbursable" and gets nothing useful, because the expense policy says "taxis are reimbursed for airport transfers". Not one word in common. Keyword search compares spelling, and spelling is a poor proxy for meaning. Every support team, legal team and HR inbox has a version of this problem, and until recently the only fix was a list of synonyms that somebody maintained by hand.</p>
+        <p>An embedding is the fix the field settled on. An embedding model reads a piece of text and returns a vector: a list of numbers, about a thousand of them, that describes what the text is about rather than how it is spelled. "Can I claim a taxi from the airport?" and "Is a cab from the terminal reimbursable?" come out with very similar lists. "Quarterly revenue grew 12%" comes out somewhere else entirely. Compare any two sentences on the left and watch the score. The pair I have preselected shares no words at all.</p>
+        <p>The score is a cosine similarity, a measure of whether two vectors point the same way. It runs from minus one to one, and for most models a match worth acting on sits somewhere above 0.8, although the exact scale depends on the model, so you calibrate it on your own data rather than trusting a number from a blog post. The numbers on this page are illustrative. They come from the distance between points in the map above, which is itself a cartoon: a thousand-dimensional space squeezed into three so that you can look at it.</p>
+        <p>The map analogy breaks in one important way. On a real map two places are close for one reason, geography. In an embedding space closeness blends everything the model learned matters: topic, intent, tone, even the kind of document the sentence usually appears in. That is why "Charged twice this month" and "Why was I billed early?" sit together although one is a complaint and the other a question. Useful most of the time, occasionally surprising, and we meet the surprises on Day 4.</p>
+        <div class="aside"><b>Claude does not make embeddings.</b> They come from a separate, much smaller model trained for exactly this job. Anthropic points people to Voyage AI; n8n has embedding nodes for several providers. Keep the two models apart in your head: one turns text into coordinates, the other writes the answer.</div>
+        <div class="key"><p>An embedding is a list of numbers that captures what a text is about. Vector search compares those numbers, so it finds meaning, not spelling.</p></div>
+      </div>
+    </article>
+    <!-- 2. Where embeddings come from -->
+    <article class="concept">
+      <div class="concept__viz">
+        <canvas id="w5-netCanvas" aria-label="A sentence is split into tokens, passes through three layers of a small network, the inner layer settles into a pattern of eight numbers, and two of those numbers place a dot on a plot where similar sentences land together"></canvas>
+        <div class="w5-ctrl" style="margin-top:10px">
+          <label style="flex:1;min-width:200px">Sentence <select id="w5-netSel" aria-label="Sentence to embed" style="flex:1"></select></label>
+          <button class="btn btn--small" type="button" id="w5-netReplay">Replay</button>
+        </div>
+        <div class="viz-caption"><span>A cartoon of an embedding model. The real inner layer has 1,024 or more numbers, not eight.</span><span class="row chip chip--think">MIT xPRO, Module 3</span></div>
+      </div>
+      <div class="concept__text">
+        <h3>Where do the numbers come from?</h3>
+        <p>In Week 1 you watched a ticket sorter learn. Every ticket passed through layers of simple units, and thousands of weights shifted until the final layer said "billing" or "technical". The MIT xPRO course, in its module on neural networks, points out something easy to miss in that picture: the layer just before the answer is already a description of the ticket. Its units light up in a pattern that captures what the ticket is about, because that is the only way the last layer can get the answer right. Read those activations off as a list of numbers and you have an embedding.</p>
+        <p>The MIT instructors show this with an autoencoder, a network trained to squeeze an input down to a few numbers and then rebuild it. Trained on images of handwritten digits, 256 pixel values in and 256 out, with only two numbers allowed in the middle, the network had no choice but to make those two numbers mean something. Plotted on a page, the zeros, ones and twos fell into separate groups, and nobody had told it what a two looks like. Modern embedding models do the same with text, at a scale of a thousand numbers rather than two, trained on millions of pairs of texts that people agreed were about the same thing.</p>
+        <p>Pick a sentence on the left and watch it travel. Tokens go in, the layers do their arithmetic, and the inner layer settles into a pattern. I have drawn eight units; a real model has a thousand or more, and the plot on the right uses two of them as coordinates. The two taxi sentences land close together. The revenue sentence does not.</p>
+        <p>This is also why embedding models are cheap to run. They are small compared with Claude, they read the text once, and they return the numbers in a few milliseconds for a fraction of a cent. You can afford to embed every paragraph of every policy your company has written, which is exactly what we will do on Day 5.</p>
+        <div class="key"><p>An embedding is a neural network's inner layer read off as coordinates. The network learned to place similar texts together because that was the only way to do its job.</p></div>
+      </div>
+    </article>
+    <div class="today">
+      <div class="today__head"><span class="scene__kicker scene__kicker--try">Do today</span><div class="meter" data-meter-for="d1"><div class="meter__row"><span>Progress</span><b data-meter-label>0 / 2</b></div><div class="progress"><i></i></div></div></div>
+      <p class="muted" style="font-size:.95rem">One experiment on this page, one in Claude. About 20 minutes. Made-up data only.</p>
+      <ol class="steps steps--numbered" data-persist="d1">
+        <li><span class="step__num"></span><input class="check" type="checkbox" id="d1-1" aria-label="Done"><div class="step__body"><p>On this page: type three questions from your own work into the box above the map and press Embed it. Then, in the comparison on this day, find a pair of sentences that scores above 0.8 with zero shared words.</p><p class="step__notice"><strong>Notice:</strong> the question lands near its neighbours by meaning. The toy on this page uses a short synonym list, which is a cheat; a real embedding model learned the same thing from billions of sentences and needs no list.</p></div></li>
+        <li><span class="step__num"></span><input class="check" type="checkbox" id="d1-2" aria-label="Done"><div class="step__body"><p>In Claude: paste the eight support questions below and ask: "Group these by what the person wants. Give each group a name, and list every pair that shares no words but belongs together."</p><p class="step__notice"><strong>Notice:</strong> Claude groups by meaning without being told the topics. An embedding model makes the same judgement as arithmetic, fast enough to run on a million chunks.</p><textarea data-note="d1-note" id="d1Note" placeholder="Which pair surprised you, and which group would you have named differently?"></textarea></div></li>
+      </ol>
+      <h4 style="margin:22px 0 8px">The eight questions to paste</h4>
+<pre class="code"><code><span class="c"># eight support questions, two topics hidden inside each pair of topics</span>
+I forgot my login
+Is a cab from the terminal reimbursable?
+Where is my package?
+Can I claim a taxi from the airport?
+Why was I billed early?
+Reset link expired
+Track my parcel
+Charged twice this month</code></pre>
+    </div>
+    <div class="daynav"><span></span><button class="btn btn--primary" type="button" data-go="2" id="goNext1">Day 2 · Groups and chunks →</button></div>
+  </section>
+
+  <section class="scene daypanel" id="day2" role="tabpanel" aria-labelledby="dayt2" hidden>
+    <div class="scene__head">
+      <span class="scene__kicker scene__kicker--learn">Day 2 · about 55 minutes</span>
+      <h2>Groups without labels, and documents cut to size</h2>
+      <p>Two ideas that explain most of the retrieval quality you will ever get. First, why similar things sit together even when nobody labelled them, an idea the MIT course teaches as clustering. Then chunking: how to cut a long document so each piece means one thing. By the end you will have chunked a policy by hand and watched three chunk sizes succeed or fail on the same question.</p>
+    </div>
+    <!-- 3. Clustering -->
+    <article class="concept">
+      <div class="concept__viz">
+        <div class="w5-km">
+          <canvas id="w5-kmCanvas" class="w5-canvas" aria-label="Forty unlabelled support tickets as dots. Pressing Find the groups runs k-means: centroids move, dots take the colour of their nearest centroid, and four groups appear"></canvas>
+          <div class="w5-tip" id="w5-kmTip" hidden></div>
+        </div>
+        <div class="w5-ctrl" style="margin-top:10px">
+          <button class="btn btn--small btn--think" type="button" id="w5-kmRun">Find the groups</button>
+          <button class="btn btn--small" type="button" id="w5-kmStep">One round</button>
+          <button class="btn btn--small" type="button" id="w5-kmShuffle">Start over</button>
+          <label>k <input type="range" id="w5-kmK" min="2" max="6" value="4" aria-label="Number of groups to look for"> <span class="mono" id="w5-kmKLabel" style="font-size:.8rem">4 groups</span></label>
+          <span class="chip" id="w5-kmState">unsorted · hover a dot</span>
+        </div>
+        <div class="viz-caption"><span>Nobody labelled these tickets. The algorithm only knows distances.</span><span class="row chip chip--think">MIT xPRO, Module 2</span></div>
+      </div>
+      <div class="concept__text">
+        <h3>Nobody labelled these tickets. Why do they still form groups?</h3>
+        <p>Export a month of support tickets with no tags, no categories, nothing but the text. Most managers assume you would have to read them to find the themes. You do not. The MIT xPRO course calls this unsupervised learning: there are inputs but no labels, and the job is to find structure in the data itself. Clustering is its simplest form, and the k-means algorithm the MIT instructors walk through is almost embarrassingly plain.</p>
+        <p>Press Find the groups. The algorithm starts with k guesses, assigns every ticket to its nearest guess, moves each guess to the middle of the tickets it collected, and repeats until nothing changes. Four or five rounds is usually enough. Hover any dot to read the ticket. The groups that appear are billing, shipping, login and leave, and no one typed those words into the machine. They emerged because similar tickets had similar coordinates.</p>
+        <p>Here is why this matters for retrieval. The embedding model places similar texts together for the same reason the clusters form: it had to, in order to do its training job. So when a question arrives, the chunks that answer it are already sitting in its neighbourhood, and "retrieve" means nothing more than "look around". The MIT course also warns about the catch: k is a choice you make before you start. Slide k to six and watch the algorithm invent groups that are not really there. Retrieval has the same knob, called top-k, and we spend most of Day 4 on it.</p>
+        <div class="aside"><b>A trick worth stealing from the MIT course.</b> When labelling is expensive, cluster first, label one example per cluster by hand, and let the label spread to the rest of the cluster. A support lead can tag four tickets instead of four hundred.</div>
+        <div class="key"><p>Similar texts get similar coordinates, so they form groups nobody labelled. Retrieval is looking around a question's neighbourhood.</p></div>
+      </div>
+    </article>
+    <!-- 4. Chunking -->
+    <article class="concept">
+      <div class="concept__viz">
+        <div class="w5-between">
+          <div class="seg" role="group" aria-label="Chunk size"><button type="button" id="w5-cs100" data-size="100">100 tokens</button><button type="button" id="w5-cs300" class="is-on" data-size="300">300</button><button type="button" id="w5-cs800" data-size="800">800</button><button type="button" id="w5-cs2000" data-size="2000">2,000</button></div>
+          <label style="display:inline-flex;gap:8px;align-items:center;font-size:.85rem;font-weight:600"><input type="checkbox" id="w5-overlap" style="accent-color:var(--observe)"> overlap</label>
+        </div>
+        <div class="seg" role="group" aria-label="Chunking strategy"><button type="button" id="w5-strFixed" class="is-on" data-strategy="fixed">Fixed size</button><button type="button" id="w5-strSection" data-strategy="section">Split at section headings</button></div>
+        <div class="w5-chunks" id="w5-chunkView" aria-live="polite"></div>
+        <div class="note" id="w5-chunkNote"></div>
+        <div class="viz-caption"><span>Question: <em>Can I claim a taxi from the airport?</em> Teal outline: the taxi rule sits whole in that chunk. Dashed red: cut in half.</span><b id="w5-chunkCount">0 chunks</b></div>
+      </div>
+      <div class="concept__text">
+        <h3>How do you cut a 40-page policy so each piece means one thing?</h3>
+        <p>You cannot embed the whole expense policy as a single vector. The model would average six topics into one list of numbers that is about nothing in particular, and a question about taxis would match it weakly. So you split the document into chunks, embed each chunk, and let a question find the chunk that answers it. How you split matters more than people expect, and it is the knob you will turn most often in the lab.</p>
+        <p>Try the sizes on the left. At 100 tokens the taxi rule is cut in half and the half about receipts lands in a different chunk; retrieval may return one half and the answer will be incomplete. At 2,000 tokens one chunk holds the whole policy and we are back to the blurred vector, with the prompt full of meals and laptops. Between 300 and 800 tokens the rule sits whole, next to the receipt cap that belongs with it. That range is a starting point, not a law: dense legal text wants smaller chunks, narrative handbooks tolerate larger ones.</p>
+        <p>Two strategies beat fixed sizes when you can use them. Split at section headings, so a chunk is a section and carries its own title; switch the toggle to see the policy cut that way. Or split by paragraph when there are no headings. And whatever you do, never cut a table in half: a row without its header means nothing to the model, or to the person who later follows the citation. Overlap, a few sentences repeated at each boundary, is cheap insurance against a sentence split across two chunks.</p>
+        <p>This is what the syllabus means by dynamic chunking: the strategy adapts to the document. A contract, a spreadsheet export and a chat log should not be cut the same way, and the only way to know your choice works is to test it, which is Day 5.</p>
+        <div class="key"><p>Chunk so each piece means one thing and carries its context. Start at 300 to 800 tokens, split at headings when you can, never cut a table, and test before you trust.</p></div>
+      </div>
+    </article>
+    <div class="today">
+      <div class="today__head"><span class="scene__kicker scene__kicker--try">Do today</span><div class="meter" data-meter-for="d2"><div class="meter__row"><span>Progress</span><b data-meter-label>0 / 2</b></div><div class="progress"><i></i></div></div></div>
+      <p class="muted" style="font-size:.95rem">One experiment on this page, one in Claude. About 25 minutes.</p>
+      <ol class="steps steps--numbered" data-persist="d2">
+        <li><span class="step__num"></span><input class="check" type="checkbox" id="d2-1" aria-label="Done"><div class="step__body"><p>On this page: run the chunker at all four sizes with overlap off, then on, then switch to splitting at section headings. Note which settings keep the taxi rule whole and next to its receipt rule.</p><p class="step__notice"><strong>Notice:</strong> splitting at headings keeps a rule with its exception regardless of size, because the person who wrote the policy already grouped them. Fixed sizes ignore that work.</p></div></li>
+        <li><span class="step__num"></span><input class="check" type="checkbox" id="d2-2" aria-label="Done"><div class="step__body"><p>In Claude: paste one of your Week 3 policy documents, or the expense policy below, and ask: "Split this into chunks of about 300 tokens, cutting at section boundaries. Give each chunk an id like expenses-03 and a one-line title, and tell me where you had to make a judgement call."</p><p class="step__notice"><strong>Notice:</strong> the judgement calls are where retrieval will fail later: a table, a list that spans two sections, a rule whose exception sits three paragraphs away.</p><textarea data-note="d2-note" id="d2Note" placeholder="The judgement calls Claude reported, and what you would do about each"></textarea></div></li>
+      </ol>
+      <h4 style="margin:22px 0 8px">A made-up expense policy to chunk</h4>
+<pre class="code"><code><span class="c"># Expense policy · Meridian Logistics (a made-up company)</span>
+1. Scope. This policy covers all staff who spend company money on travel, meals and equipment.
+2. Approval. Any expense over 100 units needs written approval from your manager before you spend it.
+3. Travel. Use public transport where it is available and reasonable. Taxis are reimbursed for airport
+   transfers when public transport is unavailable, when you carry equipment, or when you arrive after 10pm.
+   Keep every receipt. Claims without a receipt are capped at 20 units.
+4. Meals. Meals on overnight trips are reimbursed up to 40 units a day. Alcohol is never reimbursed.
+5. Equipment. Laptops and phones are ordered through IT, never bought directly.
+6. Deadlines. Submit claims within 30 days. Late claims need a written reason and may be refused.</code></pre>
+    </div>
+    <div class="daynav"><button class="btn" type="button" data-go="1" id="goPrev2">← Day 1 · Meaning as numbers</button><button class="btn btn--primary" type="button" data-go="3" id="goNext2">Day 3 · Store, search, loop →</button></div>
+  </section>
+
+  <section class="scene daypanel" id="day3" role="tabpanel" aria-labelledby="dayt3" hidden>
+    <div class="scene__head">
+      <span class="scene__kicker scene__kicker--learn">Day 3 · about 60 minutes</span>
+      <h2>The store, the search and the loop</h2>
+      <p>Today the pieces become a system. A vector store answers one question very fast, semantic search beats the keyword search you have used for twenty years, and the full RAG loop ties ingest and answer together. By the end you can draw the loop on a whiteboard, you will have made Claude act as a toy vector store, and your real store will be ready for Day 5.</p>
+    </div>
+    <!-- 5. Vector stores -->
+    <article class="concept">
+      <div class="concept__viz concept__viz--dark">
+        <canvas id="w5-storeCanvas" class="w5-canvas" aria-label="A question vector is compared with 28 stored vectors in a collection called company-docs; the five closest light up in order with their chunk ids"></canvas>
+        <div class="viz-caption" style="color:var(--stage-muted)"><span>Each stored vector keeps its text and metadata: doc_name, section, chunk_id, last_updated.</span><button class="btn btn--small" id="w5-storeRun" type="button" style="background:transparent;color:#EAF0FF;border-color:#26325A">Search again</button></div>
+      </div>
+      <div class="concept__text">
+        <h3>A database built for one question: which stored vectors are closest to this one?</h3>
+        <p>Your company already runs databases that answer "which rows match this filter" in milliseconds. A vector store is a database built for a different question: given a new vector, which of the million vectors I hold are nearest to it? Qdrant, Pinecone, Weaviate, pgvector inside Postgres, and n8n's In-Memory Vector Store all do this. They differ in price, hosting and how many vectors they hold before they slow down, not in the question they answer.</p>
+        <p>Each record in the store holds three things: the vector, the original text of the chunk, and metadata such as doc_name, section, chunk_id and the date it was indexed. The vector is for finding. The text is what you hand to Claude. The metadata is what becomes the citation. Watch the search run on the left: the question is embedded, compared with every stored vector, and the five closest light up with their ids.</p>
+        <p>The comparison looks expensive, and at a million vectors a naive version would be. Real stores use index structures that find near neighbours without checking every vector, trading a little accuracy for a lot of speed. The MIT xPRO course describes the ancestor of this idea under the name nearest neighbours: a table of everything you have seen, and a lookup for the closest entry. The index just makes the lookup fast.</p>
+        <p>One honest limit. A store returns the nearest vectors whether or not they are any good. Ask about parental leave with only an expense policy loaded and you still get five results, ranked by similarity, every one of them irrelevant. The store does not know what "relevant" means. That is why we ask for the similarity score alongside each result, and why Day 4 is about failures.</p>
+        <div class="key"><p>A vector store holds vector, text and metadata for every chunk and returns the nearest few to a question. The metadata becomes your citation.</p></div>
+      </div>
+    </article>
+    <!-- 6. Keyword versus semantic -->
+    <article class="concept">
+      <div class="concept__viz">
+        <div class="w5-kw">
+          <label class="field"><span>Question</span><select id="w5-kwSel" aria-label="Question to search for"></select></label>
+          <div class="w5-kw__cols">
+            <div class="w5-kw__col"><h5>Keyword search · top 3</h5><div id="w5-kwList" class="stack" style="gap:6px"></div></div>
+            <div class="w5-kw__col"><h5>Semantic search · top 3</h5><div id="w5-semList" class="stack" style="gap:6px"></div></div>
+          </div>
+          <div class="note" id="w5-kwVerdict"></div>
+        </div>
+        <div class="viz-caption"><span>Ten chunks from the policy set. Green border: the chunk that actually answers the question. Highlighted words: exact matches.</span><span class="muted">Simplified engines; real keyword search also stems words.</span></div>
+      </div>
+      <div class="concept__text">
+        <h3>Keyword search versus semantic search, on the same five questions</h3>
+        <p>You have used keyword search since your first job: type words, get the documents that contain those words, ranked by how often they appear. It is fast, cheap and transparent, and it fails in a predictable way. The person asking and the person who wrote the document chose different words. Pick a question on the left and compare the two columns. The chunk that actually answers it has a green border.</p>
+        <p>Semantic search embeds the question, finds the nearest chunks, and does not care how anything is spelled. "Cab from the terminal" finds the taxi rule. "Days off a year" finds the leave entitlement instead of the expense deadline that happens to contain the word "days". "Working from Spain for a month" finds the remote-work rule although Spain appears nowhere in the documents. This is what the syllabus means by semantic retrieval, and it is the reason the whole week exists.</p>
+        <p>Keyword search is not useless, and I want to be fair to it. When the question uses the document's own vocabulary, a form name, a part number, a person's name, exact matching is better than meaning: an embedding model may treat "form 27B" and "form 27C" as near twins. Production systems often run both and merge the results, which the field calls hybrid search. For the lab, semantic alone is enough. For your product, keep hybrid in mind wherever names and codes matter.</p>
+        <div class="key"><p>Semantic search matches meaning, keyword search matches spelling. Meaning wins for questions in plain words, spelling wins for codes and names, and many systems use both.</p></div>
+      </div>
+    </article>
+    <!-- 7. The RAG loop -->
+    <article class="concept">
+      <div class="concept__viz">
+        <div class="w5-rag">
+          <span class="w5-rag__phase">Ingest · once, and whenever a document changes</span>
+          <div class="w5-rag__row"><div class="w5-rag__node" data-step="0">Split into chunks</div><div class="w5-rag__node" data-step="1">Embed each chunk</div><div class="w5-rag__node" data-step="2">Store vector + text + metadata</div></div>
+          <span class="w5-rag__phase">Answer · every question</span>
+          <div class="w5-rag__row"><div class="w5-rag__node" data-step="3">Embed the question</div><div class="w5-rag__node" data-step="4">Retrieve top k</div><div class="w5-rag__node" data-step="5">Build &lt;context&gt;</div><div class="w5-rag__node" data-step="6">Claude answers and cites</div></div>
+          <div class="w5-rag__msg" id="w5-ragMsg" aria-live="polite">Press Play to walk through both phases.</div>
+          <div class="row"><button class="btn btn--small btn--think" id="w5-ragPlay" type="button">Play</button><button class="btn btn--small" id="w5-ragStep" type="button">Step</button></div>
+        </div>
+        <div class="viz-caption"><span>Seven steps. Claude enters at the last one.</span><span class="row chip chip--act">RAG · retrieval-augmented generation</span></div>
+      </div>
+      <div class="concept__text">
+        <h3>The full loop: ingest once, then answer every question</h3>
+        <p>Put the pieces in order and you have retrieval-augmented generation, RAG, the pattern inside nearly every serious enterprise assistant. There are two phases and they run at different times. Ingest happens once, or whenever a document changes: split into chunks, embed each chunk, store vector plus text plus metadata. Answering happens on every question: embed the question, retrieve the top chunks, build a prompt that puts those chunks inside <code>&lt;context&gt;</code> tags, and ask Claude to answer only from them and to cite the chunk each fact came from.</p>
+        <p>Press Play on the left and read each step. Notice how little Claude does. It never searches, never reads the store, never sees the documents that were not retrieved. It sees five chunks and a question. Everything you learned in Week 4 about packing a context window still applies, except that now a machine does the packing, one question at a time.</p>
+        <p>Do you always need this? No. If the whole corpus is under fifty pages, a Claude Project from Week 3 keeps it on the desk permanently and you skip the store entirely. RAG earns its complexity when the documents will not fit, change often, or need per-user access control so that one team's contracts never reach another's questions. Choosing between "paste it", "Project" and "RAG" is a design decision, and it is the first question in this week's design-log entry.</p>
+        <div class="aside"><b>Where it breaks.</b> Retrieval runs before the model reads anything, so a question whose answer is spread across a whole document, "summarise this policy", gets five chunks and a partial summary delivered with confidence. RAG is a lookup pattern. For whole-document work, Week 4's techniques are still the right tool.</div>
+        <div class="key"><p>Ingest once: chunk, embed, store. Per question: embed, retrieve, build &lt;context&gt;, answer with citations. Claude only ever sees the retrieved chunks.</p></div>
+      </div>
+    </article>
+    <div class="today">
+      <div class="today__head"><span class="scene__kicker scene__kicker--try">Do today</span><div class="meter" data-meter-for="d3"><div class="meter__row"><span>Progress</span><b data-meter-label>0 / 3</b></div><div class="progress"><i></i></div></div></div>
+      <p class="muted" style="font-size:.95rem">One experiment on this page, one in Claude, and the account setup for the lab. About 30 minutes.</p>
+      <ol class="steps steps--numbered" data-persist="d3">
+        <li><span class="step__num"></span><input class="check" type="checkbox" id="d3-1" aria-label="Done"><div class="step__body"><p>On this page: press Play on the loop and read all seven steps. Then press Search again on the store and watch which ids light up, and in what order.</p><p class="step__notice"><strong>Notice:</strong> six of the seven steps happen before Claude reads a word. Most of the quality, and most of the bugs, live in those six.</p></div></li>
+        <li><span class="step__num"></span><input class="check" type="checkbox" id="d3-2" aria-label="Done"><div class="step__body"><p>In Claude: make it act as a vector store. Paste the eight chunks below with their ids, then ask: "For each of the three questions, return the three chunk ids most likely to answer it, most likely first, each with a one-line reason."</p><p class="step__notice"><strong>Notice:</strong> Claude ranks by meaning the way the store would, slowly and at some cost per question. The store does the same with arithmetic in milliseconds, and cannot explain itself.</p><textarea data-note="d3-note" id="d3Note" placeholder="Where Claude's ranking surprised you, and which store you chose for the lab and why"></textarea></div></li>
+        <li><span class="step__num"></span><input class="check" type="checkbox" id="d3-3" aria-label="Done"><div class="step__body"><p>Set up for Day 5. Either create a free Qdrant Cloud cluster and keep its URL and API key in a password manager, or confirm you can open n8n and add an In-Memory Vector Store node (newer versions call it Simple Vector Store). You also need a key for an embedding model from a provider such as Voyage AI, OpenAI, Cohere or Google.</p><p class="step__notice"><strong>Notice:</strong> none of these keys ever goes into a chat window, a prompt or this page. They live in a password manager and, later, in environment variables or n8n credentials.</p></div></li>
+      </ol>
+      <h4 style="margin:22px 0 8px">Eight chunks and three questions to paste</h4>
+<pre class="code"><code><span class="c"># chunks from the made-up policy set, with their ids</span>
+[expenses-03] Taxis are reimbursed for airport transfers when public transport is unavailable, when you carry equipment, or when you arrive after 10pm.
+[handbook-07] Staff are expected to arrive on time for client meetings and dress appropriately for the client's environment.
+[expenses-04] Keep every receipt. Claims without a receipt are capped at 20 units and may be refused for travel over 50 units.
+[remote-02]   Remote workers may claim a home-office allowance of 15 units a month for internet costs.
+[expenses-02] Any expense over 100 units needs written approval from your manager before you spend it.
+[travel-01]   Exception: taxis to and from the airport are always allowed for flights departing before 7am or landing after 10pm, with a receipt.
+[leave-05]    Travel days for work count as working days, not leave days, when they fall on a weekday.
+[it-sec-09]   Never connect a company laptop to public airport Wi-Fi without the VPN switched on.
+<span class="c"># questions</span>
+1. Can I claim a taxi from the airport?
+2. Do I need a receipt for a 30-unit taxi?
+3. Can I use the airport Wi-Fi on my laptop?</code></pre>
+    </div>
+    <div class="daynav"><button class="btn" type="button" data-go="2" id="goPrev3">← Day 2 · Groups and chunks</button><button class="btn btn--primary" type="button" data-go="4" id="goNext3">Day 4 · Sources and failures →</button></div>
+  </section>
+
+  <section class="scene daypanel" id="day4" role="tabpanel" aria-labelledby="dayt4" hidden>
+    <div class="scene__head">
+      <span class="scene__kicker scene__kicker--learn">Day 4 · about 70 minutes</span>
+      <h2>Sources you can check, and the ways retrieval fails</h2>
+      <p>Citations turn "the AI said so" into "section 3 of the expense policy says so". Today you learn how a citation is tracked from the store to the sentence, how to verify one, and the five ways a RAG pipeline produces a wrong answer with a perfectly good model. By the end you will have written the five test questions you will use in the lab.</p>
+    </div>
+    <!-- 8. Citation tracking -->
+    <article class="concept">
+      <div class="concept__viz">
+        <div class="w5-cite">
+          <div class="w5-cite__ctx" id="w5-citeCtx" aria-label="The four chunks in the context"></div>
+          <div class="w5-cite__ans" id="w5-citeAns" aria-live="polite"></div>
+          <ol class="w5-cite__user" id="w5-citeUser" hidden></ol>
+          <div class="w5-between"><span class="row"><button class="btn btn--small btn--think" type="button" id="w5-citeCheck">Check citations</button><button class="btn btn--small" type="button" id="w5-citeView">As the user sees it</button><button class="btn btn--small" type="button" id="w5-citeReset">Reset</button></span><span class="chip" id="w5-citeResult">3 citations · unchecked</span></div>
+        </div>
+        <div class="viz-caption"><span>Click a citation to light up its chunk. Then check them against the context.</span><span class="row chip chip--observe">citation tracking</span></div>
+      </div>
+      <div class="concept__text">
+        <h3>How does a sentence know which chunk it came from?</h3>
+        <p>A finance lead asks the assistant whether airport taxis are claimable and gets a confident yes. Before she acts on it she wants one thing: where does it say that? In Week 1 you learned that a model's confidence tells you nothing about its correctness. Citations are the fix, and they are mechanical rather than clever. Every chunk arrives in the prompt with its chunk_id, the system prompt tells Claude to write [source: chunk_id] after every factual sentence, and the metadata the store returned turns that id into "Expense policy, section 3, Travel".</p>
+        <p>Read the answer on the left. Three sentences, three citations. Click one and its chunk lights up in the context. Now press Check citations. Two are real. The third points at expenses-09, a chunk that was never retrieved: the model wrote a plausible-looking id. That is the Week 1 invented fact wearing a citation, and it is why a program, not a person, should verify every id against the context before the answer reaches a user.</p>
+        <p>The verifier is twenty lines of code, or a Code node in n8n. Pull every [source: ...] out of the answer, check each against the list of ids you put into the context, and flag or strip the ones that do not match. Go one step further and check that the cited chunk actually contains a sentence close to the claim; that catches the subtler failure, a real id attached to the wrong fact.</p>
+        <p>Then show the sources the way a person wants them. Press "As the user sees it": footnotes with the document name, the section and the date it was indexed, each one a link to the original. Most of the trust your assistant earns comes from this screen, not from the model.</p>
+        <div class="key"><p>A citation is a chunk_id that travels from the store, through the prompt, into the answer. Verify every id against the context before anyone reads the answer.</p></div>
+      </div>
+    </article>
+    <!-- 9. Where RAG fails -->
+    <article class="concept">
+      <div class="concept__viz">
+        <div class="w5-fail">
+          <div class="seg" role="group" aria-label="Failure mode"><button type="button" id="w5-f0" class="is-on" data-fail="0">Not retrieved</button><button type="button" id="w5-f1" data-fail="1">Ranked sixth</button><button type="button" id="w5-f2" data-fail="2">Needs two chunks</button><button type="button" id="w5-f3" data-fail="3">Stale index</button><button type="button" id="w5-f4" data-fail="4">Too many results</button></div>
+          <div class="w5-between"><span class="muted" style="font-size:.85rem">Retrieved ranks 1 to 10 · <b id="w5-kLabel">top-k = 5</b></span><input type="range" id="w5-kRange" min="1" max="10" value="5" style="width:140px" aria-label="Top k, the number of chunks handed to Claude"></div>
+          <div class="w5-rankrow" id="w5-rankRow"></div>
+          <div class="w5-legend"><span><i style="background:var(--observe-soft);border-color:var(--observe)"></i>inside top-k</span><span><i style="border-color:var(--act)"></i>holds the answer</span><span><i style="border-color:var(--warn)"></i>out of date</span><span><i style="border-color:var(--bad)"></i>noise</span></div>
+          <div class="note" id="w5-failNote"></div>
+        </div>
+        <div class="viz-caption"><span>Question: <em>Can I claim a taxi from the airport, and do I need a receipt?</em> Slide k to see what Claude receives.</span></div>
+      </div>
+      <div class="concept__text">
+        <h3>Five ways to get a wrong answer with a perfectly good model</h3>
+        <p>When a RAG assistant answers badly, almost everyone blames the model. In my experience the model is the last place to look. Walk through the five failure modes on the left. The orange squares are the chunks that hold the answer; the teal ones are what you actually handed to Claude.</p>
+        <p>Not retrieved: the right chunk never appears at any rank, usually because it was cut mid-sentence or the question was vague. Ranked sixth: the chunk exists but sits just outside your top five, so Claude never sees it. Needs two chunks: the taxi rule is at rank two and the receipt cap at rank seven, so you get half an answer delivered with full confidence. Stale index: the policy changed in March and nobody re-ran the ingest, so retrieval works perfectly and quotes a rule that no longer exists, citation and all. Too many results: k is ten, six of the ten are about meals and laptops, and they compete for the model's attention until the meal allowance leaks into the taxi answer.</p>
+        <p>Each has its own fix, and none of them is "a bigger model". Better chunks or a rewritten question. A larger k, raised only as far as needed, because every chunk costs tokens and attention. Splitting a two-part question into two retrievals. Re-embedding on a schedule and storing last_updated so the date shows beside the source. A similarity threshold or a re-ranker that drops weak matches before they reach the prompt.</p>
+        <div class="aside"><b>The debugging habit.</b> Log what was retrieved for every question: ids and scores. When an answer is wrong, read that log before you touch the prompt or the model. Nine times out of ten the problem is visible there.</div>
+        <div class="key"><p>When the answer is wrong, look at what was retrieved. Wrong chunk, too few, missing context, stale index, too many: each has a fix, and none is "a bigger model".</p></div>
+      </div>
+    </article>
+    <div class="today">
+      <div class="today__head"><span class="scene__kicker scene__kicker--try">Do today</span><div class="meter" data-meter-for="d4"><div class="meter__row"><span>Progress</span><b data-meter-label>0 / 3</b></div><div class="progress"><i></i></div></div></div>
+      <p class="muted" style="font-size:.95rem">One experiment on this page, one in Claude, and the test questions for the lab. About 30 minutes.</p>
+      <ol class="steps steps--numbered" data-persist="d4">
+        <li><span class="step__num"></span><input class="check" type="checkbox" id="d4-1" aria-label="Done"><div class="step__body"><p>On this page: for each of the five failure modes, find the smallest k that fixes it, or note that k cannot fix it.</p><p class="step__notice"><strong>Notice:</strong> two of the five cannot be fixed by k at all, and one gets worse as k grows. Retrieval problems are mostly chunking and freshness problems.</p></div></li>
+        <li><span class="step__num"></span><input class="check" type="checkbox" id="d4-2" aria-label="Done"><div class="step__body"><p>In Claude: paste the four chunks from the citation visual with their ids, and the citation system prompt from the Day 5 lab. Then ask "How many days of parental leave do I get?", a question none of the chunks answers.</p><p class="step__notice"><strong>Notice:</strong> a well-prompted assistant says "The documents do not cover this" and stops. If yours answered anyway, the prompt is the problem, not the model. Tighten it and try again.</p></div></li>
+        <li><span class="step__num"></span><input class="check" type="checkbox" id="d4-3" aria-label="Done"><div class="step__body"><p>Write your five test questions for the lab in the box below, and for each one the document and section that should answer it. Do this before you build the store.</p><p class="step__notice"><strong>Notice:</strong> this is the MIT habit of a held-out test set. Decide what "right" looks like before the system can influence you. Day 5 opens with why.</p><textarea data-note="d4-questions" id="d4Note" placeholder="1. Can I claim a taxi from the airport? · Expense policy, section 3 Travel&#10;2. …"></textarea></div></li>
+      </ol>
+    </div>
+    <div class="daynav"><button class="btn" type="button" data-go="3" id="goPrev4">← Day 3 · Store, search, loop</button><button class="btn btn--primary" type="button" data-go="5" id="goNext4">Day 5 · Measure, then the lab →</button></div>
+  </section>
+
+  <section class="scene daypanel" id="day5" role="tabpanel" aria-labelledby="dayt5" hidden>
+    <div class="scene__head">
+      <span class="scene__kicker scene__kicker--learn">Day 5 · about 130 minutes</span>
+      <h2>Measure it, then build it</h2>
+      <p>The long day. One idea first, borrowed from the MIT course: you do not know retrieval is good until you measure it on questions with known answers. Then Lab 2.2, where you build the retrieval assistant, score it at three chunk sizes, verify its citations and write design-log entry 5. The quiz and a practice round close the week.</p>
+    </div>
+    <!-- 10. Measuring retrieval -->
+    <article class="concept">
+      <div class="concept__viz">
+        <div class="w5-rec">
+          <div class="w5-between"><span class="muted" style="font-size:.85rem">Eight test questions, three chunk sizes · <b id="w5-recKLabel">top-k = 5</b></span><input type="range" id="w5-recK" min="1" max="10" value="5" style="width:140px" aria-label="Top k"></div>
+          <div class="w5-recbars" id="w5-recBars" aria-live="polite"></div>
+          <div class="table-wrap"><table class="tbl" id="w5-recTable" aria-label="Rank of the correct chunk for each test question at three chunk sizes"><thead><tr><th>Test question</th><th>100 tok</th><th>300 tok</th><th>2,000 tok</th></tr></thead><tbody></tbody></table></div>
+          <p class="muted" id="w5-recTokens" style="font-size:.85rem"></p>
+        </div>
+        <div class="viz-caption"><span>Rank of the chunk that answers each question. Green: inside the top k. A dash: never retrieved.</span><span class="row chip chip--think">MIT xPRO, Module 2</span></div>
+      </div>
+      <div class="concept__text">
+        <h3>How do you know retrieval is good? Measure it on questions you wrote first</h3>
+        <p>In Week 1 you heard the MIT xPRO course insist on a held-out test set: keep some examples back, never train on them, and judge the model on those alone. Retrieval needs exactly the same discipline, and almost nobody applies it. The usual way people judge a RAG assistant is to ask it a few questions, feel reassured by the fluent answers, and ship. You now know that fluent answers prove nothing.</p>
+        <p>The metric that matters is simple. For each test question, at what rank did the chunk that actually answers it appear? From that you get hit rate at k: the share of questions where the right chunk is inside the top k. Slide k on the left. At k = 5 the 300-token chunks find seven of eight and the 2,000-token chunks find four. Raise k to ten and the gap narrows, because a big enough net catches almost everything, but look at the token count underneath. You are now sending Claude twenty thousand tokens per question to hide a chunking problem.</p>
+        <p>Eight questions is a toy. The lab asks for five because you are one person with an afternoon. A team shipping a real assistant wants fifty to a hundred, written by the people who will use it, kept away from whoever tunes the system, and re-run every time the chunking, the embedding model or the documents change. Treat the scorecard you fill in below as the first page of that test set.</p>
+        <div class="key"><p>Decide the right chunk for each test question before you search, then measure hit rate at k. Raising k can hide a chunking problem, and the token count shows the price.</p></div>
+      </div>
+    </article>
+    <div class="part" id="lab">
+      <div class="scene__head">
+        <span class="scene__kicker scene__kicker--lab">Lab 2.2</span>
+        <h2>A retrieval assistant with citation tracking</h2>
+        <p>You build the loop by hand first, so that every step is visible: a store you fill, five test questions you wrote in advance, answers in the Console Workbench with citations you verify, and a scorecard at three chunk sizes. In Week 8 you automate the same pipeline in n8n with vector store nodes. Use made-up documents only, and never paste a key into a chat.</p>
+      </div>
+      <div class="meter" data-meter-for="lab" style="margin-bottom:14px"><div class="meter__row"><span>Lab progress</span><b data-meter-label>0 / 9</b></div><div class="progress progress--act"><i></i></div></div>
+      <ol class="steps steps--numbered" data-persist="lab">
+        <li><span class="step__num"></span><input class="check" type="checkbox" id="lab-1" aria-label="Done lab step 1"><div class="step__body"><p>Pick a store and open it. Either create a free Qdrant Cloud cluster with a collection named <code>company-docs</code>, or open n8n and add an In-Memory Vector Store node (newer versions call it Simple Vector Store).</p>
+          <details class="hint"><summary>Stuck? Show a hint</summary><p>Qdrant: the free tier is enough. Choose the region nearest you, and create the collection with the vector size your embedding model produces (1,024 for Voyage's voyage-3, 1,536 for OpenAI's text-embedding-3-small) and cosine distance. Put the URL and API key in a password manager. n8n: the in-memory store forgets everything when the workflow restarts, which is fine for a lab and wrong for a product.</p></details></div></li>
+        <li><span class="step__num"></span><input class="check" type="checkbox" id="lab-2" aria-label="Done lab step 2"><div class="step__body"><p>Build the corpus: six made-up policy documents. Reuse your Week 3 set (expenses, leave, remote work, IT security, onboarding, handbook) or ask Claude to write them. Chunk them at about 300 tokens, splitting at section headings. Aim for 40 to 80 chunks, each with <code>doc_name</code>, <code>section</code>, <code>chunk_id</code> and <code>last_updated</code>.</p>
+          <details class="hint"><summary>Copy a chunk record template</summary><pre class="code"><code>{"chunk_id": "expenses-03",
+ "doc_name": "Expense policy",
+ "section": "3. Travel",
+ "last_updated": "2026-03-01",
+ "text": "Taxis are reimbursed for airport transfers when public transport is unavailable..."}</code></pre></details></div></li>
+        <li><span class="step__num"></span><input class="check" type="checkbox" id="lab-3" aria-label="Done lab step 3"><div class="step__body"><p>Before you search anything, copy your five test questions from Day 4 into the first column of the scorecard below, and keep the chunk_id that should answer each one next to you.</p><p class="step__notice"><strong>Notice:</strong> this is the held-out set. If you write the questions after seeing what the store returns, you will write questions it can answer.</p></div></li>
+        <li><span class="step__num"></span><input class="check" type="checkbox" id="lab-4" aria-label="Done lab step 4"><div class="step__body"><p>Embed and upload. Qdrant route: ask Claude for the ingest script with the prompt below, keys in environment variables. n8n route: Manual Trigger → In-Memory Vector Store in Insert mode, with a Default Data Loader, a Recursive Character Text Splitter (chunk size 300, overlap 50) and your provider's Embeddings node attached beneath it.</p>
+          <details class="hint"><summary>Which embedding model?</summary><p>Not Claude; Claude writes the answers. Any provider works (Voyage AI, OpenAI, Cohere, Google), but whichever you choose for ingest you must also use for the questions. Vectors from two different models do not compare, so a question embedded with one and chunks embedded with another returns nonsense that looks like results.</p></details></div></li>
+        <li><span class="step__num"></span><input class="check" type="checkbox" id="lab-5" aria-label="Done lab step 5"><div class="step__body"><p>Run the five questions through the store. Qdrant: the search tab in the cluster dashboard, or a second short script. n8n: a Vector Store node in Retrieve mode, or the Question and Answer Chain. Record the rank of the correct chunk in the 300-token column, or 0 if it did not appear in the top five.</p></div></li>
+        <li><span class="step__num"></span><input class="check" type="checkbox" id="lab-6" aria-label="Done lab step 6"><div class="step__body"><p>For each question, paste the top five chunks into the Console Workbench inside <code>&lt;context&gt;</code> tags with their chunk_ids, using the system prompt below and <code>claude-sonnet-5-5</code> (model names change; pick the current Sonnet). Check every citation against the ids you pasted.</p>
+          <details class="hint"><summary>Stuck? Show a hint</summary><p>The Workbench is at console.anthropic.com. Put the system prompt in the System field, the context and question in the user message. A citation is wrong if its id is not in your context, or if the chunk with that id does not say what the sentence claims. Both count as failures on the scorecard.</p></details></div></li>
+        <li><span class="step__num"></span><input class="check" type="checkbox" id="lab-7" aria-label="Done lab step 7"><div class="step__body"><p>Ask one question your documents do not cover. The assistant should say "The documents do not cover this" and stop. If it answers anyway, tighten the prompt until it does, and keep the final wording.</p></div></li>
+        <li><span class="step__num"></span><input class="check" type="checkbox" id="lab-8" aria-label="Done lab step 8"><div class="step__body"><p>Break it on purpose. Re-chunk one document into 2,000-token pieces, re-embed, re-run the five questions and fill the second column. Then 100-token pieces, third column. Watch which column wins and where each one fails.</p>
+          <details class="hint"><summary>Stuck? Show a hint</summary><p>In n8n, change the splitter's chunk size and run the ingest again into a fresh store. On Qdrant, make a second and third collection, one per size, so you can compare them side by side instead of overwriting.</p></details></div></li>
+        <li><span class="step__num"></span><input class="check" type="checkbox" id="lab-9" aria-label="Done lab step 9"><div class="step__body"><p>Verify three answers, tick the three boxes below, and write design-log entry 5.</p></div></li>
+      </ol>
+      <h4 style="margin:22px 0 8px">Prompts and snippets to copy</h4>
+<pre class="code"><code><span class="c"># system prompt for the Workbench</span>
+Answer only from the chunks inside &lt;context&gt;.
+After every factual sentence add [source: chunk_id] using the id of the chunk it came from.
+If the chunks do not contain the answer, say "The documents do not cover this" and stop.
+Never cite a chunk_id that is not in the context. If two chunks disagree, say so and cite both.
+<span class="c"># user message shape</span>
+&lt;context&gt;
+&lt;chunk id="expenses-03" doc="Expense policy" section="3. Travel" updated="2026-03-01"&gt;
+Taxis are reimbursed for airport transfers when public transport is unavailable...
+&lt;/chunk&gt;
+... four more chunks ...
+&lt;/context&gt;
+Question: Can I claim a taxi from the airport, and do I need a receipt?
+<span class="c"># ask Claude for the Qdrant ingest script (never paste a key)</span>
+Write a Python script of about 30 lines that reads a JSON file of chunk records like the one below,
+embeds the "text" field of each with [my embedding provider and model], and upserts the vectors into
+my Qdrant Cloud collection "company-docs" with the other fields as payload. Read QDRANT_URL,
+QDRANT_API_KEY and the embedding key from environment variables. Print how many records were written.</code></pre>
+      <h3 style="margin:28px 0 10px">Retrieval scorecard</h3>
+      <p class="muted" style="margin-bottom:10px">Your five test questions, and the rank of the chunk that should answer each (1 to 5), or 0 if it did not appear in the top five. Edit the questions to match yours. Totals update as you type and everything stays in this browser.</p>
+      <div class="table-wrap">
+        <table class="tbl w5-score" id="w5-scoreTable">
+          <thead><tr><th>Test question</th><th>Rank @ 300 tokens</th><th>Rank @ 2,000 tokens</th><th>Rank @ 100 tokens</th></tr></thead>
+          <tbody></tbody>
+          <tfoot><tr><th>Found in top 5</th><th id="w5-avg0">–</th><th id="w5-avg1">–</th><th id="w5-avg2">–</th></tr></tfoot>
+        </table>
+      </div>
+      <p class="muted" id="w5-scoreVerdict" style="margin-top:8px;font-size:.9rem"></p>
+      <h3 style="margin:28px 0 10px">Three cited answers</h3>
+      <div data-persist="cites" class="stack">
+        <label class="check-row"><input class="check" type="checkbox" id="cite-1"><span>Answer 1: every citation points to a chunk_id that was in the context, and that chunk supports the sentence.</span></label>
+        <label class="check-row"><input class="check" type="checkbox" id="cite-2"><span>Answer 2: same check passed, on a question that needed two chunks.</span></label>
+        <label class="check-row"><input class="check" type="checkbox" id="cite-3"><span>Answer 3: the question the documents do not cover, and the assistant said so and stopped.</span></label>
+      </div>
+      <div class="card dlog" style="margin-top:18px">
+        <h3>Design-log entry 5</h3>
+        <p class="muted">Three short answers that connect this week to the product you chose in Week 1. Retrieval decisions made now shape the capstone.</p>
+        <label class="field"><span>The documents your product retrieves from: what they are, how many pages, how often they change, and whether a Project would do instead</span><textarea data-note="dlog-a" id="dlogA" placeholder="e.g. 40 supplier contracts and the procurement policy, about 900 pages, two or three contracts change a month. Too big for a Project; RAG with one collection per region."></textarea></label>
+        <label class="field"><span>The chunk size you would start with, and why</span><textarea data-note="dlog-b" id="dlogB" placeholder="e.g. 400 tokens split at clause headings, because contract clauses are dense and an exception usually sits in the next clause; tables kept whole."></textarea></label>
+        <label class="field"><span>How you would show sources to the user</span><textarea data-note="dlog-c" id="dlogC" placeholder="e.g. a numbered footnote per sentence with contract name, clause and date indexed, linking to the PDF page; answers with an unverifiable citation never reach the user."></textarea></label>
+      </div>
+      <div class="deliverable" style="margin-top:18px">
+        <h4>What you hand in</h4>
+        <p>The retrieval scorecard: five questions and the rank of the correct chunk at three chunk sizes. Three answers with verified citations, including the one the documents do not cover. And design-log entry 5. The table and boxes above are the work; summarise what surprised you here.</p>
+        <label class="field"><span>Notes for your learning log (saved in this browser)</span><textarea data-note="lab" id="labNote" placeholder="The chunk size that won was… · The question that failed at every size was… · The citation that turned out to be invented was…"></textarea></label>
+      </div>
+    </div>
+    <div class="part" id="quiz">
+      <div class="scene__head">
+        <span class="scene__kicker scene__kicker--quiz">Check yourself</span>
+        <h2>Eight quick questions</h2>
+        <p>Pick an answer to see why it is right or wrong. Score 80 percent or more to pass. Nobody is watching; the point is to find out what did not stick.</p>
+      </div>
+      <div id="quizBox"></div>
+      <h3 style="margin:28px 0 12px">Think it through</h3>
+      <div class="reflect">
+        <details><summary>Why does vector search find "I forgot my login" when the document says "password reset"?</summary><p>The embedding model was trained on enormous amounts of text in which those two phrases appear in the same situations: the same help pages, the same tickets, the same replies. It learned to place them at nearby points, and the search compares points, not words. Nothing in the pipeline ever matched a spelling. That is also the weakness: two phrases that look alike to the model but differ in one crucial code or number can land closer than they should, which is why hybrid search exists.</p></details>
+        <details><summary>What is the trade-off between tiny chunks and huge chunks?</summary><p>Tiny chunks are precise but cut rules away from their exceptions and lose the context that makes a sentence mean something, so you retrieve half an answer. Huge chunks keep the context but blur six topics into one vector that matches everything weakly, and they fill the prompt with text the question did not need. Somewhere between 300 and 800 tokens, split at headings, usually wins, but the honest answer is that you test three sizes on a held-out set of questions and let the scorecard decide.</p></details>
+        <details><summary>The assistant answers confidently with no citation. What probably went wrong in the pipeline?</summary><p>Either nothing relevant was retrieved and the model fell back on prediction, exactly the Week 1 invented fact, or the system prompt never required a citation, or it required one and nobody verified the output, so a missing citation slipped through. Check the retrieval log first: were the right ids there? If not, fix chunking or the question. If they were, tighten the prompt and add the verifier that rejects any answer with an uncited factual sentence.</p></details>
+        <details><summary>Your scorecard shows five out of five at 300 tokens. A colleague says "ship it". What would the MIT course say?</summary><p>Five questions is a very small test set, and if you wrote them after seeing what the store returned, they are not held out at all; they are the training set. The MIT course would ask for questions written by the people who will use the assistant, kept away from whoever tuned it, and enough of them that one lucky hit does not move the score by twenty points. It would also ask what happens when the documents change next month, because a scorecard measures today's index. Ship a pilot, keep measuring, and grow the set.</p></details>
+      </div>
+    </div>
+    <div class="part" id="build">
+      <div class="scene__head">
+        <span class="scene__kicker scene__kicker--build">Practice</span>
+        <h2>Pick the chunks that answer the question</h2>
+        <p>A retrieval system returned eight chunks for each question. Choose the three you would hand to Claude, then check. Two rounds, six points. The skill is telling "about the same topic" from "answers the question".</p>
+      </div>
+      <div class="card">
+        <div class="w5-scorebar"><div><span class="muted">Score</span> <b id="w5-pickScore">0 / 6</b></div><div class="row"><span class="chip" id="w5-pickRound">Round 1 of 2</span><button class="btn btn--small" type="button" id="w5-pickReset">Reset</button></div></div>
+        <div class="grid-2">
+          <div>
+            <p class="eyebrow" style="margin-bottom:8px">Question</p>
+            <h3 style="margin-bottom:14px" id="w5-pickQ"></h3>
+            <div class="w5-pick" id="w5-pickBox"></div>
+          </div>
+          <div class="stack">
+            <div class="card">
+              <div class="row" style="justify-content:space-between"><h4>Your selection <span class="chip" id="w5-pickCount">0 / 3</span></h4><span class="row"><button class="btn btn--primary btn--small" id="w5-pickCheck" type="button" disabled>Check</button><button class="btn btn--small" id="w5-pickNext" type="button" hidden>Next question →</button></span></div>
+              <p class="muted" id="w5-pickResult" style="margin-top:10px">Select exactly three chunks.</p>
+            </div>
+            <div class="note note--think" id="w5-pickWhy"><strong>Why three?</strong><span>Most real questions need two facts, a rule and its exception or a rule and its condition. A third chunk often carries the detail that changes the answer. Everything else is noise that competes for attention.</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="daynav"><button class="btn" type="button" data-go="4" id="goPrev5">← Day 4 · Sources and failures</button><a class="btn btn--primary" href="#wrapup">Record the week in the tracker ↓</a></div>
+  </section>
+
+  <section class="scene" id="wrapup">
+    <div class="wrapup">
+      <div class="stack">
+        <h2>Your progress this week</h2>
+        <div class="wrapup__stats">
+          <div class="stat"><b data-stat="checks">0/0</b><span>Steps ticked</span></div>
+          <div class="stat"><b data-stat="quiz">–</b><span>Best quiz score</span></div>
+        </div>
+        <div class="progress"><i data-stat-bar></i></div>
+        <p class="muted">Ticks, notes and scores live in this browser. Record the week in the course tracker so it counts everywhere you open the course.</p>
+      </div>
+      <a class="btn btn--primary" data-href="track">Record in the tracker</a>
+    </div>
+    <nav class="pager" aria-label="Previous and next week">
+      <a data-href="prev"><span>Previous</span><b>Week 4 · Context Engineering</b></a>
+      <a data-href="next"><span>Next</span><b>Week 6 · n8n Workflows</b></a>
+    </nav>
+    <footer class="site">
+      <div class="row" style="justify-content:space-between">
+        <div class="weeks" data-weeks aria-label="All weeks"></div>
+        <div class="row"><a data-href="hub">Course hub</a> · <a data-href="playground">Agent playground</a> · <a data-href="doc">Course doc</a></div>
+      </div>
+      <p>Build Your Own AI Agents · a 10-week course. Use made-up data in every lab. Week 5 draws on MIT xPRO's Designing and Building AI Products and Services, Modules 2 and 3.</p>
+    </footer>
+  </section>
+</main>
+
+<script>window.COURSE_URLS={"hub": "https://claude.ai/artifact/VfmYUVxvAjdquZj7j9Wgia", "doc": "https://claude.ai/artifact/NNeZy8NSwNpWpGtkV2yNnU", "playground": "https://claude.ai/artifact/UJgMeF4nCkgx8QCQHtJj9V", "weeks": ["https://claude.ai/artifact/BHztd7U7AsfsGQidA4uGNa", "https://claude.ai/artifact/TJQtvMvTYBvrpzqULLWrc8", "https://claude.ai/artifact/9tJSawE2cNn7iEU2iM46L6", "https://claude.ai/artifact/G2ThZDmBn7UkZpgqbTF5rr", "https://claude.ai/artifact/U6ZN7Vrgo25rezcSUGn5rs", "https://claude.ai/artifact/N8kY52H4tZ1DxgMaA457Hr", "https://claude.ai/artifact/V2NY5MP2GdTy23RcUzTzZA", "https://claude.ai/artifact/V8eaPCrMHEza3yy2WrUU9i", "https://claude.ai/artifact/5DhRAKr4j7PtNXeEfq8NWe", "https://claude.ai/artifact/WjEDU4hesh8cnvJrY6CXp5"]};</script>
+<script>
+/* Course runtime shared by every module page. Exposes window.Course. */
+(function(){
+  'use strict';
+  var Course = window.Course = {};
+  var PREFIX = 'aiagents:';
+  Course.urls = window.COURSE_URLS || {};
+  Course.motionOK = !(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  Course.cfg = {week: 0, title: ''};
+  Course.sample = null;
+  var listeners = [];
+
+  /* ---------- storage (per-browser convenience; never the record of truth) ---------- */
+  Course.store = {
+    key: function(k){ return PREFIX + (Course.cfg.week != null ? 'w' + Course.cfg.week + ':' : '') + k; },
+    get: function(k, d){ try { var v = localStorage.getItem(this.key(k)); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+    set: function(k, v){ try { localStorage.setItem(this.key(k), JSON.stringify(v)); } catch (e) {} Course.emit('store', k, v); }
+  };
+  Course.on = function(fn){ listeners.push(fn); };
+  Course.emit = function(){ var a = arguments; listeners.forEach(function(fn){ try { fn.apply(null, a); } catch (e) {} }); };
+
+  /* ---------- tiny DOM helper ---------- */
+  Course.el = function(tag, attrs, children){
+    var n = document.createElement(tag);
+    if (attrs) Object.keys(attrs).forEach(function(k){
+      var v = attrs[k];
+      if (k === 'class') n.className = v;
+      else if (k === 'html') n.innerHTML = v;
+      else if (k === 'text') n.textContent = v;
+      else if (k.slice(0,2) === 'on') n.addEventListener(k.slice(2), v);
+      else if (v === false || v == null) {}
+      else n.setAttribute(k, v === true ? '' : v);
+    });
+    (children || []).forEach(function(c){ if (c == null) return; n.appendChild(typeof c === 'string' ? document.createTextNode(c) : c); });
+    return n;
+  };
+  Course.$ = function(s, root){ return (root || document).querySelector(s); };
+  Course.$$ = function(s, root){ return Array.prototype.slice.call((root || document).querySelectorAll(s)); };
+  Course.esc = function(s){ return String(s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); };
+  Course.clamp = function(v, a, b){ return Math.max(a, Math.min(b, v)); };
+  Course.lerp = function(a, b, t){ return a + (b - a) * t; };
+  Course.ease = function(t){ return t < .5 ? 2*t*t : -1 + (4 - 2*t)*t; };
+  Course.fmt = function(n){ return Number(n).toLocaleString('en-US'); };
+  Course.cssVar = function(name){ return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); };
+
+  /* ---------- init: rail, weeks strip, checklists, footer ---------- */
+  Course.init = function(cfg){
+    Course.cfg = Object.assign({week: 0, title: '', sections: null, live: null}, cfg || {});
+    document.documentElement.classList.toggle('no-motion', !Course.motionOK);
+    renderWeeks();
+    wireRail();
+    Course.checklists();
+    Course.notes();
+    Course.summary();
+    Course.sampleReady();
+    Course.on(function(){ Course.summary(); updateRailDots(); });
+    updateRailDots();
+  };
+
+  function renderWeeks(){
+    var u = Course.urls, cur = Course.cfg.week;
+    Course.$$('.weeks[data-weeks]').forEach(function(box){
+      box.innerHTML = '';
+      for (var i = 1; i <= 10; i++) {
+        var href = (u.weeks && u.weeks[i-1]) || '#';
+        var a = Course.el('a', {href: href, title: 'Week ' + i, class: i === cur ? 'is-current' : ''}, [String(i)]);
+        if (i === cur) a.setAttribute('aria-current', 'page');
+        box.appendChild(a);
+      }
+    });
+    Course.$$('[data-href]').forEach(function(a){
+      var k = a.getAttribute('data-href'), href = '#';
+      if (k === 'hub') href = u.hub || '#';
+      else if (k === 'doc') href = u.doc || '#';
+      else if (k === 'playground') href = u.playground || '#';
+      else if (/^w\d+$/.test(k)) href = (u.weeks && u.weeks[parseInt(k.slice(1),10)-1]) || '#';
+      else if (k === 'prev') href = (cur > 1 && u.weeks && u.weeks[cur-2]) || u.hub || '#';
+      else if (k === 'next') href = (cur < 10 && u.weeks && u.weeks[cur]) || u.hub || '#';
+      else if (k === 'track') href = (u.hub || '#') + (u.hub ? '#w' + cur : '');
+      var hash = a.getAttribute('data-hash'); a.setAttribute('href', href + (hash && href !== '#' ? hash : ''));
+      if (href === '#') a.classList.add('is-unlinked');
+      if (/^https?:/.test(href)) { a.setAttribute('target', '_blank'); a.setAttribute('rel', 'noopener'); }
+    });
+  }
+
+  function wireRail(){
+    var pills = Course.$$('.rail__pill');
+    if (!pills.length) return;
+    var secs = pills.map(function(p){ var id = (p.getAttribute('href') || '').slice(1); return document.getElementById(id); }).filter(Boolean);
+    if ('IntersectionObserver' in window) {
+      var seen = Course.store.get('seen', {});
+      var io = new IntersectionObserver(function(es){
+        es.forEach(function(e){
+          if (e.isIntersecting) {
+            pills.forEach(function(p){ p.classList.toggle('is-active', p.getAttribute('href') === '#' + e.target.id); });
+            if (e.target.id === 'learn' && e.intersectionRatio > 0.05) { if (!seen.learn) { seen.learn = true; Course.store.set('seen', seen); } }
+          }
+        });
+      }, {rootMargin: '-40% 0px -50% 0px', threshold: [0, .05, .2]});
+      secs.forEach(function(s){ io.observe(s); });
+    }
+    pills.forEach(function(p){ p.addEventListener('click', function(ev){
+      var id = (p.getAttribute('href') || '').slice(1), t = document.getElementById(id);
+      if (t) { ev.preventDefault(); t.scrollIntoView({behavior: Course.motionOK ? 'smooth' : 'auto', block: 'start'}); }
+    }); });
+  }
+
+  function updateRailDots(){
+    var seen = Course.store.get('seen', {});
+    Course.$$('.rail__pill').forEach(function(p){
+      var id = (p.getAttribute('href') || '').slice(1), done = false;
+      if (id === 'learn') done = !!seen.learn;
+      else if (id === 'quiz') { var q = Course.store.get('quiz', null); done = !!(q && q.total && q.score / q.total >= 0.8); }
+      else {
+        var sec = document.getElementById(id);
+        if (sec) { var boxes = Course.$$('input.check', sec); done = boxes.length > 0 && boxes.every(function(b){ return b.checked; }); }
+      }
+      p.classList.toggle('is-done', done);
+    });
+  }
+
+  /* ---------- persisted checklists: any [data-persist] container with input.check[id] ---------- */
+  Course.checklists = function(){
+    Course.$$('[data-persist]').forEach(function(box){
+      var key = 'ck:' + box.getAttribute('data-persist');
+      var state = Course.store.get(key, {});
+      Course.$$('input.check', box).forEach(function(cb){
+        if (!cb.id) return;
+        if (state[cb.id]) cb.checked = true;
+        syncLi(cb);
+        cb.addEventListener('change', function(){
+          state[cb.id] = cb.checked; if (!cb.checked) delete state[cb.id];
+          Course.store.set(key, state); syncLi(cb);
+          var all = Course.$$('input.check', box);
+          if (cb.checked && all.length > 1 && all.every(function(b){ return b.checked; })) { Course.toast('All done here. Nice work.'); Course.confetti(); }
+        });
+      });
+      renderMeter(box);
+      box.addEventListener('change', function(){ renderMeter(box); });
+    });
+    function syncLi(cb){ var li = cb.closest('li'); if (li) li.classList.toggle('done', cb.checked); }
+    function renderMeter(box){
+      var m = Course.$('[data-meter-for="' + box.getAttribute('data-persist') + '"]'); if (!m) return;
+      var all = Course.$$('input.check', box), n = all.filter(function(b){ return b.checked; }).length;
+      var bar = Course.$('.progress>i', m), lab = Course.$('[data-meter-label]', m);
+      if (bar) bar.style.width = (all.length ? 100*n/all.length : 0) + '%';
+      if (lab) lab.textContent = n + ' / ' + all.length;
+    }
+  };
+
+  /* ---------- persisted notes: textarea[data-note] or input[data-note] ---------- */
+  Course.notes = function(){
+    Course.$$('[data-note]').forEach(function(t){
+      var key = 'note:' + t.getAttribute('data-note');
+      var v = Course.store.get(key, null); if (v != null) t.value = v;
+      var timer;
+      t.addEventListener('input', function(){ clearTimeout(timer); timer = setTimeout(function(){ Course.store.set(key, t.value); }, 350); });
+    });
+  };
+
+  /* ---------- quiz ---------- */
+  Course.quiz = function(sel, opts){
+    var root = typeof sel === 'string' ? Course.$(sel) : sel; if (!root) return;
+    var qs = opts.questions || [], key = opts.key || 'quiz', passPct = opts.passPct || 80;
+    var answers = {}, result;
+    root.classList.add('quiz'); root.innerHTML = '';
+    qs.forEach(function(q, i){
+      var card = Course.el('div', {class: 'q', id: 'q-' + i});
+      card.appendChild(Course.el('div', {class: 'q__num', text: 'Question ' + (i+1) + ' of ' + qs.length}));
+      card.appendChild(Course.el('div', {class: 'q__text', text: q.q}));
+      var opts_ = Course.el('div', {class: 'opts', role: 'group', 'aria-label': 'Answers for question ' + (i+1)});
+      q.options.forEach(function(o, j){
+        var b = Course.el('button', {class: 'opt', type: 'button', id: 'q' + i + 'o' + j}, [Course.el('span', {class: 'opt__key', text: 'ABCD'[j]}), Course.el('span', {text: o})]);
+        b.addEventListener('click', function(){ pick(i, j, card); });
+        opts_.appendChild(b);
+      });
+      card.appendChild(opts_);
+      root.appendChild(card);
+    });
+    result = Course.el('div', {class: 'quiz__result', hidden: true});
+    root.appendChild(result);
+    var best = Course.store.get(key, null);
+    if (best && best.total) { var note = Course.el('p', {class: 'muted', text: 'Your best score so far: ' + best.score + ' of ' + best.total + '.'}); root.insertBefore(note, root.firstChild); }
+
+    function pick(i, j, card){
+      if (answers[i] != null) return;
+      answers[i] = j;
+      var q = qs[i], ok = j === q.answer;
+      Course.$$('.opt', card).forEach(function(b, k){
+        b.disabled = true;
+        if (k === q.answer) b.classList.add('is-correct');
+        if (k === j && !ok) b.classList.add('is-wrong');
+      });
+      var why = Course.el('div', {class: 'q__why' + (ok ? '' : ' is-bad')});
+      why.innerHTML = '<b>' + (ok ? 'Correct.' : 'Not quite.') + '</b> ' + Course.esc(q.why);
+      card.appendChild(why);
+      if (Object.keys(answers).length === qs.length) finish();
+    }
+    function finish(){
+      var score = qs.reduce(function(s, q, i){ return s + (answers[i] === q.answer ? 1 : 0); }, 0);
+      var pct = Math.round(100 * score / qs.length), pass = pct >= passPct;
+      var prev = Course.store.get(key, null);
+      if (!prev || score > prev.score) Course.store.set(key, {score: score, total: qs.length, ts: Date.now()}); else Course.emit('store', key, prev);
+      result.hidden = false; result.innerHTML = '';
+      result.appendChild(Course.el('div', {class: 'quiz__score', html: score + '<small> / ' + qs.length + '</small>'}));
+      var msg = pass ? (opts.passText || 'You passed this week\'s check. The tracker counts a score of ' + passPct + '% or more.') : (opts.failText || 'Read the explanations above, then reset and try again. You need ' + passPct + '% to pass.');
+      var box = Course.el('div', {class: 'stack'});
+      box.appendChild(Course.el('p', {html: '<strong>' + (pass ? 'Passed' : 'Keep going') + '</strong> · ' + Course.esc(msg)}));
+      var reset = Course.el('button', {class: 'btn btn--small', type: 'button', text: 'Reset quiz'});
+      reset.addEventListener('click', function(){ Course.quiz(root, opts); root.scrollIntoView({behavior: Course.motionOK ? 'smooth' : 'auto', block: 'start'}); });
+      box.appendChild(reset);
+      result.appendChild(box);
+      result.scrollIntoView({behavior: Course.motionOK ? 'smooth' : 'auto', block: 'nearest'});
+      if (pass) Course.confetti();
+    }
+  };
+
+  /* ---------- summary footer ---------- */
+  Course.summary = function(){
+    var boxes = Course.$$('[data-persist]');
+    var all = 0, done = 0;
+    boxes.forEach(function(b){ Course.$$('input.check', b).forEach(function(c){ all++; if (c.checked) done++; }); });
+    var q = Course.store.get('quiz', null);
+    var set = function(name, v){ Course.$$('[data-stat="' + name + '"]').forEach(function(e){ e.textContent = v; }); };
+    set('checks', done + '/' + all);
+    set('checkspct', all ? Math.round(100*done/all) + '%' : '0%');
+    set('quiz', q && q.total ? q.score + '/' + q.total : '–');
+    var bar = Course.$('[data-stat-bar]'); if (bar) bar.style.width = (all ? 100*done/all : 0) + '%';
+  };
+
+  /* ---------- toast + confetti ---------- */
+  var toastEl, toastT;
+  Course.toast = function(msg){
+    if (!toastEl) { toastEl = Course.el('div', {class: 'toast', role: 'status'}); document.body.appendChild(toastEl); }
+    toastEl.textContent = msg; toastEl.classList.add('is-on');
+    clearTimeout(toastT); toastT = setTimeout(function(){ toastEl.classList.remove('is-on'); }, 2200);
+  };
+  Course.confetti = function(){
+    if (!Course.motionOK) return;
+    var c = Course.el('canvas', {class: 'confetti'}); document.body.appendChild(c);
+    var ctx = c.getContext('2d'), W = c.width = innerWidth, H = c.height = innerHeight;
+    var cols = [Course.cssVar('--think'), Course.cssVar('--act'), Course.cssVar('--observe'), Course.cssVar('--warn')];
+    var ps = []; for (var i = 0; i < 90; i++) ps.push({x: W/2 + (Math.random()-.5)*W*.4, y: H*.35, vx: (Math.random()-.5)*14, vy: -Math.random()*12-4, r: 4+Math.random()*5, c: cols[i%cols.length], a: Math.random()*6, s: (Math.random()-.5)*.3});
+    var t0 = performance.now();
+    (function f(now){
+      var t = (now - t0)/1000; ctx.clearRect(0,0,W,H);
+      ps.forEach(function(p){ p.vy += .35; p.x += p.vx; p.y += p.vy; p.vx *= .99; p.a += p.s; ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.a); ctx.fillStyle = p.c; ctx.globalAlpha = Math.max(0, 1 - t/1.6); ctx.fillRect(-p.r/2,-p.r/2,p.r,p.r*.6); ctx.restore(); });
+      if (t < 1.7) requestAnimationFrame(f); else c.remove();
+    })(t0);
+  };
+
+  /* ---------- canvas loop with DPR + visibility handling ---------- */
+  Course.canvas = function(canvas, draw, opts){
+    opts = opts || {};
+    var ctx = canvas.getContext('2d'), w = 0, h = 0, dpr = 1, running = false, visible = true, last = 0, raf = 0, t0 = performance.now(), paused = false;
+    function resize(){
+      var r = canvas.getBoundingClientRect(); dpr = Math.min(2, window.devicePixelRatio || 1);
+      w = Math.max(1, r.width); h = Math.max(1, r.height);
+      canvas.width = Math.round(w*dpr); canvas.height = Math.round(h*dpr); ctx.setTransform(dpr,0,0,dpr,0,0);
+      api.once();
+    }
+    function frame(now){
+      var dt = Math.min(.05, (now - last)/1000 || 0); last = now;
+      try { draw(ctx, w, h, (now - t0)/1000, dt); } catch (e) { running = false; console.error(e); return; }
+      if (running && visible && !document.hidden && !paused) raf = requestAnimationFrame(frame); else running = false;
+    }
+    var api = {
+      start: function(){ paused = false; if (running || !Course.motionOK && !opts.force) { if (!running) api.once(); return; } running = true; last = performance.now(); raf = requestAnimationFrame(frame); },
+      stop: function(){ running = false; paused = true; cancelAnimationFrame(raf); },
+      once: function(){ try { draw(ctx, w, h, (performance.now()-t0)/1000, 0); } catch (e) { console.error(e); } },
+      resetTime: function(){ t0 = performance.now(); },
+      get w(){ return w; }, get h(){ return h; }, get ctx(){ return ctx; }, get running(){ return running; }
+    };
+    api.resize = resize; canvas.__course = api;   /* lets a page re-measure a canvas it has just un-hidden */
+    if ('ResizeObserver' in window) new ResizeObserver(resize).observe(canvas); else window.addEventListener('resize', resize);
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver(function(es){ visible = es[0].isIntersecting; if (visible && opts.auto !== false && !paused) api.start(); }).observe(canvas);
+    }
+    document.addEventListener('visibilitychange', function(){ if (!document.hidden && visible && opts.auto !== false && !paused) api.start(); });
+    resize();
+    if (opts.auto !== false) api.start();
+    return api;
+  };
+  Course.roundRect = function(ctx, x, y, w, h, r){ if (!(w > 0) || !(h > 0)) { ctx.beginPath(); return; } r = Math.max(0, Math.min(r, w/2, h/2)); ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); };
+
+  /* ---------- typewriter ---------- */
+  Course.typewrite = function(el, text, cps){
+    cps = cps || 40; el.textContent = '';
+    if (!Course.motionOK) { el.textContent = text; return Promise.resolve(); }
+    return new Promise(function(res){ var i = 0; (function step(){ el.textContent = text.slice(0, ++i); if (i < text.length) setTimeout(step, 1000/cps); else res(); })(); });
+  };
+
+  /* ---------- simple tabs: [data-tabs] > [role=tablist] button[data-tab] + [data-panel] ---------- */
+  Course.tabs = function(){
+    Course.$$('[data-tabs]').forEach(function(box){
+      var btns = Course.$$('[data-tab]', box), panels = Course.$$('[data-panel]', box);
+      function show(id){ btns.forEach(function(b){ b.classList.toggle('is-on', b.getAttribute('data-tab') === id); b.setAttribute('aria-selected', b.getAttribute('data-tab') === id); }); panels.forEach(function(p){ p.hidden = p.getAttribute('data-panel') !== id; }); }
+      btns.forEach(function(b){ b.addEventListener('click', function(){ show(b.getAttribute('data-tab')); }); });
+      var first = btns.filter(function(b){ return b.classList.contains('is-on'); })[0] || btns[0]; if (first) show(first.getAttribute('data-tab'));
+    });
+  };
+
+  /* ---------- day tabs: #dayTabs .dayt buttons, section#dayN panels, rail pills #dayN, [data-go] buttons ---------- */
+  Course.days = function(){
+    var $ = Course.$, $$ = Course.$$;
+    var DAYS = $$('section[id^="day"][role="tabpanel"]').length; if (!DAYS) return;
+    var panels = {}, tabs = {}, pills = {}, cur = 0;
+    for (var i = 1; i <= DAYS; i++) { panels[i] = $('#day' + i); tabs[i] = $('#dayt' + i); pills[i] = $('.rail__pill[href="#day' + i + '"]'); }
+    function show(n, scroll){
+      n = Course.clamp(n, 1, DAYS);
+      if (n !== cur) {
+        cur = n;
+        for (var i = 1; i <= DAYS; i++) { panels[i].hidden = i !== n; if (tabs[i]) { tabs[i].classList.toggle('is-on', i === n); tabs[i].setAttribute('aria-selected', i === n ? 'true' : 'false'); } if (pills[i]) pills[i].classList.toggle('is-active', i === n); }
+        Course.store.set('day', n);
+        setTimeout(function(){ $$('canvas', panels[n]).forEach(function(c){ if (c.__course) c.__course.resize(); }); }, 0);
+      }
+      if (scroll) { var strip = $('#dayTabs'); (strip || panels[n]).scrollIntoView({behavior: Course.motionOK ? 'smooth' : 'auto', block: 'start'}); }
+    }
+    function dots(){ for (var i = 1; i <= DAYS; i++) { if (!tabs[i]) continue; var cks = $$('input.check', panels[i]); tabs[i].classList.toggle('is-done', cks.length > 0 && cks.every(function(c){ return c.checked; })); } }
+    for (var i = 1; i <= DAYS; i++) (function(i){
+      if (tabs[i]) tabs[i].addEventListener('click', function(){ show(i, true); });
+      if (pills[i]) pills[i].addEventListener('click', function(ev){ ev.preventDefault(); show(i, true); });
+    })(i);
+    $$('[data-go]').forEach(function(b){ b.addEventListener('click', function(){ show(parseInt(b.getAttribute('data-go'), 10), true); }); });
+    document.addEventListener('change', function(e){ if (e.target && e.target.classList && e.target.classList.contains('check')) dots(); });
+    function fromHash(){ var m = /^#(?:day([1-9])|(lab|quiz|build))$/.exec(location.hash || ''); if (!m) return 0; return m[1] ? parseInt(m[1], 10) : DAYS; }
+    function innerTarget(){ return /^#(lab|quiz|build)$/.test(location.hash || '') ? $(location.hash) : null; }
+    show(fromHash() || Course.store.get('day', 1), false);
+    var t0 = innerTarget(); if (t0) setTimeout(function(){ t0.scrollIntoView({block: 'start'}); }, 60);
+    window.addEventListener('hashchange', function(){ var n = fromHash(); if (!n) return; show(n, !innerTarget()); var t = innerTarget(); if (t) setTimeout(function(){ t.scrollIntoView({behavior: Course.motionOK ? 'smooth' : 'auto', block: 'start'}); }, 80); });
+    dots();
+    Course.showDay = show;
+  };
+
+  /* ---------- live Claude (sample capability) ---------- */
+  var sampleP = null;
+  /* Live Claude is opt-in: a page passes Course.init({live: 'sample'}) when it declares that capability. Other pages never probe it. */
+  Course.sampleReady = function(){
+    if (!sampleP) {
+      var cap = Course.cfg.live;
+      sampleP = (cap && window.claude && typeof window.claude.use === 'function') ? window.claude.use(cap).catch(function(){ return null; }) : Promise.resolve(null);
+      sampleP.then(function(s){
+        Course.sample = s;
+        document.documentElement.classList.toggle('has-live', !!s);
+        Course.$$('[data-live-btn]').forEach(function(b){ b.disabled = !s; if (b.getAttribute('data-live-label')) b.textContent = b.getAttribute('data-live-label'); });
+        Course.$$('[data-live-missing]').forEach(function(el){ el.hidden = !!s; });
+        Course.$$('[data-live-only]').forEach(function(el){ el.hidden = !s; });
+      });
+    }
+    return sampleP;
+  };
+  Course.friendly = function(code){
+    return ({
+      unavailable: 'Live Claude is not available in this view. Open the page inside Claude (claude.ai or the Claude app) to run it.',
+      not_granted: 'You did not allow this page to use Claude. Allow it from the page menu, then try again.',
+      rate_limited: 'Claude is busy or you reached a usage limit. Wait a minute, then try again.',
+      cancelled: 'Stopped.',
+      refused: 'Claude declined that request. Change the wording and try again.',
+      prompt_too_large: 'That is too much text. Shorten it and try again.',
+      invalid_json: 'Claude did not answer in the expected shape. Try again.',
+      tools_unavailable: 'This view cannot run page tools yet. Open the page inside Claude on the web or in the app.',
+      sampling_disabled: 'Claude is not available for this account.',
+      empty_completion: 'Claude returned nothing. Simplify the request and try again.',
+      session_expired: 'Your Claude session expired. Sign in again, then retry.'
+    })[code] || 'Something went wrong talking to Claude. Try again in a moment.';
+  };
+  /* Course.ask(input, options) -> Promise<{text, truncated}>; rejects {code, message, friendly, text?} */
+  Course.ask = function(input, options){
+    return Course.sampleReady().then(function(s){
+      if (!s) return Promise.reject({code: 'unavailable', message: 'sample unavailable', friendly: Course.friendly('unavailable')});
+      return s(input, options || {}).catch(function(e){ e = e || {}; e.friendly = Course.friendly(e.code); throw e; });
+    });
+  };
+  Course.askJSON = function(input, options){
+    return Course.sampleReady().then(function(s){
+      if (!s) return Promise.reject({code: 'unavailable', message: 'sample unavailable', friendly: Course.friendly('unavailable')});
+      return s.json(input, options || {}).catch(function(e){ e = e || {}; e.friendly = Course.friendly(e.code); throw e; });
+    });
+  };
+  /* Convenience: run a prompt into an output element with busy state, streaming and a stop button. */
+  Course.runLive = function(cfg){
+    var out = cfg.out, btn = cfg.button, stop = cfg.stop, ctl = new AbortController();
+    if (stop) { stop.hidden = false; stop.onclick = function(){ ctl.abort(); }; }
+    if (btn) btn.disabled = true;
+    out.textContent = 'Thinking…'; out.classList.add('is-busy');
+    return Course.ask(cfg.input, Object.assign({signal: ctl.signal, onText: function(u){ out.classList.remove('is-busy'); out.textContent = u.text; }}, cfg.options || {}))
+      .then(function(r){ out.classList.remove('is-busy'); out.textContent = r.text + (r.truncated ? '\n\n[cut short: ask for less at a time]' : ''); return r; })
+      .catch(function(e){ out.classList.remove('is-busy'); out.textContent = (e.text ? e.text + '\n\n' : '') + e.friendly; if (e.code === 'not_granted' || e.code === 'sampling_disabled' || e.code === 'unavailable') Course.$$('[data-live-btn]').forEach(function(b){ b.disabled = true; }); throw e; })
+      .finally(function(){ if (btn) btn.disabled = !Course.sample; if (stop) stop.hidden = true; });
+  };
+
+  document.addEventListener('DOMContentLoaded', function(){ Course.tabs(); });
+})();
+
+</script>
+<script>
+/* The scorecard rows are built before Course.init so their data-note fields are restored and saved like every other note. */
+(function buildScorecard(){
+  var DEFAULT_Q = ['Can I claim a taxi from the airport?', 'How many days of annual leave do I get?', 'Can I work from another country for a month?', 'Who approves a laptop purchase?', 'What happens if I lose my security badge?'];
+  var SIZES = ['300', '2,000', '100'];
+  var tb = document.querySelector('#w5-scoreTable tbody'); if (!tb) return;
+  DEFAULT_Q.forEach(function(q, i){
+    var tr = document.createElement('tr');
+    tr.innerHTML = '<td><input type="text" id="w5-q' + i + '" data-note="sc-q' + i + '" value="' + q.replace(/"/g, '&quot;') + '" aria-label="Test question ' + (i + 1) + '"></td>' +
+      [0, 1, 2].map(function(c){ return '<td><input type="number" min="0" max="5" id="w5-rk' + i + '-' + c + '" data-note="rk' + i + '-' + c + '" aria-label="Rank of the correct chunk for question ' + (i + 1) + ' at ' + SIZES[c] + ' tokens" placeholder="0 to 5"></td>'; }).join('');
+    tb.appendChild(tr);
+  });
+})();
+
+Course.init({week: 5, title: 'Embeddings and RAG'});
+var $ = Course.$, $$ = Course.$$, el = Course.el;
+var MONO = '"JetBrains Mono", monospace', SANS = 'Figtree, sans-serif', DISPLAY = '"Bricolage Grotesque", sans-serif';
+var STAGE_FG = '#EAF0FF', STAGE_MUTED = '#8E9BBE';
+function think(){ return Course.cssVar('--think') || '#8F7BFF'; }
+function wrapText(ctx, text, x, y, maxW, lh){
+  var line = '';
+  text.split(' ').forEach(function(wd){ var test = line ? line + ' ' + wd : wd; if (ctx.measureText(test).width > maxW && line) { ctx.fillText(line, x, y); y += lh; line = wd; } else line = test; });
+  if (line) ctx.fillText(line, x, y);
+  return y;
+}
+function rnd(seed){ var x = Math.sin(seed * 9301 + 49297) * 233280; return x - Math.floor(x); }
+
+/* ---------- DATA: 40 workplace questions in 5 topics, placed in a toy 3D space ---------- */
+var CLUSTERS = [
+  {name: 'Login and access', color: '#8F7BFF', center: [-0.55, 0.45, 0.2], items: ['How do I reset my password?', 'I forgot my login', "Can't sign in to my account", 'Locked out after too many attempts', 'Two-factor code never arrives', 'Reset link expired', 'Request access to the shared drive', 'New starter needs a laptop login']},
+  {name: 'Orders and shipping', color: '#FF7A58', center: [0.6, 0.35, -0.3], items: ['Where is my order?', 'Track my parcel', 'Where is my package?', 'Delivery is late again', 'Change my shipping address', 'Do you ship to Canada?', 'My package arrived damaged', 'Can I pick up in store?']},
+  {name: 'Refunds and billing', color: '#2CD2B2', center: [0.1, -0.6, 0.5], items: ['I want a refund', 'Charged twice this month', 'Cancel my subscription', 'Invoice shows the wrong amount', 'How long do refunds take?', 'Update my card details', 'Apply a discount code', 'Why was I billed early?']},
+  {name: 'Business numbers', color: '#F2B53C', center: [-0.5, -0.35, -0.6], items: ['Quarterly revenue grew 12%', 'Gross margin fell to 41%', 'Marketing spend doubled in May', 'Net profit per store', "Forecast next quarter's sales", 'Cost of goods rose with shipping fees', 'Headcount budget for Q3', 'Churn dropped after the price change']},
+  {name: 'Travel, leave and expenses', color: '#5EB1FF', center: [0.45, 0.1, 0.75], items: ['Can I claim a taxi from the airport?', 'Is a cab from the terminal reimbursable?', 'How many days of annual leave do I get?', 'Do I need a receipt for a client dinner?', 'Working from another country for a month', 'Who approves a laptop purchase?', 'Per diem for an overnight trip', 'Can I submit an expense claim late?']}
+];
+/* a short synonym list stands in for what a real embedding model learned from billions of sentences */
+var SYN = {login:'signin', log:'signin', sign:'signin', signin:'signin', password:'signin', account:'signin', locked:'signin', lock:'signin', access:'signin', drive:'signin', factor:'signin', expir:'signin', parcel:'package', order:'package', delivery:'package', deliver:'package', shipping:'package', ship:'package', track:'package', courier:'package', damag:'package', refund:'billing', charged:'billing', charg:'billing', charge:'billing', billed:'billing', bill:'billing', invoice:'billing', card:'billing', subscription:'billing', cancel:'billing', payment:'billing', paid:'billing', discount:'billing', revenue:'money', sales:'money', sale:'money', margin:'money', profit:'money', spend:'money', budget:'money', cost:'money', forecast:'money', grew:'money', grow:'money', quarter:'money', quarterly:'money', churn:'money', headcount:'money', taxi:'taxi', cab:'taxi', airport:'airport', terminal:'airport', flight:'airport', claim:'claim', reimbursable:'claim', reimburs:'claim', reimburse:'claim', expense:'claim', expens:'claim', receipt:'receipt', leave:'leave', holiday:'leave', vacation:'leave', pto:'leave', annual:'leave', abroad:'abroad', country:'abroad', overseas:'abroad', remote:'abroad', diem:'allowance', allowance:'allowance', overnight:'allowance', trip:'travel', travel:'travel', laptop:'equipment', equipment:'equipment', phone:'equipment', approve:'approval', approval:'approval', manager:'approval', dinner:'meal', meal:'meal', lunch:'meal'};
+var STOP = {i:1, a:1, an:1, the:1, my:1, is:1, to:1, do:1, in:1, on:1, of:1, me:1, it:1, and:1, how:1, can:1, cant:1, t:1, where:1, was:1, why:1, this:1, last:1, for:1, from:1, get:1, need:1, am:1, are:1, be:1, with:1, you:1, your:1, we:1, our:1, at:1, by:1, or:1, if:1, into:1, what:1, when:1, who:1, another:1, after:1, too:1, many:1, per:1, new:1};
+var POINTS = [];
+CLUSTERS.forEach(function(c, ci){ c.items.forEach(function(s, i){ var k = ci * 8 + i; var r = 0.17 + 0.12 * rnd(k + 1); var th = rnd(k + 2) * Math.PI * 2, ph = Math.acos(2 * rnd(k + 3) - 1); POINTS.push({label: s, cluster: ci, x: c.center[0] + r * Math.sin(ph) * Math.cos(th), y: c.center[1] + r * Math.sin(ph) * Math.sin(th), z: c.center[2] + r * Math.cos(ph)}); }); });
+function pullTogether(a, b, f){ var A = POINTS[a], B = POINTS[b]; var mx = (A.x + B.x) / 2, my = (A.y + B.y) / 2, mz = (A.z + B.z) / 2; [A, B].forEach(function(p){ p.x = Course.lerp(p.x, mx, f); p.y = Course.lerp(p.y, my, f); p.z = Course.lerp(p.z, mz, f); }); }
+pullTogether(32, 33, .8); pullTogether(0, 1, .6); pullTogether(8, 10, .7); pullTogether(8, 9, .5); pullTogether(17, 23, .5);
+function tokens(s){ return s.toLowerCase().replace(/[^a-z0-9 ]/g, ' ').split(/\s+/).filter(function(w){ return w && !STOP[w]; }).map(function(w){ w = w.replace(/(ing|ed|s)$/, ''); return SYN[w] || SYN[w + 's'] || w; }); }
+POINTS.forEach(function(p){ p.tok = tokens(p.label); });
+function textSim(q, p){ var qt = tokens(q); if (!qt.length) return 0; var hit = 0; qt.forEach(function(t){ if (p.tok.indexOf(t) >= 0) hit++; }); return hit / Math.sqrt(qt.length * Math.max(1, p.tok.length)); }
+function dist3(a, b){ return Math.hypot(a.x - b.x, a.y - b.y, a.z - b.z); }
+function simFromDist(d){ return Course.clamp(1 - d / 1.6, 0, 1); }
+
+/* ---------- HERO: a hand-rolled 3D projection of the space; drag to orbit, hover to read, type to place a question ---------- */
+(function(){
+  var canvas = $('#heroCanvas'), tip = $('#w5-spaceTip'), stage = $('#w5-spaceStage');
+  var yaw = 0.6, pitch = 0.35, spin = Course.motionOK, dragging = false, lx = 0, ly = 0, query = null, nn = [], hover = -1, projected = [];
+  function project(p, w, h){
+    var cy = Math.cos(yaw), sy = Math.sin(yaw), cp = Math.cos(pitch), sp = Math.sin(pitch);
+    var x = p.x * cy + p.z * sy, z = -p.x * sy + p.z * cy; var y = p.y * cp - z * sp; z = p.y * sp + z * cp;
+    var D = 3.1, f = Math.min(w, h) * 0.95, s = f / (D + z);
+    return {sx: w / 2 + x * s, sy: h / 2 - y * s, depth: z, s: s};
+  }
+  var api = Course.canvas(canvas, function(ctx, w, h, t){
+    if (w < 60 || h < 60) return;
+    if (spin && !dragging) yaw += 0.0035;
+    ctx.clearRect(0, 0, w, h);
+    var g = ctx.createRadialGradient(w / 2, h / 2, 10, w / 2, h / 2, Math.max(w, h) * 0.7); g.addColorStop(0, 'rgba(143,123,255,.10)'); g.addColorStop(1, 'rgba(0,0,0,0)'); ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
+    projected = POINTS.map(function(p, i){ var pr = project(p, w, h); pr.i = i; return pr; });
+    var order = projected.slice().sort(function(a, b){ return b.depth - a.depth; });
+    if (query) {
+      var q = project(query, w, h);
+      nn.forEach(function(n, k){ var pr = projected[n.i]; ctx.beginPath(); ctx.moveTo(q.sx, q.sy); ctx.lineTo(pr.sx, pr.sy); ctx.strokeStyle = 'rgba(255,255,255,' + (0.55 - k * 0.08) + ')'; ctx.lineWidth = 1.5; ctx.setLineDash([4, 4]); ctx.stroke(); ctx.setLineDash([]); });
+    }
+    order.forEach(function(pr){
+      var p = POINTS[pr.i], col = CLUSTERS[p.cluster].color, depthT = Course.clamp((pr.depth + 1.1) / 2.2, 0, 1);
+      var r = 4 + 5 * (1 - depthT), alpha = 0.45 + 0.55 * (1 - depthT), isNN = nn.some(function(n){ return n.i === pr.i; });
+      if (isNN || hover === pr.i) { ctx.beginPath(); ctx.arc(pr.sx, pr.sy, r * 2.4, 0, Math.PI * 2); ctx.fillStyle = col + '44'; ctx.fill(); }
+      ctx.beginPath(); ctx.arc(pr.sx, pr.sy, r, 0, Math.PI * 2); ctx.fillStyle = col; ctx.globalAlpha = alpha; ctx.fill(); ctx.globalAlpha = 1;
+      if (isNN) { ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5; ctx.stroke(); }
+    });
+    CLUSTERS.forEach(function(c){ var pr = project({x: c.center[0], y: c.center[1] + 0.3, z: c.center[2]}, w, h); ctx.font = '700 12px ' + DISPLAY; ctx.textAlign = 'center'; ctx.fillStyle = 'rgba(7,11,22,.7)'; var tw = ctx.measureText(c.name).width; Course.roundRect(ctx, pr.sx - tw / 2 - 6, pr.sy - 11, tw + 12, 18, 6); ctx.fill(); ctx.fillStyle = c.color; ctx.fillText(c.name, pr.sx, pr.sy + 3); });
+    if (query) { var q2 = project(query, w, h); ctx.beginPath(); ctx.arc(q2.sx, q2.sy, 9 + 2 * Math.sin(t * 4), 0, Math.PI * 2); ctx.fillStyle = '#fff'; ctx.fill(); ctx.strokeStyle = '#F2552E'; ctx.lineWidth = 3; ctx.stroke(); ctx.font = '700 12px ' + SANS; ctx.textAlign = 'left'; ctx.fillStyle = '#fff'; ctx.fillText('your question', q2.sx + 14, q2.sy + 4); }
+    ctx.textAlign = 'left';
+  }, {auto: true});
+  stage.addEventListener('pointerdown', function(e){ dragging = true; lx = e.clientX; ly = e.clientY; stage.setPointerCapture(e.pointerId); });
+  stage.addEventListener('pointermove', function(e){
+    var rect = canvas.getBoundingClientRect();
+    if (dragging) { yaw += (e.clientX - lx) * 0.008; pitch = Course.clamp(pitch + (e.clientY - ly) * 0.006, -1.2, 1.2); lx = e.clientX; ly = e.clientY; if (!api.running) api.once(); return; }
+    var mx = e.clientX - rect.left, my = e.clientY - rect.top, best = -1, bd = 14;
+    projected.forEach(function(pr){ var d = Math.hypot(pr.sx - mx, pr.sy - my); if (d < bd) { bd = d; best = pr.i; } });
+    hover = best; if (best >= 0) { tip.hidden = false; tip.textContent = POINTS[best].label; tip.style.left = projected[best].sx + 'px'; tip.style.top = projected[best].sy + 'px'; } else tip.hidden = true;
+    if (!api.running) api.once();
+  });
+  stage.addEventListener('pointerup', function(){ dragging = false; });
+  stage.addEventListener('pointerleave', function(){ dragging = false; hover = -1; tip.hidden = true; });
+  var spinBtn = $('#w5-spinBtn');
+  if (!Course.motionOK) spinBtn.hidden = true;
+  spinBtn.addEventListener('click', function(){ spin = !spin; spinBtn.textContent = spin ? 'Pause spin' : 'Spin'; if (spin) api.start(); });
+  $('#w5-resetView').addEventListener('click', function(){ yaw = 0.6; pitch = 0.35; api.once(); });
+  function embed(text){
+    var scores = POINTS.map(function(p, i){ return {i: i, s: textSim(text, p)}; }).sort(function(a, b){ return b.s - a.s; });
+    var top = scores.slice(0, 5).filter(function(x){ return x.s > 0; });
+    var pos;
+    if (top.length) { var sum = 0, acc = {x: 0, y: 0, z: 0}; top.forEach(function(x){ var wgt = Math.pow(x.s, 2); sum += wgt; acc.x += POINTS[x.i].x * wgt; acc.y += POINTS[x.i].y * wgt; acc.z += POINTS[x.i].z * wgt; }); pos = {x: acc.x / sum + 0.05, y: acc.y / sum + 0.04, z: acc.z / sum - 0.03}; }
+    else { pos = {x: 0.05, y: 0.05, z: 0.05}; }
+    query = pos;
+    nn = POINTS.map(function(p, i){ return {i: i, d: dist3(pos, p)}; }).sort(function(a, b){ return a.d - b.d; }).slice(0, 5);
+    var list = $('#w5-nnList'); list.innerHTML = '';
+    list.appendChild(el('p', {class: 'muted', style: 'font-size:.85rem;color:var(--stage-muted)', text: top.length ? 'Five nearest neighbours, illustrative similarity:' : 'No overlap with any question in this toy space, so it lands near the centre. Try the examples above.'}));
+    nn.forEach(function(n, k){ var s = simFromDist(n.d); list.appendChild(el('div', {}, [el('span', {class: 'w5-rank', text: String(k + 1)}), el('span', {}, [el('span', {class: 'w5-nn__t', text: POINTS[n.i].label}), el('div', {class: 'w5-bar'}, [el('i', {style: 'width:' + Math.round(s * 100) + '%'})])]), el('span', {class: 'w5-sim', text: s.toFixed(2)})])); });
+    if (!api.running) api.once();
+  }
+  $('#w5-qGo').addEventListener('click', function(){ embed($('#w5-qText').value); });
+  $('#w5-qText').addEventListener('keydown', function(e){ if (e.key === 'Enter') embed(this.value); });
+  $$('#w5-qPresets button').forEach(function(b){ b.addEventListener('click', function(){ $('#w5-qText').value = b.getAttribute('data-q'); embed(b.getAttribute('data-q')); }); });
+  embed($('#w5-qText').value);
+})();
+
+/* ---------- LEARN 1: pair similarity ---------- */
+(function(){
+  var A = $('#w5-pairA'), B = $('#w5-pairB');
+  POINTS.forEach(function(p, i){ A.appendChild(el('option', {value: String(i), text: p.label})); B.appendChild(el('option', {value: String(i), text: p.label})); });
+  A.value = '32'; B.value = '33';
+  function paint(){
+    var a = POINTS[+A.value], b = POINTS[+B.value]; var s = +A.value === +B.value ? 1 : simFromDist(dist3(a, b));
+    $('#w5-pairScore').textContent = s.toFixed(2); $('#w5-pairBar').style.width = Math.round(s * 100) + '%';
+    var wa = a.label.toLowerCase().split(/\W+/).filter(function(w){ return w && !STOP[w]; }), wb = b.label.toLowerCase().split(/\W+/);
+    var shared = wa.filter(function(w){ return wb.indexOf(w) >= 0; }).length;
+    $('#w5-pairWords').textContent = shared + (shared === 1 ? ' shared word' : ' shared words');
+    var note;
+    if (+A.value === +B.value) note = 'Identical text scores 1.00, the top of the scale. Real duplicates in a document set do exactly this, which is also how you find them.';
+    else if (s >= .75 && shared === 0) note = 'High score, zero shared words. Keyword search would never connect these two; the embedding does, because they mean the same thing.';
+    else if (s >= .75) note = 'High score with shared words. Both kinds of search would find this pair; meaning and spelling agree.';
+    else if (s < .35) note = 'Far apart: different topics. A question about one should never retrieve the other, and a store that returns it anyway is telling you the match is weak.';
+    else note = 'Related but not the same: same topic, different need. Retrieval should rank this pair below a closer match.';
+    $('#w5-pairNote').textContent = note;
+  }
+  A.addEventListener('change', paint); B.addEventListener('change', paint); paint();
+})();
+
+/* ---------- LEARN 2: from sentence to coordinates (a cartoon of an embedding model) ---------- */
+(function(){
+  var canvas = $('#w5-netCanvas'), sel = $('#w5-netSel');
+  var ITEMS = [32, 33, 17, 24, 10], cur = 0, netApi = null, seen = false;
+  ITEMS.forEach(function(idx, i){ sel.appendChild(el('option', {value: String(i), text: POINTS[idx].label})); });
+  var BASE = [[.9, .2, .1, .7, .3, .8, .1, .4], [.2, .8, .6, .1, .9, .2, .5, .3], [.3, .1, .9, .4, .2, .6, .8, .1], [.1, .6, .2, .9, .7, .1, .3, .8], [.7, .4, .3, .2, .1, .9, .6, .8]];
+  function vecFor(idx){ var p = POINTS[idx], b = BASE[p.cluster]; return b.map(function(v, k){ return Course.clamp(v + (rnd(idx * 13 + k) - .5) * .18, 0, 1); }); }
+  function tokensOf(label){ return label.replace(/[?]/g, '').split(' ').slice(0, 6); }
+  function draw(ctx, w, h, t){
+    if (w < 60 || h < 60) return;
+    if (!Course.motionOK) t = 10;
+    var fg = Course.cssVar('--fg'), muted = Course.cssVar('--muted'), lineC = Course.cssVar('--line'), soft = Course.cssVar('--surface-2'), violet = think();
+    ctx.clearRect(0, 0, w, h);
+    var idx = ITEMS[cur], p = POINTS[idx], vec = vecFor(idx), toks = tokensOf(p.label), small = w < 520;
+    var pad = 12, plotW = small ? Math.round(w * 0.3) : 150, plotX = w - pad - plotW, tokW = small ? 58 : 84, netX0 = pad + tokW + (small ? 26 : 40), netX1 = plotX - 28;
+    var layerXs = [netX0, (netX0 + netX1) / 2, netX1], layerN = [6, 8, 6], top = 36, bottom = h - 52, span = bottom - top;
+    ctx.textBaseline = 'alphabetic'; ctx.textAlign = 'left'; ctx.font = '600 13px ' + SANS; ctx.fillStyle = fg; ctx.fillText('From sentence to coordinates', pad, 20);
+    var tokGap = span / Math.max(1, toks.length);
+    function nodeY(L, i){ return top + span * (i + .5) / layerN[L]; }
+    ctx.lineWidth = 1; ctx.globalAlpha = .45; ctx.strokeStyle = lineC;
+    toks.forEach(function(tk, i){ for (var j = 0; j < layerN[0]; j++) { ctx.beginPath(); ctx.moveTo(pad + tokW, top + tokGap * (i + .5)); ctx.lineTo(layerXs[0] - 7, nodeY(0, j)); ctx.stroke(); } });
+    ctx.globalAlpha = 1;
+    var pulse = [Course.clamp((t - 0.6) / 0.8, 0, 1), Course.clamp((t - 1.4) / 0.8, 0, 1)], L, i, j;
+    for (L = 0; L < 2; L++) { var ph = pulse[L], live = ph > 0 && ph < 1; ctx.strokeStyle = live ? violet : lineC; ctx.globalAlpha = live ? .25 + .5 * Math.sin(ph * Math.PI) : .45; for (i = 0; i < layerN[L]; i++) for (j = 0; j < layerN[L + 1]; j++) { ctx.beginPath(); ctx.moveTo(layerXs[L] + 7, nodeY(L, i)); ctx.lineTo(layerXs[L + 1] - 7, nodeY(L + 1, j)); ctx.stroke(); } }
+    ctx.globalAlpha = 1;
+    for (L = 0; L < 2; L++) { var ph2 = pulse[L]; if (ph2 > 0 && ph2 < 1) { ctx.fillStyle = violet; ctx.beginPath(); ctx.arc(Course.lerp(layerXs[L], layerXs[L + 1], ph2), (top + bottom) / 2, 5, 0, Math.PI * 2); ctx.fill(); } }
+    ctx.font = '11px ' + MONO;
+    toks.forEach(function(tk, i){ var a = Course.clamp((t - i * 0.08) / 0.3, 0, 1); if (a <= 0) return; var y = top + tokGap * (i + .5), max = small ? 7 : 10; ctx.globalAlpha = a; ctx.fillStyle = soft; Course.roundRect(ctx, pad, y - 10, tokW, 20, 6); ctx.fill(); ctx.fillStyle = fg; ctx.fillText(tk.length > max ? tk.slice(0, max - 1) + '…' : tk, pad + 6, y + 4); ctx.globalAlpha = 1; });
+    for (L = 0; L < 3; L++) for (i = 0; i < layerN[L]; i++) {
+      var lit = L === 0 ? Course.clamp((t - 0.5) / 0.3, 0, 1) : L === 1 ? Course.clamp((t - 1.3) / 0.5, 0, 1) : Course.clamp((t - 2.1) / 0.3, 0, 1);
+      var v = L === 1 ? vec[i] : 0.3 + 0.6 * rnd(idx * 7 + L * 11 + i);
+      ctx.beginPath(); ctx.arc(layerXs[L], nodeY(L, i), L === 1 ? 8 : 6, 0, Math.PI * 2); ctx.fillStyle = soft; ctx.fill();
+      ctx.fillStyle = L === 1 ? violet : muted; ctx.globalAlpha = lit * (0.15 + 0.85 * v); ctx.fill(); ctx.globalAlpha = 1;
+      ctx.strokeStyle = L === 1 ? violet : lineC; ctx.lineWidth = L === 1 ? 1.5 : 1; ctx.stroke();
+    }
+    ctx.fillStyle = muted; ctx.font = '10px ' + MONO; ctx.textAlign = 'center';
+    ctx.fillText('layer 1', layerXs[0], bottom + 16); ctx.fillText('inner layer', layerXs[1], bottom + 16); ctx.fillText('layer 3', layerXs[2], bottom + 16); ctx.fillText('tokens', pad + tokW / 2, bottom + 16);
+    var numA = Course.clamp((t - 2.2) / 0.5, 0, 1);
+    if (numA > 0) { ctx.globalAlpha = numA; ctx.fillStyle = violet; ctx.font = '600 11px ' + MONO; ctx.textAlign = 'left'; var s = '[' + vec.map(function(v){ return v.toFixed(2); }).join(', ') + ']'; ctx.fillText(small ? s.slice(0, 24) + ' …]' : s, pad, bottom + 38); ctx.globalAlpha = 1; }
+    ctx.fillStyle = soft; Course.roundRect(ctx, plotX, top, plotW, span, 10); ctx.fill(); ctx.strokeStyle = lineC; ctx.lineWidth = 1; ctx.stroke();
+    ctx.fillStyle = muted; ctx.font = '10px ' + MONO; ctx.textAlign = 'center'; ctx.fillText(small ? 'two numbers' : 'two of the numbers as x, y', plotX + plotW / 2, bottom + 16);
+    function plotPt(ix){ var q = POINTS[ix]; return {x: plotX + 14 + (plotW - 28) * Course.clamp((q.x + 1) / 2, 0, 1), y: top + 14 + (span - 44) * Course.clamp(1 - (q.y + 1) / 2, 0, 1)}; }
+    ITEMS.forEach(function(ix, k){ if (k === cur) return; var pp = plotPt(ix); ctx.fillStyle = CLUSTERS[POINTS[ix].cluster].color; ctx.globalAlpha = .45; ctx.beginPath(); ctx.arc(pp.x, pp.y, 4, 0, Math.PI * 2); ctx.fill(); ctx.globalAlpha = 1; });
+    var landA = Course.clamp((t - 2.8) / 0.6, 0, 1);
+    if (landA > 0) { var pp2 = plotPt(idx), e = Course.ease(landA), sx = Course.lerp(layerXs[1], pp2.x, e), sy = Course.lerp((top + bottom) / 2, pp2.y, e) - Math.sin(e * Math.PI) * 24; ctx.fillStyle = CLUSTERS[p.cluster].color; ctx.beginPath(); ctx.arc(sx, sy, 7, 0, Math.PI * 2); ctx.fill(); ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke(); if (landA >= 1) { ctx.fillStyle = fg; ctx.font = '600 10px ' + SANS; ctx.textAlign = 'center'; wrapText(ctx, p.label, plotX + plotW / 2, top + span - 24, plotW - 14, 12); } }
+    ctx.textAlign = 'left';
+    if (netApi && t > 3.8) netApi.stop();
+  }
+  netApi = Course.canvas(canvas, draw, {auto: true});
+  function replay(){ netApi.resetTime(); netApi.start(); netApi.once(); }
+  sel.addEventListener('change', function(){ cur = +sel.value; replay(); });
+  $('#w5-netReplay').addEventListener('click', replay);
+  if ('IntersectionObserver' in window) new IntersectionObserver(function(es){ if (es[0].isIntersecting && !seen) { seen = true; replay(); } }).observe(canvas);
+})();
+/* ---------- LEARN 3: k-means on forty unlabelled tickets (MIT xPRO, Module 2) ---------- */
+(function(){
+  var canvas = $('#w5-kmCanvas'), tip = $('#w5-kmTip');
+  var GROUPS = [
+    {cx: .24, cy: .3, items: ['Charged twice this month', 'Invoice shows the wrong amount', 'Refund still not received', 'Why was I billed early?', 'Cancel my subscription', 'Update my card details', 'Discount code not applied', 'Need a copy of my invoice', 'Billed after cancelling', 'Wrong currency on the receipt']},
+    {cx: .76, cy: .28, items: ['Where is my order?', 'Parcel marked delivered but missing', 'Delivery is late again', 'Change my shipping address', 'Package arrived damaged', 'Do you ship to Canada?', 'Track my parcel', 'Courier left it with a neighbour', 'Wrong item in the box', 'Can I pick up in store?']},
+    {cx: .28, cy: .74, items: ['I forgot my login', 'Reset link expired', 'Locked out after too many attempts', 'Two-factor code never arrives', "Can't sign in on mobile", 'Change my email address', 'Request access to the shared drive', 'Password reset not working', "Account shows someone else's name", 'New starter needs a login']},
+    {cx: .74, cy: .74, items: ['How many days of annual leave do I get?', 'Can I carry over unused leave?', 'Parental leave policy', 'Book leave over the holidays', 'Sick on a day of annual leave', 'Leave balance looks wrong', 'Public holidays while abroad', 'Unpaid leave request', 'Leave during the notice period', 'Are half days allowed?']}
+  ];
+  var PAL = ['#FF7A58', '#2CD2B2', '#8F7BFF', '#F2B53C', '#5EB1FF', '#E26FD0'];
+  var pts = []; GROUPS.forEach(function(g, gi){ g.items.forEach(function(s, i){ var k = gi * 10 + i, ang = rnd(k + 101) * Math.PI * 2, r = .05 + .13 * Math.sqrt(rnd(k + 202)); pts.push({x: g.cx + r * Math.cos(ang), y: g.cy + r * Math.sin(ang), label: s, c: -1}); }); });
+  var k = 4, cents = [], shown = [], iter = 0, running = false, converged = false, seed = 7, hover = -1, moving = 0, acc = 0, api = null;
+  function init(){ cents = []; shown = []; iter = 0; converged = false; running = false; acc = 0; for (var i = 0; i < k; i++) { var p = pts[Math.floor(rnd(seed * 31 + i * 17) * pts.length)]; cents.push({x: p.x, y: p.y}); shown.push({x: p.x, y: p.y}); } pts.forEach(function(p){ p.c = -1; }); state(0); }
+  function assign(){ var moved = 0; pts.forEach(function(p){ var best = 0, bd = 1e9; cents.forEach(function(c, i){ var d = (p.x - c.x) * (p.x - c.x) + (p.y - c.y) * (p.y - c.y); if (d < bd) { bd = d; best = i; } }); if (p.c !== best) moved++; p.c = best; }); return moved; }
+  function update(){ cents.forEach(function(c, i){ var sx = 0, sy = 0, n = 0; pts.forEach(function(p){ if (p.c === i) { sx += p.x; sy += p.y; n++; } }); if (n) { c.x = sx / n; c.y = sy / n; } }); }
+  function step(){ if (converged) return; var moved = assign(); update(); iter++; if (moved === 0 && iter > 1) { converged = true; running = false; } state(moved); if (api) api.start(); }
+  function state(moved){
+    var chip = $('#w5-kmState');
+    if (iter === 0) { chip.textContent = 'unsorted · hover a dot'; chip.className = 'chip'; }
+    else if (converged) { chip.textContent = 'settled after ' + iter + ' rounds · ' + k + ' groups'; chip.className = 'chip chip--ok'; }
+    else { chip.textContent = 'round ' + iter + ' · ' + moved + ' tickets changed group'; chip.className = 'chip chip--warn'; }
+    $('#w5-kmRun').textContent = running ? 'Pause' : converged ? 'Settled' : 'Find the groups'; $('#w5-kmRun').disabled = converged; $('#w5-kmStep').disabled = converged;
+  }
+  function draw(ctx, w, h, t, dt){
+    if (w < 60 || h < 60) return;
+    var fg = Course.cssVar('--fg'), muted = Course.cssVar('--muted');
+    ctx.clearRect(0, 0, w, h);
+    var pad = 14, pw = w - pad * 2, ph = h - pad * 2 - 18, kk = Course.motionOK ? 1 - Math.pow(0.002, dt || 0.016) : 1;
+    moving = 0;
+    shown.forEach(function(s, i){ s.x += (cents[i].x - s.x) * kk; s.y += (cents[i].y - s.y) * kk; if (Math.abs(cents[i].x - s.x) + Math.abs(cents[i].y - s.y) > .002) moving++; });
+    if (running && Course.motionOK) { acc += dt; if (acc > 0.9 && moving === 0) { acc = 0; step(); } }
+    pts.forEach(function(p, i){ var x = pad + p.x * pw, y = pad + p.y * ph; ctx.beginPath(); ctx.arc(x, y, i === hover ? 7 : 5, 0, Math.PI * 2); ctx.fillStyle = p.c < 0 ? muted : PAL[p.c % PAL.length]; ctx.globalAlpha = p.c < 0 ? .55 : .9; ctx.fill(); ctx.globalAlpha = 1; if (i === hover) { ctx.strokeStyle = fg; ctx.lineWidth = 1.5; ctx.stroke(); } });
+    shown.forEach(function(c, i){ var x = pad + c.x * pw, y = pad + c.y * ph; ctx.save(); ctx.translate(x, y); ctx.rotate(Math.PI / 4); ctx.fillStyle = PAL[i % PAL.length]; ctx.fillRect(-7, -7, 14, 14); ctx.strokeStyle = fg; ctx.lineWidth = 2; ctx.strokeRect(-7, -7, 14, 14); ctx.restore(); });
+    ctx.fillStyle = muted; ctx.font = '11px ' + MONO; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+    ctx.fillText(iter === 0 ? '40 tickets · no labels · ' + k + ' starting guesses (diamonds)' : 'round ' + iter + ' · each diamond sits at the middle of its tickets' + (converged ? ' · nothing moves any more' : ''), pad, h - 6);
+    if (api && !running && moving === 0) api.stop();
+  }
+  api = Course.canvas(canvas, draw, {auto: false});
+  init(); api.once();
+  $('#w5-kmRun').addEventListener('click', function(){
+    if (converged) return;
+    running = !running; state(0);
+    if (!running) { api.stop(); api.once(); return; }
+    if (!Course.motionOK) { while (!converged) step(); api.once(); return; }
+    acc = 1; api.start();
+  });
+  $('#w5-kmStep').addEventListener('click', function(){ running = false; step(); state(0); if (!Course.motionOK) api.once(); });
+  $('#w5-kmShuffle').addEventListener('click', function(){ seed++; init(); api.stop(); api.once(); });
+  $('#w5-kmK').addEventListener('input', function(){ k = +this.value; $('#w5-kmKLabel').textContent = k + ' groups'; init(); api.stop(); api.once(); });
+  canvas.addEventListener('pointermove', function(e){
+    var rect = canvas.getBoundingClientRect(), pad = 14, pw = rect.width - pad * 2, ph = rect.height - pad * 2 - 18, mx = e.clientX - rect.left, my = e.clientY - rect.top, best = -1, bd = 11;
+    pts.forEach(function(p, i){ var d = Math.hypot(pad + p.x * pw - mx, pad + p.y * ph - my); if (d < bd) { bd = d; best = i; } });
+    if (best !== hover) { hover = best; if (!api.running) api.once(); }
+    if (best >= 0) { tip.hidden = false; tip.textContent = pts[best].label; tip.style.left = (pad + pts[best].x * pw) + 'px'; tip.style.top = (pad + pts[best].y * ph) + 'px'; } else tip.hidden = true;
+  });
+  canvas.addEventListener('pointerleave', function(){ hover = -1; tip.hidden = true; if (!api.running) api.once(); });
+})();
+
+/* ---------- LEARN 4: chunking lab ---------- */
+(function(){
+  var doc = 'Expense policy. 1. Scope. This policy covers all staff who spend company money on travel, meals and equipment. 2. Approval. Any expense over 100 units needs written approval from your manager before you spend it. 3. Travel. Use public transport where it is available and reasonable. Taxis are reimbursed for airport transfers when public transport is unavailable, when you carry equipment, or when you arrive after 10pm. Keep every receipt. Claims without a receipt are capped at 20 units. 4. Meals. Meals on overnight trips are reimbursed up to 40 units a day. Alcohol is never reimbursed. 5. Equipment. Laptops and phones are ordered through IT, never bought directly. 6. Deadlines. Submit claims within 30 days. Late claims need a written reason and may be refused.';
+  var words = doc.split(' '), size = 300, overlap = false, strategy = 'fixed';
+  var ANSWER_START = words.indexOf('Taxis'), ANSWER_END = words.indexOf('units.', ANSWER_START);
+  var colors = ['var(--think-soft)', 'var(--act-soft)', 'var(--observe-soft)', 'color-mix(in srgb,var(--warn) 25%,var(--surface))'];
+  function fixedChunks(){
+    var perChunk = Math.max(6, Math.round(size / 1.33 / 6)), step = overlap ? Math.max(3, Math.round(perChunk * 0.8)) : perChunk, chunks = [];
+    for (var s = 0; s < words.length; s += step) { chunks.push([s, Math.min(words.length, s + perChunk)]); if (s + perChunk >= words.length) break; }
+    return chunks;
+  }
+  function sectionChunks(){ var starts = []; words.forEach(function(w, i){ if (/^\d\.$/.test(w)) starts.push(i); }); return starts.map(function(s, i){ return [i === 0 ? 0 : s, i + 1 < starts.length ? starts[i + 1] : words.length]; }); }
+  function paint(){
+    var view = $('#w5-chunkView'); view.innerHTML = '';
+    var chunks = strategy === 'section' ? sectionChunks() : fixedChunks();
+    chunks.forEach(function(c, k){ var has = c[0] <= ANSWER_START && c[1] > ANSWER_END, cut = !has && c[1] > ANSWER_START && c[0] <= ANSWER_END; view.appendChild(el('span', {class: 'w5-chunk' + (has ? ' has' : cut ? ' cut' : ''), style: 'background:' + colors[k % colors.length], text: words.slice(c[0], c[1]).join(' ')})); });
+    $('#w5-chunkCount').textContent = chunks.length + (chunks.length === 1 ? ' chunk' : ' chunks');
+    var whole = chunks.some(function(c){ return c[0] <= ANSWER_START && c[1] > ANSWER_END; }), note = $('#w5-chunkNote');
+    if (strategy === 'section') note.innerHTML = '<strong>Split at headings.</strong> Six chunks, one per section, whatever the size setting. The taxi rule sits in "3. Travel" with its receipt rule, because the person who wrote the policy already grouped them. Chunks are uneven, so a very long section would still need a size cap, and overlap is not needed.';
+    else if (size <= 100) note.innerHTML = '<strong>Too small.</strong> The taxi rule is ' + (whole ? 'barely whole in one chunk.' : 'cut across two chunks (dashed red). Retrieval may return half of it, and the receipt cap lands somewhere else.') + (overlap ? ' Overlap helps a little, at the cost of storing the same words twice.' : ' Try overlap.');
+    else if (size >= 2000) note.innerHTML = '<strong>Too big.</strong> One chunk holds the whole policy. Its vector is the average of six topics, so a taxi question matches it weakly, and the prompt fills with meals and laptops the question never asked about.';
+    else if (size === 800) note.innerHTML = '<strong>Whole, but roomy.</strong> The taxi rule is whole, and so are approval, meals and equipment in the same chunk. Fine for a one-page policy; across a 40-page document, 800-token chunks start to blur in the same way 2,000 does here.';
+    else note.innerHTML = '<strong>About right.</strong> The taxi rule sits whole in one chunk (teal outline) with its receipt rule next to it. That chunk will rank first for the question, and little else comes along for the ride.';
+  }
+  $$('[data-size]').forEach(function(b){ b.addEventListener('click', function(){ size = +b.getAttribute('data-size'); $$('[data-size]').forEach(function(x){ x.classList.toggle('is-on', x === b); }); paint(); }); });
+  $$('[data-strategy]').forEach(function(b){ b.addEventListener('click', function(){ strategy = b.getAttribute('data-strategy'); $$('[data-strategy]').forEach(function(x){ x.classList.toggle('is-on', x === b); }); paint(); }); });
+  $('#w5-overlap').addEventListener('change', function(){ overlap = this.checked; paint(); });
+  paint();
+})();
+
+/* ---------- LEARN 5: the vector store search ---------- */
+(function(){
+  var canvas = $('#w5-storeCanvas'), t0 = 0;
+  var N = 28, vecs = []; for (var i = 0; i < N; i++) vecs.push({x: 0.12 + 0.76 * rnd(i * 7 + 1), y: 0.15 + 0.7 * rnd(i * 7 + 2), id: ['handbook', 'leave', 'expenses', 'it-sec', 'remote', 'onboard'][i % 6] + '-' + String(1 + Math.floor(i / 6)).padStart(2, '0')});
+  var q = {x: 0.72, y: 0.36};
+  var ranked = vecs.map(function(v, i){ return {i: i, d: Math.hypot(v.x - q.x, v.y - q.y)}; }).sort(function(a, b){ return a.d - b.d; }).slice(0, 5);
+  var api = Course.canvas(canvas, function(ctx, w, h, t){
+    if (w < 60 || h < 60) return;
+    var tt = Course.motionOK ? (t - t0) % 7 : 5;
+    ctx.clearRect(0, 0, w, h);
+    ctx.font = '700 11px ' + MONO; ctx.fillStyle = STAGE_MUTED; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic'; ctx.fillText('collection: company-docs · ' + N + ' vectors · each with text + metadata', 12, 18);
+    var qx = q.x * w, qy = q.y * h;
+    vecs.forEach(function(v, i){
+      var x = v.x * w, y = v.y * h, rank = -1; ranked.forEach(function(r, j){ if (r.i === i) rank = j; });
+      if (tt > 0.4 && tt < 2.4) { var ph = (tt * 6 + i) % 1; ctx.beginPath(); ctx.moveTo(qx, qy); ctx.lineTo(x, y); ctx.strokeStyle = 'rgba(143,123,255,' + (0.08 + 0.25 * ph) + ')'; ctx.lineWidth = 1; ctx.stroke(); }
+      var lit = tt >= 2.4 && rank >= 0 && tt > 2.4 + rank * 0.35;
+      if (lit) { ctx.beginPath(); ctx.moveTo(qx, qy); ctx.lineTo(x, y); ctx.strokeStyle = '#2CD2B2'; ctx.lineWidth = 2; ctx.stroke(); }
+      ctx.beginPath(); ctx.arc(x, y, lit ? 7 : 4, 0, Math.PI * 2); ctx.fillStyle = lit ? '#2CD2B2' : '#3A4770'; ctx.fill();
+      if (lit) { var label = '#' + (rank + 1) + ' ' + v.id + '  ' + (0.93 - rank * 0.07).toFixed(2), ly = y + (rank % 2 ? 16 : -8); ctx.fillStyle = STAGE_FG; ctx.font = '700 11px ' + MONO; var tw = ctx.measureText(label).width; if (x + 10 + tw > w - 6) { ctx.textAlign = 'right'; ctx.fillText(label, x - 10, ly); ctx.textAlign = 'left'; } else ctx.fillText(label, x + 10, ly); }
+    });
+    ctx.beginPath(); ctx.arc(qx, qy, 8, 0, Math.PI * 2); ctx.fillStyle = '#fff'; ctx.fill(); ctx.strokeStyle = '#F2552E'; ctx.lineWidth = 3; ctx.stroke();
+    ctx.fillStyle = STAGE_FG; ctx.font = '700 12px ' + SANS; ctx.fillText(tt < 0.4 ? 'embed the question…' : tt < 2.4 ? 'comparing with every stored vector…' : 'top 5 by similarity, with chunk_id and score', qx + 14, qy - 10);
+  }, {auto: true});
+  $('#w5-storeRun').addEventListener('click', function(){ api.resetTime(); t0 = 0; api.start(); api.once(); });
+})();
+
+/* ---------- LEARN 6: keyword versus semantic search ---------- */
+(function(){
+  var CH = [
+    {id: 'expenses-03', doc: 'Expense policy · 3. Travel', text: 'Taxis are reimbursed for airport transfers when public transport is unavailable, when you carry equipment, or when you arrive after 10pm.', tags: ['taxi', 'airport', 'reimburse', 'travel']},
+    {id: 'expenses-04', doc: 'Expense policy · 3. Travel', text: 'Keep every receipt. Claims without a receipt are capped at 20 units.', tags: ['receipt', 'claim', 'cap']},
+    {id: 'expenses-06', doc: 'Expense policy · 6. Deadlines', text: 'Submit claims within 30 days. Late claims need a written reason and may be refused.', tags: ['claim', 'deadline', 'late']},
+    {id: 'expenses-05', doc: 'Expense policy · 5. Equipment', text: 'A laptop or phone is ordered through IT, never bought directly.', tags: ['laptop', 'equipment', 'buy']},
+    {id: 'leave-01', doc: 'Leave policy · 1. Entitlement', text: 'Full-time staff are entitled to 24 days of annual leave, plus public holidays.', tags: ['leave', 'entitlement', 'year']},
+    {id: 'leave-04', doc: 'Leave policy · 4. Sickness', text: "Report sickness before 10am on the first day. A doctor's note is needed after five days.", tags: ['sick', 'leave', 'report']},
+    {id: 'remote-03', doc: 'Remote work policy · 3. Abroad', text: 'Working from another country for more than 14 days in a year needs approval from HR and a tax check.', tags: ['abroad', 'remote', 'approval', 'tax']},
+    {id: 'remote-02', doc: 'Remote work policy · 2. Allowance', text: 'Remote workers may claim a home-office allowance of 15 units a month for internet costs.', tags: ['remote', 'allowance', 'claim']},
+    {id: 'it-sec-02', doc: 'IT security · 2. Access cards', text: 'Report a lost access card to Security within 24 hours; it is deactivated immediately.', tags: ['badge', 'lost', 'security']},
+    {id: 'it-sec-09', doc: 'IT security · 9. Networks', text: 'Never connect a company laptop to public airport Wi-Fi without the VPN switched on.', tags: ['laptop', 'wifi', 'vpn', 'airport']}
+  ];
+  var QS = [
+    {q: 'Is a cab from the terminal reimbursable?', tags: ['taxi', 'airport', 'reimburse'], right: 'expenses-03', why: 'Keyword search finds nothing: not one word of the question appears in the taxi rule. The embedding knows that a cab is a taxi and a terminal is an airport.'},
+    {q: 'How many days off do I get a year?', tags: ['leave', 'entitlement', 'year'], right: 'leave-01', why: 'Keyword search ranks the remote-work rule first because it contains both "days" and "year", with the expense deadline next. Semantic search reads "days off a year" as leave and finds the entitlement.'},
+    {q: 'Can I buy a laptop myself?', tags: ['laptop', 'buy', 'equipment'], right: 'expenses-05', why: 'Both find the equipment rule, but keyword search also pulls in the airport Wi-Fi chunk because it mentions a laptop. Meaning separates buying from connecting.'},
+    {q: 'Working from Spain for a month, is that allowed?', tags: ['abroad', 'remote', 'approval'], right: 'remote-03', why: 'Spain appears nowhere in the policies, so keyword search clings to "month" and "working" and puts the home-office allowance first. Semantic search maps "working from Spain" to working abroad.'},
+    {q: 'I lost my security badge, what now?', tags: ['badge', 'lost', 'security'], right: 'it-sec-02', why: 'Keyword search matches "lost" and "security" and gets there. Semantic search gets there on meaning: a badge is an access card. When both work, prefer the cheaper one.'},
+    {q: 'Do I need a receipt for a taxi?', tags: ['receipt', 'taxi', 'claim'], right: 'expenses-04', why: 'Both engines find the receipt rule, because the question uses the policy\'s own word. When the vocabulary matches, keyword search is as good and cheaper. Hybrid search exists for exactly this reason.'}
+  ];
+  var KSTOP = {i:1, a:1, an:1, the:1, my:1, is:1, to:1, do:1, in:1, on:1, of:1, me:1, it:1, and:1, how:1, can:1, for:1, from:1, get:1, need:1, that:1, what:1, now:1, myself:1, you:1, are:1, be:1};
+  function words(s){ return s.toLowerCase().replace(/[^a-z0-9 ]/g, ' ').split(/\s+/).filter(function(w){ return w && !KSTOP[w]; }); }
+  var sel = $('#w5-kwSel'); QS.forEach(function(q, i){ sel.appendChild(el('option', {value: String(i), text: q.q})); });
+  function hit(c, score, matched, right){
+    var div = el('div', {class: 'w5-hit' + (right ? ' is-right' : '')});
+    var body = el('div', {}); body.appendChild(el('code', {text: c.id + ' · ' + c.doc}));
+    var span = el('span'); span.innerHTML = Course.esc(c.text).replace(/[A-Za-z0-9-]+/g, function(w){ return matched.indexOf(w.toLowerCase()) >= 0 ? '<mark>' + w + '</mark>' : w; }); body.appendChild(span);
+    div.appendChild(body); div.appendChild(el('span', {class: 'w5-sc', text: score}));
+    return div;
+  }
+  function paint(){
+    var q = QS[+sel.value], qw = words(q.q), kwList = $('#w5-kwList'), semList = $('#w5-semList'); kwList.innerHTML = ''; semList.innerHTML = '';
+    var kw = CH.map(function(c){ var cw = words(c.text), m = qw.filter(function(w){ return cw.indexOf(w) >= 0; }); return {c: c, n: m.length, m: m}; }).filter(function(r){ return r.n > 0; }).sort(function(a, b){ return b.n - a.n || (a.c.id < b.c.id ? -1 : 1); }).slice(0, 3);
+    if (!kw.length) kwList.appendChild(el('div', {class: 'w5-hit is-empty', text: 'No chunk contains any word of the question.'}));
+    kw.forEach(function(r){ kwList.appendChild(hit(r.c, r.n + (r.n === 1 ? ' word' : ' words'), r.m, r.c.id === q.right)); });
+    var sem = CH.map(function(c){ var m = q.tags.filter(function(t){ return c.tags.indexOf(t) >= 0; }).length; return {c: c, s: m / Math.sqrt(q.tags.length * c.tags.length)}; }).sort(function(a, b){ return b.s - a.s || (a.c.id < b.c.id ? -1 : 1); }).slice(0, 3);
+    sem.forEach(function(r){ semList.appendChild(hit(r.c, (0.55 + 0.42 * r.s).toFixed(2), [], r.c.id === q.right)); });
+    var kwRight = kw.length && kw[0].c.id === q.right, semRight = sem[0].c.id === q.right;
+    $('#w5-kwVerdict').innerHTML = '<strong>' + (kwRight && semRight ? 'Both find it.' : semRight ? 'Only semantic search puts the right chunk first.' : 'Neither is sure.') + '</strong> ' + Course.esc(q.why);
+  }
+  sel.addEventListener('change', paint); paint();
+})();
+
+/* ---------- LEARN 7: the RAG loop stepper ---------- */
+(function(){
+  var msgs = ['Six policy documents become 52 chunks of about 300 tokens, split at section headings. Each keeps doc_name, section and last_updated.', 'Each chunk goes through the embedding model and becomes a vector of 1,024 numbers. Claude is not involved yet.', 'Vector + text + metadata land in the collection company-docs. This phase runs once, and again whenever a document changes.', 'A question arrives: "Can I claim a taxi from the airport?" The same embedding model turns it into a vector too.', 'The store returns the 5 closest chunks: expenses-03 (0.89), expenses-04 (0.81), travel-01 (0.74), handbook-12 (0.52), remote-02 (0.41).', 'The prompt wraps those five chunks in <context> tags with their ids, adds the citation rules, then the question. About 1,900 tokens in total.', 'claude-sonnet-5-5 answers: "Yes, airport taxis are reimbursed when public transport is unavailable [source: expenses-03]. Keep the receipt; claims without one are capped at 20 units [source: expenses-04]."'];
+  var i = 0, timer = null, nodes = $$('.w5-rag__node'), msg = $('#w5-ragMsg');
+  function show(k){ nodes.forEach(function(n, j){ n.classList.toggle('is-on', j === k); n.classList.toggle('is-done', j < k); }); msg.textContent = msgs[k]; }
+  function stop(){ clearInterval(timer); timer = null; $('#w5-ragPlay').textContent = 'Play'; }
+  function step(){ i = (i + 1) % msgs.length; show(i); if (i === msgs.length - 1) stop(); }
+  $('#w5-ragStep').addEventListener('click', function(){ stop(); step(); });
+  $('#w5-ragPlay').addEventListener('click', function(){ if (timer) return stop(); if (i >= msgs.length - 1) i = -1; this.textContent = 'Stop'; step(); timer = setInterval(step, Course.motionOK ? 2200 : 3000); });
+  show(0);
+})();
+/* ---------- LEARN 8: citation tracking ---------- */
+(function(){
+  var CTX = [
+    {id: 'expenses-03', doc: 'Expense policy', sec: '3. Travel', upd: '1 Mar 2026', text: 'Taxis are reimbursed for airport transfers when public transport is unavailable, when you carry equipment, or when you arrive after 10pm.'},
+    {id: 'expenses-04', doc: 'Expense policy', sec: '3. Travel', upd: '1 Mar 2026', text: 'Keep every receipt. Claims without a receipt are capped at 20 units.'},
+    {id: 'travel-01', doc: 'Travel guide', sec: '1. Airports', upd: '14 Nov 2025', text: 'Exception: taxis to and from the airport are always allowed for flights departing before 7am or landing after 10pm, with a receipt.'},
+    {id: 'handbook-12', doc: 'Staff handbook', sec: '12. Client sites', upd: '2 Sep 2025', text: "Staff are expected to arrive on time for client meetings and dress appropriately for the client's environment."}
+  ];
+  var ANS = [
+    {s: 'Yes. You can claim a taxi from the airport when public transport is unavailable, when you carry equipment, or when you arrive after 10pm', src: 'expenses-03'},
+    {s: 'Keep the receipt: claims without one are capped at 20 units', src: 'expenses-04'},
+    {s: 'Airport taxis also need pre-approval from your manager for fares over 60 units', src: 'expenses-09'}
+  ];
+  var checked = false, userView = false, ctxBox = $('#w5-citeCtx'), ansBox = $('#w5-citeAns'), userBox = $('#w5-citeUser'), chip = $('#w5-citeResult');
+  function byId(id){ for (var i = 0; i < CTX.length; i++) if (CTX[i].id === id) return CTX[i]; return null; }
+  function light(id){ $$('.w5-chunkcard', ctxBox).forEach(function(c){ c.classList.toggle('is-lit', c.getAttribute('data-id') === id); }); $$('.w5-src', ansBox).forEach(function(s){ s.classList.toggle('is-lit', s.getAttribute('data-src') === id); }); }
+  function render(){
+    ctxBox.innerHTML = ''; ansBox.innerHTML = ''; userBox.innerHTML = '';
+    CTX.forEach(function(c){ ctxBox.appendChild(el('div', {class: 'w5-chunkcard', 'data-id': c.id, id: 'w5-ctx-' + c.id}, [el('code', {text: c.id + ' · ' + c.doc + ' · ' + c.sec + ' · indexed ' + c.upd}), el('span', {text: c.text})])); });
+    if (userView) {
+      var n = 0;
+      ANS.forEach(function(a){ var c = byId(a.src); if (!c) return; n++; ansBox.appendChild(document.createTextNode(a.s + ' ')); ansBox.appendChild(el('sup', {text: '[' + n + ']', style: 'color:var(--think);font-weight:700'})); ansBox.appendChild(document.createTextNode('. ')); userBox.appendChild(el('li', {html: '<b>' + Course.esc(c.doc) + ' › ' + Course.esc(c.sec) + '</b> · indexed ' + Course.esc(c.upd) + ' · opens the original page'})); });
+      ansBox.appendChild(el('p', {class: 'muted', style: 'font-size:.85rem;margin-top:8px', text: 'One sentence was removed before display because its citation could not be verified against the context.'}));
+      userBox.hidden = false; chip.textContent = n + ' sources shown · 1 sentence removed'; chip.className = 'chip chip--ok'; return;
+    }
+    userBox.hidden = true;
+    ANS.forEach(function(a, i){
+      var ok = !!byId(a.src), s = el('span', {class: 'w5-src' + (checked ? (ok ? ' is-ok' : ' is-bad') : ''), 'data-src': a.src, id: 'w5-src-' + i, role: 'button', tabindex: '0', text: '[source: ' + a.src + ']'});
+      s.addEventListener('click', function(){ light(a.src); }); s.addEventListener('keydown', function(e){ if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); light(a.src); } });
+      ansBox.appendChild(document.createTextNode(a.s + ' ')); ansBox.appendChild(s); ansBox.appendChild(document.createTextNode('. '));
+      if (checked && !ok) ansBox.appendChild(el('span', {class: 'muted', style: 'font-size:.85rem', text: '(not in the context: an invented id, and an invented rule) '}));
+    });
+    if (checked) { chip.textContent = '2 verified · 1 invented'; chip.className = 'chip chip--warn'; } else { chip.textContent = '3 citations · unchecked'; chip.className = 'chip'; }
+  }
+  $('#w5-citeCheck').addEventListener('click', function(){ checked = true; userView = false; render(); Course.toast('One citation points at a chunk that was never retrieved.'); });
+  $('#w5-citeView').addEventListener('click', function(){ checked = true; userView = !userView; this.textContent = userView ? 'Back to the raw answer' : 'As the user sees it'; render(); });
+  $('#w5-citeReset').addEventListener('click', function(){ checked = false; userView = false; $('#w5-citeView').textContent = 'As the user sees it'; render(); });
+  render();
+})();
+
+/* ---------- LEARN 9: where RAG fails, five modes against a top-k slider ---------- */
+(function(){
+  var mode = 0, k = 5, row = $('#w5-rankRow'), note = $('#w5-failNote');
+  var RIGHT = [[], [6], [2, 7], [1], [2, 4]], NOISE4 = [3, 5, 6, 7, 8, 9, 10];
+  function paint(){
+    row.innerHTML = ''; var right = RIGHT[mode];
+    for (var r = 1; r <= 10; r++) { var s = el('span', {text: String(r), id: 'w5-rank-' + r}); s.classList.add(r <= k ? 'in' : 'out'); if (right.indexOf(r) >= 0) s.classList.add(mode === 3 ? 'stale' : 'right'); if (mode === 4 && r <= k && NOISE4.indexOf(r) >= 0) s.classList.add('noise'); row.appendChild(s); }
+    $('#w5-kLabel').textContent = 'top-k = ' + k + ' · about ' + Course.fmt(k * 400) + ' tokens';
+    var allIn = right.every(function(r){ return r <= k; });
+    if (mode === 0) note.innerHTML = '<strong>Not retrieved at all.</strong> The question was "what about getting to the plane?" and the taxi rule was cut mid-sentence at ingest. No rank holds the answer, however far you push k. Fix: better chunks, or rewrite the question ("airport taxi reimbursement") before embedding it.';
+    else if (mode === 1) note.innerHTML = allIn ? '<strong>Caught it.</strong> With k = ' + k + ' the right chunk at rank 6 (orange) is inside the cut. Every extra chunk costs tokens and attention, so raise k only as far as you need.' : '<strong>Ranked sixth, cut off.</strong> The right chunk is at rank 6 but you handed Claude ' + k + '. It never sees the rule and answers from the wrong chunks, fluently. Fix: raise k, or improve the chunk so it ranks higher.';
+    else if (mode === 2) note.innerHTML = allIn ? '<strong>Both chunks in.</strong> Rank 2 holds the taxi rule and rank 7 the receipt cap. With k = ' + k + ' Claude sees both and can answer the whole question.' : '<strong>Half an answer.</strong> The taxi rule is at rank 2 but the receipt cap is at rank 7, outside your top ' + k + '. Claude answers the first half with full confidence and never mentions the cap. Fix: raise k, or split the question in two and retrieve twice.';
+    else if (mode === 3) note.innerHTML = '<strong>Stale index.</strong> Rank 1 holds the right chunk and it says "submit claims within 30 days". The policy changed to 14 days in March; nobody re-ran the ingest. Retrieval worked perfectly and the answer is wrong, with a correct-looking citation. No value of k helps. Fix: re-embed when documents change, store last_updated, and show the date next to the source.';
+    else note.innerHTML = k <= 4 ? '<strong>Tight and clean.</strong> With k = ' + k + ' Claude gets the two right chunks (ranks 2 and 4) and ' + (k - 2) + ' mild distraction' + (k - 2 === 1 ? '' : 's') + '. Push k up and watch the red noise arrive.' : k <= 6 ? '<strong>Getting noisy.</strong> ' + (k - 2) + ' of ' + k + ' chunks are about meals, laptops and leave. The answer is usually still right, but the prompt is now mostly noise, and you pay for every token of it.' : '<strong>Too many results.</strong> ' + (k - 2) + ' of ' + k + ' chunks are noise. They compete for attention until the 40-unit meal allowance leaks into the taxi answer. Fix: lower k, set a minimum similarity, or add a re-ranker that drops weak matches before they reach the prompt.';
+  }
+  $$('[data-fail]').forEach(function(b){ b.addEventListener('click', function(){ mode = +b.getAttribute('data-fail'); $$('[data-fail]').forEach(function(x){ x.classList.toggle('is-on', x === b); }); paint(); }); });
+  $('#w5-kRange').addEventListener('input', function(){ k = +this.value; paint(); });
+  paint();
+})();
+
+/* ---------- LEARN 10: hit rate at k on a held-out set (MIT xPRO, Module 2) ---------- */
+(function(){
+  var REC = [
+    {q: 'Can I claim a taxi from the airport?', r: [1, 1, 1]}, {q: 'Do I need a receipt for a taxi?', r: [2, 1, 1]}, {q: 'How many days of annual leave do I get?', r: [1, 1, 6]}, {q: 'Can I work from another country for a month?', r: [7, 2, 6]},
+    {q: 'Who approves a laptop purchase?', r: [3, 1, 4]}, {q: 'What happens if I lose my badge?', r: [0, 4, 8]}, {q: 'Is alcohol reimbursed at client dinners?', r: [6, 3, 1]}, {q: 'When must I submit an expense claim?', r: [4, 6, 7]}
+  ];
+  var SIZES = [100, 300, 2000], LABELS = ['100 tokens', '300 tokens', '2,000 tokens'], k = 5, tb = $('#w5-recTable tbody'), bars = $('#w5-recBars');
+  function paint(){
+    tb.innerHTML = ''; bars.innerHTML = '';
+    var hits = [0, 0, 0];
+    REC.forEach(function(row){ var tr = el('tr'); tr.appendChild(el('td', {text: row.q})); row.r.forEach(function(r, c){ var ok = r >= 1 && r <= k; if (ok) hits[c]++; tr.appendChild(el('td', {class: ok ? 'hit' : 'miss', text: r ? String(r) : '–'})); }); tb.appendChild(tr); });
+    SIZES.forEach(function(sz, c){ var b = el('div', {class: 'w5-recbar'}); b.appendChild(el('span', {text: LABELS[c]})); var pr = el('div', {class: 'progress' + (c === 1 ? ' progress--think' : '')}); pr.appendChild(el('i', {style: 'width:' + Math.round(100 * hits[c] / REC.length) + '%'})); b.appendChild(pr); b.appendChild(el('span', {class: 'w5-n', text: hits[c] + ' / ' + REC.length})); bars.appendChild(b); });
+    $('#w5-recKLabel').textContent = 'top-k = ' + k;
+    $('#w5-recTokens').textContent = 'Tokens sent to Claude per question at k = ' + k + ': about ' + Course.fmt(k * 100) + ' with 100-token chunks, ' + Course.fmt(k * 300) + ' with 300, ' + Course.fmt(k * 2000) + ' with 2,000.';
+  }
+  $('#w5-recK').addEventListener('input', function(){ k = +this.value; paint(); });
+  paint();
+})();
+
+/* ---------- LAB: scorecard totals ---------- */
+(function(){
+  var tb = $('#w5-scoreTable tbody'); if (!tb) return;
+  var NAMES = ['300 tokens', '2,000 tokens', '100 tokens'];
+  function totals(){
+    var best = -1, bestN = -1, filledAll = true;
+    for (var c = 0; c < 3; c++) { var found = 0, filled = 0; for (var i = 0; i < 5; i++) { var v = $('#w5-rk' + i + '-' + c).value; if (v !== '') { filled++; if (+v >= 1 && +v <= 5) found++; } } $('#w5-avg' + c).textContent = filled ? found + ' / ' + filled : '–'; if (filled < 5) filledAll = false; if (filled && found > bestN) { bestN = found; best = c; } }
+    $('#w5-scoreVerdict').textContent = best < 0 ? '' : (filledAll ? 'All three sizes scored. ' : '') + 'Best so far: ' + NAMES[best] + ', ' + bestN + ' of 5 found in the top five.' + (filledAll && bestN < 5 ? ' Look at the question that failed: was the answer cut in half, or never in the documents?' : '');
+  }
+  tb.addEventListener('input', totals); totals();
+})();
+
+/* ---------- QUIZ ---------- */
+Course.quiz('#quizBox', {passPct: 80, questions: [
+  {q: 'What is an embedding?', options: ['A compressed copy of a document that can be unzipped later', 'A list of numbers that represents what a piece of text is about', 'A keyword index with synonyms added by hand', 'A summary that Claude writes for each chunk'], answer: 1, why: 'An embedding model turns text into a vector of about a thousand numbers. Texts that mean similar things get similar vectors, which is what makes meaning searchable.'},
+  {q: 'Why does vector search find "I forgot my login" when the document says "password reset"?', options: ['Both phrases contain the word "password"', 'The two phrases have nearby embeddings because they mean the same thing', 'The store runs a spelling corrector on the question', 'Claude rewrites the document before it is stored'], answer: 1, why: 'The phrases share no words. Their vectors are close because the embedding model learned, from millions of examples, that they appear in the same situations.'},
+  {q: 'Where do the numbers in an embedding come from, in the picture the MIT course paints?', options: ['A dictionary that assigns each word a fixed code', "A neural network's inner layer, read off as coordinates", 'The page number and position of the text in the document', 'Random numbers that are later corrected by hand'], answer: 1, why: 'A network that has to recognise or rebuild its input ends up describing that input in its inner layer. Read those activations as a list and you have an embedding.'},
+  {q: 'A good starting chunk size for a policy document is about…', options: ['10 to 20 tokens, so every sentence is its own chunk', '300 to 800 tokens, split at section headings where possible', 'One whole document per chunk', 'Exactly 2,000 tokens, always'], answer: 1, why: 'Tiny chunks cut rules away from their exceptions; a whole document blurs six topics into one vector. The middle range is a starting point you then test, not a law.'},
+  {q: 'What does a vector store return at query time?', options: ['Every document in the collection', 'The chunks whose vectors are closest to the question, with their text and metadata', 'A ranked list of web pages', 'A single sentence that answers the question'], answer: 1, why: 'It returns the top-k nearest chunks. The text goes to Claude; the metadata (doc_name, section, chunk_id) becomes the citation.'},
+  {q: 'The answer is wrong. The retrieval log shows the right chunk was ranked sixth and k was 5. The simplest fix is…', options: ['Switch to a bigger Claude model', 'Raise k, or improve the chunk so it ranks higher', 'Remove the citation requirement from the system prompt', 'Delete the other five chunks from the store'], answer: 1, why: 'Retrieval dropped the answer before the model ever saw it. Change what is retrieved; the model was never the problem.'},
+  {q: 'The assistant quotes "submit claims within 30 days" with a correct citation, but the policy changed to 14 days last quarter. What happened?', options: ['The model hallucinated the number', 'The index is stale: nobody re-embedded the document after it changed', 'The chunk size was too small', 'Cosine similarity cannot handle numbers'], answer: 1, why: 'Retrieval worked perfectly on an old chunk. Re-embed when documents change, store a last_updated field, and show the date beside the source.'},
+  {q: 'Before you trust a retrieval assistant, the habit this course borrows from the MIT xPRO course is to…', options: ['Ask the assistant to rate its own confidence', 'Write test questions with known answers first, then measure the rank of the right chunk', 'Read every answer for a week and see if anything looks odd', 'Raise k to 20 so nothing is missed'], answer: 1, why: 'A held-out test set: decide what right looks like before the system can influence you, then measure hit rate at k and re-run it whenever the chunking, the model or the documents change.'}
+]});
+
+/* ---------- PRACTICE: pick the chunks that answer the question, two rounds ---------- */
+(function(){
+  var ROUNDS = [
+    {q: '"I took a taxi from the airport to the client\'s office. Can I claim it, and do I need a receipt?"', chunks: [
+      {id: 'expenses-03', text: 'Taxis are reimbursed for airport transfers when public transport is unavailable, when you carry equipment, or when you arrive after 10pm.', right: true},
+      {id: 'handbook-07', text: "Staff are expected to arrive on time for client meetings and dress appropriately for the client's environment.", right: false},
+      {id: 'expenses-04', text: 'Keep every receipt. Claims without a receipt are capped at 20 units and may be refused for travel over 50 units.', right: true},
+      {id: 'remote-02', text: 'Remote workers may claim a home-office allowance of 15 units a month for internet costs.', right: false},
+      {id: 'expenses-02', text: 'Any expense over 100 units needs written approval from your manager before you spend it.', right: false},
+      {id: 'travel-01', text: 'Exception: taxis to and from the airport are always allowed for flights departing before 7am or landing after 10pm, with a receipt.', right: true},
+      {id: 'leave-05', text: 'Travel days for work count as working days, not leave days, when they fall on a weekday.', right: false},
+      {id: 'it-sec-09', text: 'Never connect a company laptop to public airport Wi-Fi without the VPN switched on.', right: false}
+    ], why: 'expenses-03 answers "can I claim it", expenses-04 answers "do I need a receipt", and travel-01 carries the exception that may apply. expenses-02 looks relevant but only matters above 100 units; the rest is noise about the same trip.'},
+    {q: '"I want to work from Portugal for three weeks in March. Is that allowed, and do I need to tell anyone?"', chunks: [
+      {id: 'remote-03', text: 'Working from another country is allowed for up to 14 days a year without approval.', right: true},
+      {id: 'it-sec-04', text: 'When working abroad, use the VPN at all times and never a shared or hotel computer.', right: false},
+      {id: 'remote-04', text: 'Stays abroad longer than 14 days need written approval from HR and a tax check, requested at least two weeks ahead.', right: true},
+      {id: 'leave-02', text: 'Annual leave must be booked in the HR system at least five working days in advance.', right: false},
+      {id: 'expenses-07', text: 'Per diem for overnight trips is 40 units a day; accommodation is booked through the travel desk.', right: false},
+      {id: 'remote-05', text: 'Tell your manager and update your work location in the HR system before you travel, whatever the length of stay.', right: true},
+      {id: 'handbook-03', text: 'Core hours are 10am to 4pm in your contracted time zone unless your manager agrees otherwise.', right: false},
+      {id: 'onboard-02', text: 'New laptops are set up by IT on your first day; bring photo identification.', right: false}
+    ], why: 'remote-03 sets the 14-day limit, remote-04 says what three weeks requires (HR approval and a tax check), and remote-05 answers "do I need to tell anyone". it-sec-04 is good advice but not what was asked; the rest is noise about leave, per diems and laptops.'}
+  ];
+  var round = 0, total = 0, sel = {}, box = $('#w5-pickBox'), btn = $('#w5-pickCheck'), next = $('#w5-pickNext'), res = $('#w5-pickResult'), cnt = $('#w5-pickCount');
+  function render(){
+    var R = ROUNDS[round]; sel = {}; box.innerHTML = ''; $('#w5-pickQ').textContent = R.q; $('#w5-pickRound').textContent = 'Round ' + (round + 1) + ' of ' + ROUNDS.length; cnt.textContent = '0 / 3'; btn.disabled = true; btn.hidden = false; next.hidden = true; res.textContent = 'Select exactly three chunks.';
+    R.chunks.forEach(function(c, i){ var b = el('button', {type: 'button', id: 'w5-pk-' + round + '-' + i}, [el('code', {text: c.id}), el('span', {text: c.text})]); b.addEventListener('click', function(){ if (b.classList.contains('is-right') || b.classList.contains('is-wrong') || b.classList.contains('is-missed')) return; sel[i] = !sel[i]; b.classList.toggle('is-sel', !!sel[i]); var n = Object.keys(sel).filter(function(x){ return sel[x]; }).length; cnt.textContent = n + ' / 3'; btn.disabled = n !== 3; res.textContent = n === 3 ? 'Press Check.' : 'Select exactly three chunks.'; }); box.appendChild(b); });
+  }
+  btn.addEventListener('click', function(){
+    var R = ROUNDS[round], score = 0;
+    R.chunks.forEach(function(c, i){ var b = $('#w5-pk-' + round + '-' + i); if (sel[i]) { b.classList.remove('is-sel'); b.classList.add(c.right ? 'is-right' : 'is-wrong'); if (c.right) score++; } else if (c.right) b.classList.add('is-missed'); });
+    total += score; $('#w5-pickScore').textContent = total + ' / ' + (ROUNDS.length * 3);
+    res.innerHTML = '<strong>' + score + ' of 3 right.</strong> ' + Course.esc(R.why);
+    btn.hidden = true;
+    if (round + 1 < ROUNDS.length) next.hidden = false; else { res.innerHTML += ' <strong>Final score: ' + total + ' of ' + (ROUNDS.length * 3) + '.</strong> ' + (total >= 5 ? 'You can tell "answers the question" from "same topic". That is the whole skill of reading a retrieval log.' : 'Reread the two explanations: the test is whether a chunk changes the answer, not whether it mentions the same words.'); if (total >= 5) Course.confetti(); }
+  });
+  next.addEventListener('click', function(){ round++; render(); });
+  $('#w5-pickReset').addEventListener('click', function(){ round = 0; total = 0; $('#w5-pickScore').textContent = '0 / ' + (ROUNDS.length * 3); render(); });
+  render();
+})();
+
+Course.days();
+</script>
+</body></html>

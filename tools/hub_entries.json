@@ -1,0 +1,180 @@
+[
+ {
+  "n": 2,
+  "title": "Prompt Craft",
+  "hours": 5,
+  "lab": "Lab 1.1 · guardrail prompt",
+  "make": "A guardrail system prompt for a software company's support assistant that holds 9 of 10 attacks, plus design-log entry 2",
+  "viz": "Five day tabs: prompt anatomy hero, system-prompt plate, injection quarantine, template builder, prompt test bench, guardrail gate, live attack workbench",
+  "concepts": [
+   "Role and Task",
+   "Context, Rules, Format",
+   "System prompt vs messages",
+   "XML tags and injection",
+   "Few-shot examples",
+   "Output shape: markdown, JSON",
+   "Think step by step",
+   "Templates with slots",
+   "Testing a prompt",
+   "Guardrails as scope"
+  ]
+ },
+ {
+  "n": 3,
+  "title": "Claude Projects",
+  "hours": 5,
+  "lab": "Lab 1.2 · policy assistant",
+  "make": "A company policy helper Project with a ten-question score sheet, a New starter FAQ Artifact and design-log entry 3",
+  "viz": "Five day tabs: one-Project-many-chats hero, pinned-instructions chat, token budget meter, retrieval desk, versioned Artifact panel, metadata namer, team fan-out, Project-or-agent lanes, answer anatomy",
+  "concepts": [
+   "What a Project holds",
+   "Instructions that persist",
+   "Files on the desk",
+   "Retrieval from a big binder",
+   "Artifacts you keep and version",
+   "Documents are the data",
+   "Who sees what when you share",
+   "Project or agent?",
+   "Cite, say when not covered, hand over"
+  ]
+ },
+ {
+  "n": 4,
+  "title": "Context Engineering",
+  "hours": 5,
+  "lab": "Lab 2.1 · caching test",
+  "make": "A caching cost table, a question-order accuracy comparison and design-log entry 4",
+  "viz": "Five day tabs: context assembly, tool results on the desk, needle-in-a-haystack game, lost-in-the-middle curves, briefing-pack builder, 33-step pruning timeline, prefix-cache demo, caching calculator, Workbench readout, product planner",
+  "concepts": [
+   "Prompt vs context engineering",
+   "Claude's native tools",
+   "Needle in a haystack",
+   "Lost in the middle",
+   "Context packing",
+   "Document pruning",
+   "Prefix caching",
+   "What caching saves",
+   "The Workbench counters",
+   "Static and dynamic context"
+  ]
+ },
+ {
+  "n": 5,
+  "title": "Embeddings and RAG",
+  "hours": 6,
+  "lab": "Lab 2.2 · retrieval assistant",
+  "make": "A retrieval scorecard at three chunk sizes, three answers with verified citations and design-log entry 5",
+  "viz": "Five day tabs: 3D embedding space, sentence-to-coordinates network, k-means clusters, chunking lab, keyword vs semantic search, vector store search, RAG loop, citation checker, failure modes on a top-k slider, hit-rate meter",
+  "concepts": [
+   "Meaning as numbers",
+   "Where embeddings come from",
+   "Similar things sit together",
+   "Chunking",
+   "Vector stores",
+   "Keyword vs semantic search",
+   "The RAG loop",
+   "Citation tracking",
+   "Where RAG fails",
+   "Measuring retrieval"
+  ]
+ },
+ {
+  "n": 6,
+  "title": "n8n Workflows",
+  "hours": 5,
+  "lab": "Lab 3.1 · ticket intake webhook",
+  "make": "A webhook-triggered support-ticket intake that validates, stores, answers the form and routes by category",
+  "viz": "Five day tabs: executing node canvas, items loop, pinning and error branch, polling vs webhook timeline, webhook gate, expression trainer, Set-node mapper, credentials vault, Switch router",
+  "concepts": [
+   "Nodes and the canvas",
+   "Items and loops",
+   "Data pinning",
+   "Error handling",
+   "Instant triggers",
+   "Test vs production URLs",
+   "JSON and expressions",
+   "Schema transformation",
+   "The credentials vault",
+   "Switch routing"
+  ]
+ },
+ {
+  "n": 7,
+  "title": "Your First Agent",
+  "hours": 6,
+  "lab": "Lab 3.2 · CRM + Gmail agent",
+  "make": "A Claude-powered n8n support agent that looks up a mock CRM and sends Gmail alerts, with an eight-message scored test log",
+  "viz": "Five day tabs: agent-loop hero and simulator, AI Agent node sockets, memory window, tool-description tester, output parser, narrow vs wide tools, HTTP request anatomy, standing-orders tester, fix-the-run, who-decides sorter",
+  "concepts": [
+   "The agent loop",
+   "The AI Agent node",
+   "Memory windows",
+   "Tool descriptions",
+   "Output parsers",
+   "Workflows as tools",
+   "The HTTP Request tool",
+   "Standing orders",
+   "Reading a run",
+   "Computers in the group"
+  ]
+ },
+ {
+  "n": 8,
+  "title": "Tool Calling",
+  "hours": 6,
+  "lab": "Labs 4.1, 4.2 · analytics agent",
+  "make": "Three proven tool schemas and a spreadsheet Analytics Agent whose every number is computed in code and audited from its log",
+  "viz": "Five day tabs: tool-calling sequence hero, Console desk, rate-limit bucket, Workbench mock, messages array, schema linter, n8n mapping, vector pipeline, verify-by-code, workbook normaliser, execution log",
+  "concepts": [
+   "Console workspaces and keys",
+   "Rate limits and 429s",
+   "Workbench requests",
+   "The four messages",
+   "Schemas as prompts",
+   "n8n tool mapping",
+   "Retrieval as a tool",
+   "Numbers from a tool",
+   "Messy sheets to KPIs",
+   "Execution monitoring"
+  ]
+ },
+ {
+  "n": 9,
+  "title": "Chat Channels",
+  "hours": 6,
+  "lab": "Labs 5.1, 5.2 · chat front end + WhatsApp",
+  "make": "A session-aware chat front end with handover and identity rules, embedded in a live web page, optional WhatsApp",
+  "viz": "Five day tabs: three-doors hero, intention vs menu, block flow, streaming ladder, session leak, handover packet, identity gate, origin and rate gate, WhatsApp loop, channel router",
+  "concepts": [
+   "Intention, not menu",
+   "Blocks, variables, loops",
+   "Streaming",
+   "Session ids and memory",
+   "Handover to a person",
+   "Identity checks",
+   "Embedding on a web page",
+   "WhatsApp",
+   "The channel router"
+  ]
+ },
+ {
+  "n": 10,
+  "title": "Capstone",
+  "hours": 8,
+  "lab": "Capstone · enterprise assistant",
+  "make": "A production-style assistant on two channels, a five-minute demo video and a one-page write-up",
+  "viz": "Five day tabs: 3D architecture model, MIT eight-choices board, cost sheet with the 2.5x rule, dispatch rule tester, 20-test eval suite",
+  "concepts": [
+   "The architecture",
+   "The brief",
+   "Technology and data",
+   "The software plan",
+   "The cost sheet",
+   "Retrieval with citations",
+   "Calculation tools",
+   "Dispatch and error branch",
+   "The eval suite",
+   "Decision rights"
+  ]
+ }
+]

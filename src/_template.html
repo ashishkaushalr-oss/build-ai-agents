@@ -1,0 +1,220 @@
+<title>Week N Title Here</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<!-- @css -->
+<style>
+/* Page-specific styles only. Build them from the tokens in course.css (var(--think) violet = model thinking, var(--act) orange = actions and tools,
+   var(--observe) teal = results, var(--surface), var(--surface-2), var(--line), var(--fg), var(--muted), var(--stage) dark stage, var(--stage-fg)).
+   Prefix every new class with the week (e.g. .w4-meter) so it never collides with a shared class. Size widget grids by their container:
+   grid-template-columns:repeat(auto-fit,minmax(<min>px,1fr)), never a viewport media query alone. */
+</style>
+
+<!-- ===== RAIL: the five day pills switch days (Course.days wires them) ===== -->
+<header class="rail">
+  <div class="wrap">
+    <span class="rail__badge">Week N</span>
+    <span class="rail__title">Title Here</span>
+    <nav class="rail__nav" aria-label="Days">
+      <a class="rail__pill" href="#day1"><i class="rail__dot"></i>Day 1</a>
+      <a class="rail__pill" href="#day2"><i class="rail__dot"></i>Day 2</a>
+      <a class="rail__pill" href="#day3"><i class="rail__dot"></i>Day 3</a>
+      <a class="rail__pill" href="#day4"><i class="rail__dot"></i>Day 4</a>
+      <a class="rail__pill" href="#day5"><i class="rail__dot"></i>Day 5</a>
+    </nav>
+    <div class="rail__links">
+      <a data-href="hub">Course hub</a>
+      <a data-href="doc">Course doc</a>
+    </div>
+  </div>
+</header>
+
+<!-- ===== HERO: the week's thesis in a human sentence + the signature animation ===== -->
+<section class="hero">
+  <div class="wrap">
+    <div class="hero__text">
+      <span class="eyebrow">Week N · Modules X to Y · five days · about H hours in total</span>
+      <h1>A human sentence that says what this week gives you.</h1>
+      <p class="lede">Two or three plain sentences in the instructor's voice. Say what the learner will be able to do and build, and that the week is cut into five short days.</p>
+      <div class="hero__actions">
+        <a class="btn btn--primary" href="#day1">Start Day 1</a>
+        <a class="btn" href="#day5">Go to Day 5, the lab</a>
+      </div>
+    </div>
+    <div class="stage" aria-label="Animated: describe the animation for screen readers">
+      <canvas id="heroCanvas"></canvas>
+      <span class="stage__label">live · short label</span>
+      <div class="stage__hud"><button class="btn btn--small" id="heroReplay" type="button">Replay</button></div>
+    </div>
+  </div>
+</section>
+
+<main class="wrap">
+
+  <!-- ===== DAY STRIP: one button per day; Course.days() marks the open day and lights a dot when a day's checks are all ticked ===== -->
+  <nav class="days" id="dayTabs" aria-label="The five days of Week N" role="tablist">
+    <button class="dayt" type="button" role="tab" id="dayt1" aria-controls="day1" aria-selected="false"><span class="dayt__n">Day 1</span><b>Short title</b><span class="dayt__t">about 40 min</span><i class="dayt__dot"></i></button>
+    <button class="dayt" type="button" role="tab" id="dayt2" aria-controls="day2" aria-selected="false"><span class="dayt__n">Day 2</span><b>Short title</b><span class="dayt__t">about 45 min</span><i class="dayt__dot"></i></button>
+    <button class="dayt" type="button" role="tab" id="dayt3" aria-controls="day3" aria-selected="false"><span class="dayt__n">Day 3</span><b>Short title</b><span class="dayt__t">about 50 min</span><i class="dayt__dot"></i></button>
+    <button class="dayt" type="button" role="tab" id="dayt4" aria-controls="day4" aria-selected="false"><span class="dayt__n">Day 4</span><b>Short title</b><span class="dayt__t">about 60 min</span><i class="dayt__dot"></i></button>
+    <button class="dayt" type="button" role="tab" id="dayt5" aria-controls="day5" aria-selected="false"><span class="dayt__n">Day 5</span><b>Design and the lab</b><span class="dayt__t">about 100 min</span><i class="dayt__dot"></i></button>
+  </nav>
+
+  <!-- ===== DAY 1 (days 2 to 4 have the same shape) ===== -->
+  <section class="scene daypanel" id="day1" role="tabpanel" aria-labelledby="dayt1" hidden>
+    <div class="scene__head">
+      <span class="scene__kicker scene__kicker--learn">Day 1 · about 40 minutes</span>
+      <h2>A plain title for the day</h2>
+      <p>One or two sentences: what the learner can do by the end of today, and what they will have made. Every visual is live; say so.</p>
+    </div>
+
+    <article class="concept">
+      <div class="concept__viz">
+        <canvas id="viz1" height="250" aria-label="Describe what this shows"></canvas>
+        <div class="viz-caption"><span>What the viewer is looking at</span><span class="row"><button class="btn btn--small" type="button" id="viz1Btn">Control</button></span></div>
+      </div>
+      <div class="concept__text">
+        <h3>A plain question or statement, not a slogan</h3>
+        <p>Open with a workplace moment the learner already knows. Then name the term.</p>
+        <p>Explain the why. Give one worked example. Say where the analogy breaks. Three to five paragraphs, varied sentence length, first person.</p>
+        <div class="aside"><b>An honest aside.</b> Where the field is unsure, say so.</div>
+        <div class="key"><p>The one line to remember, in plain words.</p></div>
+      </div>
+    </article>
+
+    <article class="concept">
+      <div class="concept__viz">
+        <svg viewBox="0 0 400 240" role="img" aria-label="Describe"></svg>
+        <div class="viz-caption"><span>Caption</span><span class="row chip chip--think">label</span></div>
+      </div>
+      <div class="concept__text">
+        <h3>Second concept</h3>
+        <p>Paragraphs.</p>
+        <div class="key"><p>The one line to remember.</p></div>
+      </div>
+    </article>
+
+    <!-- Do today: the day's exercises, a persisted checklist with its own meter. Keys d1..d4; Day 5 uses the lab's own list. -->
+    <div class="today">
+      <div class="today__head"><span class="scene__kicker scene__kicker--try">Do today</span><div class="meter" data-meter-for="d1"><div class="meter__row"><span>Progress</span><b data-meter-label>0 / 2</b></div><div class="progress"><i></i></div></div></div>
+      <p class="muted" style="font-size:.95rem">Where to do it (this page, Claude, n8n, the Console) and roughly how long. Made-up data only.</p>
+      <ol class="steps steps--numbered" data-persist="d1">
+        <li><span class="step__num"></span><input class="check" type="checkbox" id="d1-1" aria-label="Done"><div class="step__body"><p>A concrete step with the exact words to type or click.</p><p class="step__notice"><strong>Notice:</strong> what to look for, and why it happens.</p></div></li>
+        <li><span class="step__num"></span><input class="check" type="checkbox" id="d1-2" aria-label="Done"><div class="step__body"><p>Second step.</p><textarea data-note="d1-note" id="d1Note" placeholder="A note field when the step asks the learner to write something"></textarea></div></li>
+      </ol>
+    </div>
+    <div class="daynav"><span></span><button class="btn btn--primary" type="button" data-go="2" id="goNext1">Day 2 · Short title →</button></div>
+  </section>
+
+  <!-- DAY 2, 3, 4: same shape. daynav holds a previous and a next button:
+       <div class="daynav"><button class="btn" type="button" data-go="1" id="goPrev2">← Day 1 · Short title</button><button class="btn btn--primary" type="button" data-go="3" id="goNext2">Day 3 · Short title →</button></div> -->
+
+  <!-- ===== DAY 5: one concept at most, then the lab, the quiz and the practice as .part blocks ===== -->
+  <section class="scene daypanel" id="day5" role="tabpanel" aria-labelledby="dayt5" hidden>
+    <div class="scene__head">
+      <span class="scene__kicker scene__kicker--learn">Day 5 · about 100 minutes</span>
+      <h2>Design it, then build it</h2>
+      <p>The longest day: the lab from the syllabus, the design-log entry, the quiz and a practice round.</p>
+    </div>
+
+    <div class="part" id="lab">
+      <div class="scene__head">
+        <span class="scene__kicker scene__kicker--lab">Lab X.Y</span>
+        <h2>Lab title in plain words</h2>
+        <p>What you build and why a company would build it.</p>
+      </div>
+      <div class="meter" data-meter-for="lab" style="margin-bottom:14px"><div class="meter__row"><span>Lab progress</span><b data-meter-label>0 / 6</b></div><div class="progress progress--act"><i></i></div></div>
+      <ol class="steps steps--numbered" data-persist="lab">
+        <li><span class="step__num"></span><input class="check" type="checkbox" id="lab-1" aria-label="Done lab step 1"><div class="step__body"><p>Step with the exact clicks and words.</p>
+          <details class="hint"><summary>Stuck? Show a hint</summary><p>Hint text.</p></details></div></li>
+        <li><span class="step__num"></span><input class="check" type="checkbox" id="lab-2" aria-label="Done lab step 2"><div class="step__body"><p>Step.</p></div></li>
+      </ol>
+      <h4 style="margin:22px 0 8px">Prompts and snippets to copy</h4>
+<pre class="code"><code><span class="c"># what this is</span>
+the text to paste</code></pre>
+      <div class="card dlog" style="margin-top:18px">
+        <h3>Design-log entry N</h3>
+        <p class="muted">Three short answers that connect this week to the product the learner chose in Week 1.</p>
+        <label class="field"><span>Question one</span><textarea data-note="dlog-a" id="dlogA" placeholder="…"></textarea></label>
+        <label class="field"><span>Question two</span><textarea data-note="dlog-b" id="dlogB" placeholder="…"></textarea></label>
+        <label class="field"><span>Question three</span><textarea data-note="dlog-c" id="dlogC" placeholder="…"></textarea></label>
+      </div>
+      <div class="deliverable" style="margin-top:18px">
+        <h4>What you hand in</h4>
+        <p>The deliverable from the syllabus, plus the design-log entry.</p>
+        <label class="field"><span>Notes for your learning log (saved in this browser)</span><textarea data-note="lab" id="labNote" placeholder="What I built, what broke, what I learned"></textarea></label>
+      </div>
+    </div>
+
+    <div class="part" id="quiz">
+      <div class="scene__head">
+        <span class="scene__kicker scene__kicker--quiz">Check yourself</span>
+        <h2>Eight quick questions</h2>
+        <p>Pick an answer to see why it is right or wrong. Score 80 percent or more to pass.</p>
+      </div>
+      <div id="quizBox"></div>
+      <h3 style="margin:28px 0 12px">Think it through</h3>
+      <div class="reflect">
+        <details><summary>An open question from the course text?</summary><p>A model answer in three or four sentences.</p></details>
+      </div>
+    </div>
+
+    <div class="part" id="build">
+      <div class="scene__head">
+        <span class="scene__kicker scene__kicker--build">Practice</span>
+        <h2>A game or sandbox that trains the week's skill</h2>
+        <p>Score it and show the score.</p>
+      </div>
+      <div class="card">Practice widget here.</div>
+    </div>
+    <div class="daynav"><button class="btn" type="button" data-go="4" id="goPrev5">← Day 4 · Short title</button><a class="btn btn--primary" href="#wrapup">Record the week in the tracker ↓</a></div>
+  </section>
+
+  <!-- ===== WRAP UP: always visible under the day panels ===== -->
+  <section class="scene" id="wrapup">
+    <div class="wrapup">
+      <div class="stack">
+        <h2>Your progress this week</h2>
+        <div class="wrapup__stats">
+          <div class="stat"><b data-stat="checks">0/0</b><span>Steps ticked</span></div>
+          <div class="stat"><b data-stat="quiz">–</b><span>Best quiz score</span></div>
+        </div>
+        <div class="progress"><i data-stat-bar></i></div>
+        <p class="muted">Ticks, notes and scores live in this browser. Record the week in the course tracker so it counts everywhere you open the course.</p>
+      </div>
+      <a class="btn btn--primary" data-href="track">Record in the tracker</a>
+    </div>
+    <nav class="pager" aria-label="Previous and next week">
+      <a data-href="prev"><span>Previous</span><b>Week N-1 · Title</b></a>
+      <a data-href="next"><span>Next</span><b>Week N+1 · Title</b></a>
+    </nav>
+    <footer class="site">
+      <div class="row" style="justify-content:space-between">
+        <div class="weeks" data-weeks aria-label="All weeks"></div>
+        <div class="row"><a data-href="hub">Course hub</a> · <a data-href="playground">Agent playground</a> · <a data-href="doc">Course doc</a></div>
+      </div>
+      <p>Build Your Own AI Agents · a 10-week course. Use made-up data in every lab.</p>
+    </footer>
+  </section>
+</main>
+
+<!-- @js -->
+<script>
+Course.init({week: 0, title: 'Title Here'});   /* add live: 'sample' ONLY on a page that declares that capability (Week 2 does) */
+Course.days();                                   /* wires the day strip, the rail pills, [data-go] buttons, #dayN links and the day dots */
+
+var $ = Course.$, $$ = Course.$$, el = Course.el;
+var MONO = '"JetBrains Mono", monospace', SANS = 'Figtree, sans-serif';
+
+/* HERO: draw(ctx, w, h, t, dt). t = 0 must already be a meaningful frame. Return early when the canvas has no size yet. */
+var hero = Course.canvas(document.getElementById('heroCanvas'), function(ctx, w, h, t){
+  if (w < 60 || h < 60) return;
+  ctx.clearRect(0, 0, w, h);
+  ctx.fillStyle = '#EAF0FF'; ctx.font = '600 16px ' + SANS; ctx.fillText('replace me', 20, 40);
+});
+document.getElementById('heroReplay').addEventListener('click', function(){ hero.resetTime(); hero.start(); });
+
+/* QUIZ: eight questions, four options, one correct, a why that teaches */
+Course.quiz('#quizBox', {passPct: 80, questions: [
+  {q: 'Question?', options: ['A', 'B', 'C', 'D'], answer: 1, why: 'One sentence that teaches.'}
+]});
+</script>
