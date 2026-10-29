@@ -229,10 +229,10 @@
 
   /* ---------- toast + confetti ---------- */
   var toastEl, toastT;
-  Course.toast = function(msg){
+  Course.toast = function(msg, ms){
     if (!toastEl) { toastEl = Course.el('div', {class: 'toast', role: 'status'}); document.body.appendChild(toastEl); }
     toastEl.textContent = msg; toastEl.classList.add('is-on');
-    clearTimeout(toastT); toastT = setTimeout(function(){ toastEl.classList.remove('is-on'); }, 2200);
+    clearTimeout(toastT); toastT = setTimeout(function(){ toastEl.classList.remove('is-on'); }, ms || 2200);
   };
   Course.confetti = function(){
     if (!Course.motionOK) return;

@@ -1191,10 +1191,10 @@ policy documents uploaded to this Project.
 
   /* ---------- toast + confetti ---------- */
   var toastEl, toastT;
-  Course.toast = function(msg){
+  Course.toast = function(msg, ms){
     if (!toastEl) { toastEl = Course.el('div', {class: 'toast', role: 'status'}); document.body.appendChild(toastEl); }
     toastEl.textContent = msg; toastEl.classList.add('is-on');
-    clearTimeout(toastT); toastT = setTimeout(function(){ toastEl.classList.remove('is-on'); }, 2200);
+    clearTimeout(toastT); toastT = setTimeout(function(){ toastEl.classList.remove('is-on'); }, ms || 2200);
   };
   Course.confetti = function(){
     if (!Course.motionOK) return;
@@ -1406,7 +1406,7 @@ window.FIREBASE_CONFIG = {
       'signed-out': 'saved on this device · sign in with Google to keep it across devices',
       syncing: 'syncing with your Google account…',
       saved: 'saved to your Google account',
-      error: 'saved on this device only (sync error)'
+      error: 'saved on this device only (' + (S.detail && !S.user ? explain(S.detail).short.toLowerCase() : 'sync error') + ')'
     })[S.status] || '';
   };
 
@@ -1492,6 +1492,17 @@ window.FIREBASE_CONFIG = {
       })
       .catch(function(e){ S.enabled = false; setStatus('off', e && e.message); return false; });
   };
+  /* Plain words for the sign-in errors a learner can actually meet: `short` sits in the header, `long` in the toast. */
+  function explain(code){
+    if (code === 'auth/unauthorized-domain') return {
+      short: 'Sign-in is not set up for this web address',
+      long: 'Sign-in is not switched on for ' + location.hostname + ' yet. The course owner has to add that address under Authentication > Settings > Authorized domains in the Firebase console.'
+    };
+    if (code === 'auth/operation-not-allowed') return {short: 'Google sign-in is not enabled', long: 'Google sign-in is not enabled in the Firebase project yet (Authentication > Sign-in method > Google).'};
+    if (code === 'auth/network-request-failed') return {short: 'Could not reach Google', long: 'Could not reach Google to sign in. Check the connection and try again.'};
+    return {short: 'Sign-in did not work', long: 'Sign-in did not work (' + (code || 'unknown error') + '). Try again.'};
+  }
+  S.explain = explain;
   S.signIn = function(){
     if (!auth) return Promise.resolve();
     var provider = new window.firebase.auth.GoogleAuthProvider();
@@ -1500,7 +1511,7 @@ window.FIREBASE_CONFIG = {
       if (code === 'auth/popup-blocked') return auth.signInWithRedirect(provider);
       if (code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request') return;
       setStatus('error', code);
-      if (Course.toast) Course.toast('Sign-in did not work (' + (code || 'unknown error') + '). Try again.');
+      if (Course.toast) Course.toast(explain(code).long, 9000);
     });
   };
   S.signOut = function(){ return auth ? auth.signOut() : Promise.resolve(); };
@@ -1516,6 +1527,10 @@ window.FIREBASE_CONFIG = {
       el.appendChild(Course.el('span', {class: 'sync-user' + (S.status === 'error' ? ' is-error' : ''), title: S.describe(), text: (S.status === 'error' ? 'Not synced · ' : '') + label}));
       el.appendChild(Course.el('button', {type: 'button', onclick: function(){ S.signOut(); }, text: 'Sign out'}));
     } else {
+      if (S.status === 'error' && S.detail) {
+        var why = explain(S.detail);
+        el.appendChild(Course.el('span', {class: 'sync-user is-error', title: why.long, text: why.short}));
+      }
       el.appendChild(Course.el('button', {type: 'button', disabled: S.status === 'loading', title: 'Keep your progress across devices', onclick: function(){ S.signIn(); }, text: S.status === 'loading' ? 'Loading…' : 'Sign in with Google'}));
     }
   }

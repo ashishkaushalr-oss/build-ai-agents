@@ -13,7 +13,7 @@ Setting it up takes about ten minutes in the Firebase console and costs nothing 
 
 1. In the left menu, **Build**, then **Authentication**, then **Get started**.
 2. **Sign-in method** tab, choose **Google**, switch **Enable** on, pick a support email, **Save**.
-3. **Settings** tab, **Authorized domains**, **Add domain**: add `ashishkaushalr-oss.github.io`. Add the Intuit Pages host too once it exists. `localhost` is already there for local testing.
+3. **Settings** tab, **Authorized domains**, **Add domain**: add `ashishkaushalr-oss.github.io`. If the course is also served from another address, add that host as well: the Intuit copy is served from `github.intuit.com` (GitHub Enterprise Pages, visible after corporate sign-in), so that goes in too. A host missing from this list makes the Google popup fail at once, and the header then says "Sign-in is not set up for this web address" (`auth/unauthorized-domain`). `localhost` is already there for local testing.
 
 ## 3. Create the database
 
