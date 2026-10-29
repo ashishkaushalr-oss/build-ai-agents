@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- Stack: three soft slabs in the course colours, built up layer by layer, with a spark on top. -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FBFBFE"/><stop offset="1" stop-color="#E8EAF6"/></linearGradient>
+    <linearGradient id="v" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#B0A4FF"/><stop offset="1" stop-color="#7259FF"/></linearGradient>
+    <linearGradient id="o" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFA489"/><stop offset="1" stop-color="#FF6A43"/></linearGradient>
+    <linearGradient id="t" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6FE6D0"/><stop offset="1" stop-color="#17B597"/></linearGradient>
+    <filter id="shadow" x="-20%" y="-30%" width="140%" height="180%"><feDropShadow dx="0" dy="22" stdDeviation="20" flood-color="#2A2A5A" flood-opacity="0.22"/></filter>
+  </defs>
+  <rect width="1024" height="1024" rx="224" fill="url(#bg)"/>
+  <g filter="url(#shadow)">
+    <rect x="252" y="584" width="520" height="184" rx="56" fill="url(#t)"/>
+    <rect x="252" y="452" width="520" height="184" rx="56" fill="url(#o)"/>
+    <rect x="252" y="320" width="520" height="184" rx="56" fill="url(#v)"/>
+  </g>
+  <rect x="300" y="352" width="424" height="40" rx="20" fill="#FFFFFF" opacity="0.35"/>
+  <path d="M788 232 c8 50 26 68 76 76 c-50 8 -68 26 -76 76 c-8 -50 -26 -68 -76 -76 c50 -8 68 -26 76 -76 z" fill="#0E1626"/>
+</svg>

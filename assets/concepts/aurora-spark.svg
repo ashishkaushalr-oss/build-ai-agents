@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- Aurora Spark: a blended three-colour gradient with the AI spark glyph in white. -->
+  <defs>
+    <clipPath id="r"><rect width="1024" height="1024" rx="224"/></clipPath>
+    <radialGradient id="g1" cx="22%" cy="18%" r="75%"><stop offset="0" stop-color="#8F7BFF"/><stop offset="1" stop-color="#8F7BFF" stop-opacity="0"/></radialGradient>
+    <radialGradient id="g2" cx="88%" cy="28%" r="70%"><stop offset="0" stop-color="#FF7A58"/><stop offset="1" stop-color="#FF7A58" stop-opacity="0"/></radialGradient>
+    <radialGradient id="g3" cx="40%" cy="100%" r="75%"><stop offset="0" stop-color="#2CD2B2"/><stop offset="1" stop-color="#2CD2B2" stop-opacity="0"/></radialGradient>
+    <filter id="soft" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="50"/></filter>
+    <filter id="glow" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="16" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+  <g clip-path="url(#r)">
+    <rect width="1024" height="1024" fill="#2B1C66"/>
+    <rect width="1024" height="1024" fill="url(#g1)"/>
+    <rect width="1024" height="1024" fill="url(#g2)"/>
+    <rect width="1024" height="1024" fill="url(#g3)"/>
+    <ellipse cx="512" cy="90" rx="560" ry="240" fill="#FFFFFF" opacity="0.12" filter="url(#soft)"/>
+  </g>
+  <g fill="#FFFFFF" filter="url(#glow)">
+    <path d="M512 236 C 542 428, 596 482, 788 512 C 596 542, 542 596, 512 788 C 482 596, 428 542, 236 512 C 428 482, 482 428, 512 236 Z"/>
+    <path d="M772 228 C 781 274, 796 289, 842 298 C 796 307, 781 322, 772 368 C 763 322, 748 307, 702 298 C 748 289, 763 274, 772 228 Z" opacity="0.92"/>
+  </g>
+</svg>

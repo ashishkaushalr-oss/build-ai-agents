@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- Constellation: a light, minimal graph. The agent at the centre, three tools around it. -->
+  <defs>
+    <linearGradient id="paper" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#ECEEFB"/></linearGradient>
+    <linearGradient id="v" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#A89BFF"/><stop offset="1" stop-color="#6A52F5"/></linearGradient>
+    <linearGradient id="o" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FF9A7E"/><stop offset="1" stop-color="#F2552E"/></linearGradient>
+    <linearGradient id="t" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5BE3C9"/><stop offset="1" stop-color="#0E9F86"/></linearGradient>
+    <filter id="shadow" x="-40%" y="-40%" width="180%" height="180%"><feDropShadow dx="0" dy="14" stdDeviation="14" flood-color="#0E1626" flood-opacity="0.18"/></filter>
+  </defs>
+  <rect width="1024" height="1024" rx="224" fill="url(#paper)"/>
+  <g stroke="#0E1626" stroke-width="10" stroke-linecap="round" opacity="0.14">
+    <line x1="512" y1="262" x2="296" y2="637"/><line x1="296" y1="637" x2="728" y2="637"/><line x1="728" y1="637" x2="512" y2="262"/>
+  </g>
+  <g stroke="#0E1626" stroke-width="24" stroke-linecap="round">
+    <line x1="512" y1="512" x2="512" y2="262"/><line x1="512" y1="512" x2="296" y2="637"/><line x1="512" y1="512" x2="728" y2="637"/>
+  </g>
+  <g filter="url(#shadow)">
+    <circle cx="512" cy="262" r="76" fill="url(#v)"/>
+    <circle cx="296" cy="637" r="76" fill="url(#t)"/>
+    <circle cx="728" cy="637" r="76" fill="url(#o)"/>
+    <circle cx="512" cy="512" r="64" fill="#0E1626"/>
+  </g>
+  <circle cx="512" cy="512" r="24" fill="#FFFFFF"/>
+</svg>

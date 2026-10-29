@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Icon concepts</title>
+<style>
+  body { margin: 0; font: 14px/1.4 system-ui, -apple-system, Segoe UI, sans-serif; color: #0E1626; background: #F4F6FB; }
+  .band { padding: 32px 40px; display: flex; gap: 44px; flex-wrap: wrap; align-items: flex-start; }
+  .band.dark { background: #0B1020; color: #EAF0FF; }
+  .cell { display: flex; flex-direction: column; gap: 12px; }
+  .row { display: flex; align-items: flex-end; gap: 14px; }
+  img { display: block; }
+  .name { font-weight: 600; }
+  .num { opacity: .6; font-size: 12px; }
+</style>
+<body>
+<div id="light" class="band"></div>
+<div id="dark" class="band dark"></div>
+<script>
+  // name, label
+  var ICONS = [
+    ['aurora-spark', 'Aurora Spark'],
+    ['orbit', 'Orbit'],
+    ['constellation', 'Constellation'],
+    ['glass-bot', 'Glass Bot'],
+    ['monogram', 'Monogram'],
+    ['stack', 'Stack']
+  ];
+  ['light', 'dark'].forEach(function (band) {
+    ICONS.forEach(function (ic, i) {
+      var cell = document.createElement('div'); cell.className = 'cell';
+      var row = document.createElement('div'); row.className = 'row';
+      [180, 120, 60, 40].forEach(function (s) { var img = new Image(s, s); img.src = ic[0] + '.svg'; row.appendChild(img); });
+      cell.appendChild(row);
+      var name = document.createElement('div'); name.className = 'name'; name.textContent = (i + 1) + '. ' + ic[1];
+      cell.appendChild(name);
+      document.getElementById(band).appendChild(cell);
+    });
+  });
+
+  function render(file, size) {
+    return new Promise(function (resolve, reject) {
+      var img = new Image();
+      img.onload = function () {
+        var cv = document.createElement('canvas'); cv.width = cv.height = size;
+        cv.getContext('2d').drawImage(img, 0, 0, size, size);
+        resolve(cv);
+      };
+      img.onerror = function () { reject(new Error('could not load ' + file)); };
+      img.src = file + '.svg?' + Date.now();
+    });
+  }
+  function post(name, canvas) {
+    return new Promise(function (resolve) { canvas.toBlob(resolve, 'image/png'); }).then(function (blob) {
+      return fetch('/save?name=' + encodeURIComponent(name), { method: 'POST', body: blob }).then(function (r) { return r.text(); });
+    });
+  }
+  // Renders every concept at 1024 px and a comparison sheet, and posts them to the local server.
+  window.exportAll = async function () {
+    var out = [];
+    for (var i = 0; i < ICONS.length; i++) {
+      var cv = await render(ICONS[i][0], 1024);
+      out.push(await post(ICONS[i][0] + '-1024.png', cv));
+    }
+    var col = 310, W = 40 + ICONS.length * col, bandH = 330, sheet = document.createElement('canvas');
+    sheet.width = W; sheet.height = bandH * 2;
+    var x = sheet.getContext('2d');
+    x.fillStyle = '#F4F6FB'; x.fillRect(0, 0, W, bandH);
+    x.fillStyle = '#0B1020'; x.fillRect(0, bandH, W, bandH);
+    for (var b = 0; b < 2; b++) {
+      for (var j = 0; j < ICONS.length; j++) {
+        var big = await render(ICONS[j][0], 720);
+        var cx = 40 + j * col, cy = b * bandH + 36;
+        x.drawImage(big, cx, cy, 180, 180);
+        x.drawImage(big, cx + 196, cy + 52, 80, 80);
+        x.drawImage(big, cx + 196, cy + 140, 40, 40);
+        x.fillStyle = b ? '#EAF0FF' : '#0E1626';
+        x.font = '600 22px system-ui, sans-serif'; x.fillText((j + 1) + '. ' + ICONS[j][1], cx, cy + 228);
+        x.font = '15px system-ui, sans-serif'; x.globalAlpha = 0.65; x.fillText('180 · 80 · 40 px', cx, cy + 254); x.globalAlpha = 1;
+      }
+    }
+    out.push(await post('concepts-sheet.png', sheet));
+    return out;
+  };
+</script>
+</body>
+</html>

@@ -20,6 +20,7 @@ A ten-week, no-code course on building AI agents with Claude and n8n, written fo
 ## Read or run the course
 
 - **Static site.** The `docs/` folder is a complete copy of the course that runs from any web host. GitHub Pages serves it from `/docs` on `main`: the hub is at https://ashishkaushalr-oss.github.io/build-ai-agents/ and each week at `w1.html` to `w10.html`.
+- **Phone app.** The site is also a progressive web app: open it on a phone and add it to the home screen (Safari: Share, then Add to Home Screen; Chrome: Install). It opens full screen with its own icon, and every week works offline.
 - **Course doc.** `COURSE.md` is the written course: welcome, setup, every week's learn, try-it, lab and check-yourself sections, a glossary and a progress checklist.
 - **Inside Claude.** The course owner also publishes each page as a Claude artifact (`urls.json`). Two things only work there: the hub's progress sync to a Claude account (elsewhere progress stays in the browser), and the live Claude workbench in Week 2 and the Agent Playground (elsewhere the page says so and keeps the rest working).
 
@@ -32,7 +33,8 @@ On the web the course remembers progress in the visitor's browser, and every pag
 | Folder or file | What it holds |
 |---|---|
 | `src/` | One HTML file per page: `hub.html`, `w1.html` to `w10.html`, `playground.html`. `_template.html` is the five-day skeleton; `_w1-flat.html` is Week 1's single-scroll source. |
-| `shared/` | `course.css` and `course.js`, the design tokens and the runtime every page shares (day tabs, checklists, quizzes, canvases, link resolution); `sync.js` and `firebase-config.js`, the optional account sync. |
+| `shared/` | `course.css` and `course.js`, the design tokens and the runtime every page shares (day tabs, checklists, quizzes, canvases, link resolution); `sync.js` and `firebase-config.js`, the optional account sync; `install.js`, the web-app install hint and offline registration (site build only). |
+| `assets/` | The app icon, the "A Mark": `icon.svg` plus every size the web app needs, `icon-src/` with the iOS appearance variants and the design spec, `concepts/` with earlier explorations. `tools/make_icons.py` regenerates the sizes. |
 | `content/` | The course text in Markdown, one file per week plus the syllabus, glossary and setup notes. `syllabus.md` is the fifteen-module programme the course follows. |
 | `dist/` | Built pages: `dist/<name>.html` are the artifact bodies published to Claude; `dist/preview/` wraps them for local viewing. |
 | `docs/` | The static site build with relative links, ready for GitHub Pages. |

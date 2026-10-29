@@ -314,6 +314,16 @@ footer.site{padding-block:32px 48px;color:var(--muted);font-size:.9rem;display:g
 .rail__links .sync-user{font-size:.85rem;font-weight:700;color:var(--observe);padding:6px 10px;border-radius:999px;background:var(--observe-soft);white-space:nowrap}
 .rail__links .sync-user.is-error{color:var(--warn);background:color-mix(in srgb,var(--warn) 18%,var(--surface))}
 
+/* ---------- install hint (web app only; shared/install.js adds it to the hub) ---------- */
+.install{display:flex;align-items:center;gap:14px;margin:0 0 18px;padding:14px 16px;border:1px solid var(--line);border-radius:16px;background:var(--surface);box-shadow:0 1px 2px rgba(14,22,38,.04)}
+.install img{width:44px;height:44px;border-radius:10px;flex:none}
+.install__text{flex:1;min-width:0;font-size:.92rem;line-height:1.45}
+.install__text b{display:block;margin-bottom:2px}
+.install .btn{flex:none}
+.install__x{flex:none;appearance:none;border:0;background:transparent;color:inherit;opacity:.6;font-size:22px;line-height:1;cursor:pointer;padding:4px 8px;border-radius:8px}
+.install__x:hover{opacity:1;background:var(--surface-2)}
+@media (max-width:520px){.install{flex-wrap:wrap}.install__text{flex-basis:calc(100% - 118px)}.install .btn{margin-left:58px}}
+
 </style>
 <style>
 /* Week 3 specifics. Every page class is prefixed w3- so nothing collides with course.css. */
