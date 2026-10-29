@@ -122,7 +122,7 @@
     <div class="scene__head">
       <span class="scene__kicker scene__kicker--try">Tracker</span>
       <h2>What you have covered, what is still ahead</h2>
-      <p>Open a week, tick each day as you finish it, and mark each concept as you cover it. The days run straight through the course, Day 1 to Day 50, five a week. Your progress is saved to your Claude account when you open this page inside Claude, and to this browser otherwise.</p>
+      <p>Open a week, tick each day as you finish it, and mark each concept as you cover it. The days run straight through the course, Day 1 to Day 50, five a week. Your progress is saved to your Claude account when you open this page inside Claude. On the web, sign in with Google from the header to keep it across devices; otherwise it stays in this browser.</p>
     </div>
     <div class="sumgrid">
       <div class="sumcard"><b id="sWeeks">0</b><span>weeks done</span></div>
@@ -136,6 +136,7 @@
       <div class="card"><h4>Covered recently</h4><div class="todo" id="recent" style="margin-top:10px"></div></div>
     </div>
     <div class="tracker" id="trackerList"></div>
+    <p class="muted" style="font-size:.85rem;margin-top:14px">If you sign in, the course stores only your account id and this progress: ticks, concepts and notes. Nothing else is kept, signing out leaves the copy in this browser alone, and the reset button clears everything.</p>
     <div class="danger" style="margin-top:18px">
       <button class="btn btn--small" id="resetBtn" type="button">Reset all progress</button>
       <span id="resetConfirm" hidden>Sure? This clears every tick and note. <button class="btn btn--small" id="resetYes" type="button" style="border-color:var(--bad);color:var(--bad)">Yes, clear it</button> <button class="btn btn--small" id="resetNo" type="button">Keep it</button></span>
@@ -366,6 +367,11 @@ Course.init({week: 0, title: 'Course Hub'});
 
   /* ---------- remote sync (db + user) ---------- */
   function connect(){
+    if (Course.sync && Course.sync.enabled) {
+      // outside Claude with Firebase configured: shared/sync.js keeps the store in the learner's Google account
+      Course.sync.onStatus(function(s){ setSync(Course.sync.describe(), s === 'saved' ? 'ok' : (s === 'syncing' || s === 'loading') ? '' : 'warn'); });
+      return;
+    }
     if (!(window.claude && typeof window.claude.use === 'function')) { setSync('saved on this device only', 'warn'); return; }
     Promise.all([window.claude.use('db').catch(function(){ return null; }), window.claude.use('user').catch(function(){ return null; })]).then(function(r){
       db = r[0]; var user = r[1];
@@ -389,6 +395,9 @@ Course.init({week: 0, title: 'Course Hub'});
     }).catch(function(){ setSync('saved on this device only', 'warn'); });
   }
 
+  // when shared/sync.js pulls newer progress from the learner's account, redraw instead of reloading the page
+  Course.syncHandled = true;
+  Course.on(function(evt){ if (evt === 'sync') { state = migrate(Course.store.get('hubstate', null) || blank()); buildTracker(); buildSetup(); paintAll(); } });
   buildTracker(); buildMods(); buildSetup(); paintAll(); setupMap(); connect();
   // open the week named in the hash (hub#w3)
   var m = /^#w(\d+)$/.exec(location.hash || ''); if (m) { var d = $('#w' + m[1]); if (d) { d.open = true; setTimeout(function(){ d.scrollIntoView({block: 'center'}); }, 150); } }

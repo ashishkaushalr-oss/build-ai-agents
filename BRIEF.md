@@ -93,3 +93,7 @@ Rewrite it in the new voice with the shape of `content/w1.md`: `## Week N: <plai
 - The Browser pane is shared by every agent in the session. A builder must open its own tab and never navigate the active one, or it will break a sibling's check mid-run.
 - The Bash tool collapses a doubled backslash to a single one inside heredocs. Write files that need doubled backslashes with the Write tool.
 - Doc texts landed at 1,800 to 2,600 words against the brief's 1,200 to 1,800; the approved Week 1 doc is 2,700. Treat the ceiling as "about the length of Week 1".
+
+## Account sync outside Claude (added 29 Oct 2026)
+
+`shared/sync.js` is inlined into every page after `course.js`. With `window.FIREBASE_CONFIG` set (in `shared/firebase-config.js`) and no `window.claude` present, it adds a Google sign-in control to `.rail__links`, timestamps every `Course.store.set`, and mirrors all `aiagents:*` keys into Firestore `users/<uid>` with newest-wins merging. It emits `syncstatus` and `sync` events; a page that sets `Course.syncHandled = true` and redraws on `sync` avoids the default reload (the hub does). Inside Claude it exits at once. Builders never need to touch it; keep using `Course.store`, `[data-persist]` and `[data-note]` and sync comes free.

@@ -301,3 +301,11 @@ footer.site{padding-block:32px 48px;color:var(--muted);font-size:.9rem;display:g
   .anim-pulse,.anim-float,.anim-dash{animation:none}
   *{scroll-behavior:auto!important}
 }
+
+/* ---------- account sync control in the header (shared/sync.js) ---------- */
+.rail__links .sync-control{display:inline-flex;gap:6px;align-items:center}
+.rail__links button{font:inherit;font-size:.85rem;font-weight:600;color:var(--muted);padding:6px 10px;border-radius:999px;border:1px solid var(--line);background:var(--surface);cursor:pointer;white-space:nowrap}
+.rail__links button:hover{color:var(--fg)}
+.rail__links button[disabled]{opacity:.6;cursor:default}
+.rail__links .sync-user{font-size:.85rem;font-weight:700;color:var(--observe);padding:6px 10px;border-radius:999px;background:var(--observe-soft);white-space:nowrap}
+.rail__links .sync-user.is-error{color:var(--warn);background:color-mix(in srgb,var(--warn) 18%,var(--surface))}

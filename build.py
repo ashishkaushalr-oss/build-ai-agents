@@ -37,6 +37,7 @@ if '--doc-url' in args:
 
 css = read(os.path.join(SHARED, 'course.css'))
 js = read(os.path.join(SHARED, 'course.js'))
+sync_js = read(os.path.join(SHARED, 'firebase-config.js')) + '\n' + read(os.path.join(SHARED, 'sync.js'))
 urls_path = os.path.join(HERE, 'urls.json')
 urls = json.loads(read(urls_path)) if os.path.exists(urls_path) else {}
 urls.setdefault('weeks', ['#'] * 10)
@@ -48,7 +49,7 @@ def build_page(name, url_map):
     page = read(os.path.join(SRC, name + '.html'))
     tag = '<script>window.COURSE_URLS=' + json.dumps(url_map) + ';</script>'
     out = page.replace('<!-- @css -->', '<style>\n' + css + '\n</style>')
-    out = out.replace('<!-- @js -->', tag + '\n<script>\n' + js + '\n</script>')
+    out = out.replace('<!-- @js -->', tag + '\n<script>\n' + js + '\n</script>\n<script>\n' + sync_js + '\n</script>')
     out = out.replace('<!-- @urls -->', tag)
     if '<title>' not in out[:8000]: problems.append(name + ': no <title> in first 8KB')
     for bad in ('<!doctype', '<html', '<head', '<body'):

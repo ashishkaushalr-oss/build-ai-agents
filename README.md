@@ -23,18 +23,23 @@ A ten-week, no-code course on building AI agents with Claude and n8n, written fo
 - **Course doc.** `COURSE.md` is the written course: welcome, setup, every week's learn, try-it, lab and check-yourself sections, a glossary and a progress checklist.
 - **Inside Claude.** The course owner also publishes each page as a Claude artifact (`urls.json`). Two things only work there: the hub's progress sync to a Claude account (elsewhere progress stays in the browser), and the live Claude workbench in Week 2 and the Agent Playground (elsewhere the page says so and keeps the rest working).
 
+## Sign in and progress sync
+
+On the web the course remembers progress in the visitor's browser. Connect a free Firebase project and every page gets a **Sign in with Google** button; a signed-in learner's progress (hub ticks, concepts, notes, module checklists, quiz scores) then follows them across devices. `firebase/SETUP.md` has the ten-minute setup; the config goes in `shared/firebase-config.js` and the access rule is `firebase/firestore.rules`. Inside Claude the hub keeps using Claude's own account sync and the Firebase code stays idle.
+
 ## How the repository is laid out
 
 | Folder or file | What it holds |
 |---|---|
 | `src/` | One HTML file per page: `hub.html`, `w1.html` to `w10.html`, `playground.html`. `_template.html` is the five-day skeleton; `_w1-flat.html` is Week 1's single-scroll source. |
-| `shared/` | `course.css` and `course.js`, the design tokens and the runtime every page shares (day tabs, checklists, quizzes, canvases, link resolution). |
+| `shared/` | `course.css` and `course.js`, the design tokens and the runtime every page shares (day tabs, checklists, quizzes, canvases, link resolution); `sync.js` and `firebase-config.js`, the optional account sync. |
 | `content/` | The course text in Markdown, one file per week plus the syllabus, glossary and setup notes. `syllabus.md` is the fifteen-module programme the course follows. |
 | `dist/` | Built pages: `dist/<name>.html` are the artifact bodies published to Claude; `dist/preview/` wraps them for local viewing. |
 | `docs/` | The static site build with relative links, ready for GitHub Pages. |
 | `tools/` | Helpers: `check_pages.py` (static checks), `update_hub.py` + `hub_entries.json` (hub cards and totals), `doc_ops.py` + `doc_blocks.json` (pushing a week's text into the Claude doc), `make_w1_days.py` (regenerates Week 1 from its flat source). |
 | `BRIEF.md` | The builder brief: voice rules, the five-day structure, the page contract and lessons learned. Start here before changing a page. |
 | `urls.json` | Where each page is published on claude.ai. |
+| `firebase/` | Setup guide and the Firestore security rule for account sync. |
 
 ## Build and check
 
