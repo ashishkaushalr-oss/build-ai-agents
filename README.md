@@ -19,13 +19,13 @@ A ten-week, no-code course on building AI agents with Claude and n8n, written fo
 
 ## Read or run the course
 
-- **Static site.** The `docs/` folder is a complete copy of the course that runs from any web host. With GitHub Pages pointed at `/docs` on `main`, the hub is at https://ashishkaushalr-oss.github.io/build-ai-agents/ and each week at `w1.html` to `w10.html`.
+- **Static site.** The `docs/` folder is a complete copy of the course that runs from any web host. GitHub Pages serves it from `/docs` on `main`: the hub is at https://ashishkaushalr-oss.github.io/build-ai-agents/ and each week at `w1.html` to `w10.html`.
 - **Course doc.** `COURSE.md` is the written course: welcome, setup, every week's learn, try-it, lab and check-yourself sections, a glossary and a progress checklist.
 - **Inside Claude.** The course owner also publishes each page as a Claude artifact (`urls.json`). Two things only work there: the hub's progress sync to a Claude account (elsewhere progress stays in the browser), and the live Claude workbench in Week 2 and the Agent Playground (elsewhere the page says so and keeps the rest working).
 
 ## Sign in and progress sync
 
-On the web the course remembers progress in the visitor's browser. Connect a free Firebase project and every page gets a **Sign in with Google** button; a signed-in learner's progress (hub ticks, concepts, notes, module checklists, quiz scores) then follows them across devices. `firebase/SETUP.md` has the ten-minute setup; the config goes in `shared/firebase-config.js` and the access rule is `firebase/firestore.rules`. Inside Claude the hub keeps using Claude's own account sync and the Firebase code stays idle.
+On the web the course remembers progress in the visitor's browser, and every page also offers **Sign in with Google**: a signed-in learner's progress (hub ticks, concepts, notes, module checklists, quiz scores) follows them across devices. The site is connected to the Firebase project `build-ai-agents-1ffed`; `firebase/SETUP.md` explains the ten-minute setup for a fork, the config lives in `shared/firebase-config.js` and the access rule is `firebase/firestore.rules` (each person can read and write only their own record). Inside Claude the hub keeps using Claude's own account sync and the Firebase code stays idle.
 
 ## How the repository is laid out
 

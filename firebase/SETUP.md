@@ -21,41 +21,56 @@ Setting it up takes about ten minutes in the Firebase console and costs nothing 
 2. Pick a location close to most learners (any is fine), choose **Start in production mode**, **Create**.
 3. **Rules** tab: replace the contents with the file `firebase/firestore.rules` from this repository, then **Publish**. The rule lets each signed-in person read and write only their own document and nothing else.
 
-## 4. Register the web app and copy its config
+## 4. Tell Firebase about the website and get its "config"
 
-1. **Project settings** (the gear next to Project Overview), **General** tab, scroll to **Your apps**, click the web icon (`</>`).
-2. Nickname, for example `course site`. Leave Firebase Hosting unticked. **Register app**.
-3. Under **SDK setup and configuration** choose **Config** and copy the object. It looks like this:
+Why this step exists: Firebase has to know that a website (this course) will be talking to it. When you register the website, Firebase hands back a small block of text called the **config**. It is the project's address: six values that tell the course which Firebase project to connect to. Nothing in it is secret.
+
+1. In the Firebase console, click the **gear icon** next to **Project Overview** at the top left, then **Project settings**.
+2. You land on the **General** tab. Scroll down to the section **Your apps**. If it says there are no apps yet, click the round button with **`</>`** on it (that is the "web app" button). If an app is already listed there, click it and jump to point 4.
+3. Type a nickname, for example `course site`. Leave **Also set up Firebase Hosting** unticked. Click **Register app**.
+4. Firebase now shows a block of code. Just above it are two little options, **npm** and **Config**: click **Config**. The block starts with `const firebaseConfig = {` and ends with `};`. Select all of it, copy it, then click **Continue to console**.
+
+The copied block looks like this (your values will differ):
 
 ```js
 const firebaseConfig = {
   apiKey: "AIza...",
   authDomain: "build-ai-agents.firebaseapp.com",
   projectId: "build-ai-agents",
-  storageBucket: "build-ai-agents.appspot.com",
+  storageBucket: "build-ai-agents.firebasestorage.app",
   messagingSenderId: "1234567890",
   appId: "1:1234567890:web:abcdef"
 };
 ```
 
-The `apiKey` here is not a secret. It only identifies the project; what anyone can do with the data is decided by the rules you published in step 3.
+You can find it again any time: **Project settings**, **General**, **Your apps**, click the app, **SDK setup and configuration**, **Config**.
 
-## 5. Put the config in the course
+The `apiKey` is not a password. It only says which project the site talks to; what anyone can do with the data is decided by the rules you published in step 3.
 
-Open `shared/firebase-config.js` and replace `null` with the object:
+## 5. Put the config into the course
+
+The course reads exactly one line of the file `shared/firebase-config.js`:
+
+```js
+window.FIREBASE_CONFIG = null;
+```
+
+Replace the word `null` with the part of the copied block from `{` to `}`. Do **not** paste the words `const firebaseConfig =` in front: that would create a separate variable the course never looks at, and sign-in would stay off. The line must end up as:
 
 ```js
 window.FIREBASE_CONFIG = {
   apiKey: "AIza...",
   authDomain: "build-ai-agents.firebaseapp.com",
   projectId: "build-ai-agents",
-  storageBucket: "build-ai-agents.appspot.com",
+  storageBucket: "build-ai-agents.firebasestorage.app",
   messagingSenderId: "1234567890",
   appId: "1:1234567890:web:abcdef"
 };
 ```
 
-Then rebuild and publish:
+The easiest route is to paste the copied block into a chat with Claude and ask it to connect the course; it edits this file, rebuilds and commits. In this repository that is already done: the config points at the project `build-ai-agents-1ffed`.
+
+Doing it by hand instead, the pages have to be rebuilt afterwards, because the build copies this file into every page. From the course folder, in a terminal:
 
 ```bash
 python -I build.py
@@ -63,7 +78,10 @@ python -I build.py --site --doc-url https://github.com/ashishkaushalr-oss/build-
 git add -A
 git commit -m "Connect account sync"
 git push
+git push intuit main:master
 ```
+
+The first command rebuilds the course pages for Claude in `dist/`, the second rebuilds the website in `docs/` (the folder GitHub Pages serves), `git add` and `git commit` record the change, and the two pushes upload it to the public and the Intuit repository.
 
 ## How it works, in one paragraph
 
