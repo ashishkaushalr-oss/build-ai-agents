@@ -1,6 +1,6 @@
 # Build Your Own AI Agents
 
-Repository: https://github.intuit.com/aranjan10/build-ai-agents
+Repository: https://github.com/ashishkaushalr-oss/build-ai-agents
 
 A ten-week, no-code course on building AI agents with Claude and n8n, written for new professionals and product managers. Each week is an interactive module split into five day tabs: four days of concepts with live visuals and short exercises, then a lab day with a quiz, a practice round and an entry in the learner's design log. Fifty days in all, about 57 hours.
 
@@ -19,7 +19,7 @@ A ten-week, no-code course on building AI agents with Claude and n8n, written fo
 
 ## Read or run the course
 
-- **Static site.** The `docs/` folder is a complete copy of the course that runs from any web host. Turn on GitHub Pages for this repository (Settings, Pages, branch `master`, folder `/docs`) and the hub is served at the Pages address shown there, with each week at `w1.html` to `w10.html`.
+- **Static site.** The `docs/` folder is a complete copy of the course that runs from any web host. With GitHub Pages pointed at `/docs` on `main`, the hub is at https://ashishkaushalr-oss.github.io/build-ai-agents/ and each week at `w1.html` to `w10.html`.
 - **Course doc.** `COURSE.md` is the written course: welcome, setup, every week's learn, try-it, lab and check-yourself sections, a glossary and a progress checklist.
 - **Inside Claude.** The course owner also publishes each page as a Claude artifact (`urls.json`). Two things only work there: the hub's progress sync to a Claude account (elsewhere progress stays in the browser), and the live Claude workbench in Week 2 and the Agent Playground (elsewhere the page says so and keeps the rest working).
 
