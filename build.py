@@ -23,6 +23,7 @@ SITE_HEAD = ('<link rel="manifest" href="manifest.webmanifest"><link rel="icon" 
              '<meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes">'
              '<meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="apple-mobile-web-app-title" content="AI Agents">')
 ICON_FILES = ['icon.svg', 'icon-192.png', 'icon-512.png', 'icon-maskable-192.png', 'icon-maskable-512.png', 'apple-touch-icon.png', 'favicon-32.png']
+SITE_ONLY = {'transformer'}   # pages that embed outside content; the Claude copies link out instead
 MANIFEST = {
     'name': 'Build Your Own AI Agents', 'short_name': 'AI Agents',
     'description': 'A ten-week, no-code course on building AI agents with Claude and n8n.',
@@ -129,7 +130,7 @@ def build_page(name, url_map, site_meta=None):
 if site_dir:
     site = site_dir if os.path.isabs(site_dir) else os.path.join(HERE, site_dir)
     site_urls = {'hub': 'index.html', 'doc': doc_url or urls.get('doc', '#'), 'playground': 'playground.html',
-                 'weeks': ['w%d.html' % n for n in range(1, 11)]}
+                 'explainer': 'transformer.html', 'weeks': ['w%d.html' % n for n in range(1, 11)]}
     if args:
         print('note: the site is always built whole, so the offline list stays complete')
     pages, digest = {}, hashlib.sha1()
@@ -155,6 +156,8 @@ if site_dir:
     print('site manifest.webmanifest + sw.js (version %s, %d files offline) + %d icons' % (version, len(precache), len(ICON_FILES)))
 else:
     for name in names:
+        if name in SITE_ONLY:
+            continue
         out = build_page(name, urls)
         write(os.path.join(DIST, name + '.html'), out)
         write(os.path.join(DIST, 'preview', name + '.html'), SKELETON + out + '</body></html>')

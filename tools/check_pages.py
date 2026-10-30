@@ -8,6 +8,8 @@ names = sys.argv[1:] or [n[:-5] for n in sorted(os.listdir(os.path.join(HERE, 's
 bad = 0
 for name in names:
     src_p = os.path.join(HERE, 'src', name + '.html'); dist_p = os.path.join(HERE, 'dist', name + '.html')
+    if not os.path.exists(dist_p) and os.path.exists(os.path.join(HERE, 'docs', name + '.html')):
+        print(f'{name}: site-only page, built in docs/ only; structural checks skipped'); continue
     if not os.path.exists(dist_p):
         print(f'{name}: NOT BUILT'); bad += 1; continue
     s = open(src_p, encoding='utf-8').read(); d = open(dist_p, encoding='utf-8').read()

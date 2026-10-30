@@ -76,6 +76,7 @@
       else if (k === 'prev') href = (cur > 1 && u.weeks && u.weeks[cur-2]) || u.hub || '#';
       else if (k === 'next') href = (cur < 10 && u.weeks && u.weeks[cur]) || u.hub || '#';
       else if (k === 'track') href = (u.hub || '#') + (u.hub ? '#w' + cur : '');
+      else if (typeof u[k] === 'string') href = u[k];
       var hash = a.getAttribute('data-hash'); a.setAttribute('href', href + (hash && href !== '#' ? hash : ''));
       if (href === '#') a.classList.add('is-unlinked');
       if (/^https?:/.test(href)) { a.setAttribute('target', '_blank'); a.setAttribute('rel', 'noopener'); }

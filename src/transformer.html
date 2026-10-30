@@ -1,0 +1,62 @@
+<title>Transformer Explainer</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<!-- @css -->
+<style>
+/* The real Polo Club Transformer Explainer, embedded. Website build only: the Claude copy links out instead. */
+.tex{display:grid;gap:14px;padding-block:18px 28px}
+.tex__intro{display:grid;gap:10px;max-width:72ch}
+.tex__intro p{font-size:1.02rem}
+.tex__frame{position:relative;border:1px solid var(--line);border-radius:var(--r-l);overflow:hidden;background:var(--surface);min-height:720px;height:calc(100vh - 150px)}
+.tex__frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:#fff}
+.tex__fallback{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:24px;color:var(--muted);font-size:.95rem}
+.tex__frame.is-live .tex__fallback{display:none}
+.tex__credit{font-size:.85rem;color:var(--muted);max-width:80ch}
+@media (max-width:720px){.tex__frame{height:70vh;min-height:520px}}
+</style>
+
+<header class="rail">
+  <div class="wrap">
+    <span class="rail__badge">Week 1 · Day 2</span>
+    <span class="rail__title">Transformer Explainer</span>
+    <nav class="rail__nav" aria-label="Sections"></nav>
+    <div class="rail__links">
+      <a data-href="w1" data-hash="#day2">Back to Week 1</a>
+      <a data-href="hub">Course hub</a>
+    </div>
+  </div>
+</header>
+
+<main class="wrap tex">
+  <div class="tex__intro">
+    <span class="eyebrow">The real thing, inside the course</span>
+    <h2>A live GPT-2 you can look inside</h2>
+    <p>This is the <a href="https://poloclub.github.io/transformer-explainer/" target="_blank" rel="noopener">Transformer Explainer</a> built by the Polo Club at Georgia Tech, shown here exactly as they publish it. It runs an actual GPT-2 (small) model in your browser: type a sentence, press Generate, and every number you see, from the embeddings to the attention maps to the output probabilities, is computed live by the model. The card in Week 1 is drawn to the same shape; this one is the genuine article.</p>
+    <p class="muted" style="font-size:.92rem">It downloads the model the first time, a few hundred megabytes, so use a laptop on a good connection. It needs the internet, so it is the one part of the course that does not work offline. If the frame stays blank, open it directly: <a href="https://poloclub.github.io/transformer-explainer/" target="_blank" rel="noopener">poloclub.github.io/transformer-explainer</a>.</p>
+  </div>
+  <div class="tex__frame" id="texFrame">
+    <div class="tex__fallback">Loading the explainer from poloclub.github.io…<br>If nothing appears, <a href="https://poloclub.github.io/transformer-explainer/" target="_blank" rel="noopener">open it in a new tab</a>.</div>
+    <iframe id="texIframe" src="https://poloclub.github.io/transformer-explainer/" title="Transformer Explainer by the Polo Club, Georgia Tech" loading="eager" referrerpolicy="no-referrer-when-downgrade" allow="clipboard-write"></iframe>
+  </div>
+  <p class="tex__credit">Transformer Explainer was created by Aeree Cho, Grace C. Kim, Alexander Karpekov, Alec Helbling, Jay Wang, Seongmin Lee, Benjamin Hoover and Polo Chau at the Georgia Institute of Technology, and is published under the MIT License. It is embedded here from their site with thanks; nothing about it has been changed. Source and paper: <a href="https://github.com/poloclub/transformer-explainer" target="_blank" rel="noopener">github.com/poloclub/transformer-explainer</a>.</p>
+  <nav class="pager" aria-label="Back to the course">
+    <a data-href="w1" data-hash="#day2"><span>Back to</span><b>Week 1 · Day 2 · Machines that learn</b></a>
+    <a data-href="hub"><span>Or the</span><b>Course hub</b></a>
+  </nav>
+  <footer class="site">
+    <div class="row" style="justify-content:space-between">
+      <div class="weeks" data-weeks aria-label="All weeks"></div>
+      <div class="row"><a data-href="hub">Course hub</a> · <a data-href="playground">Agent playground</a> · <a data-href="doc">Course doc</a></div>
+    </div>
+    <p>Build Your Own AI Agents · a 10-week course. The embedded explainer is the work of the Polo Club, Georgia Tech, MIT License.</p>
+  </footer>
+</main>
+
+<!-- @js -->
+<script>
+Course.init({week: 1, title: 'Transformer Explainer'});
+(function(){
+  var f = document.getElementById('texIframe'), box = document.getElementById('texFrame');
+  f.addEventListener('load', function(){ box.classList.add('is-live'); });
+})();
+</script>

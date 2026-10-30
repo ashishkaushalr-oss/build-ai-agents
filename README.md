@@ -20,6 +20,7 @@ A ten-week, no-code course on building AI agents with Claude and n8n, written fo
 ## Read or run the course
 
 - **Static site.** The `docs/` folder is a complete copy of the course that runs from any web host. GitHub Pages serves it from `/docs` on `main`: the hub is at https://ashishkaushalr-oss.github.io/build-ai-agents/ and each week at `w1.html` to `w10.html`.
+- **The real Transformer Explainer.** `transformer.html` on the site embeds the Polo Club's original (Georgia Tech, MIT License), which runs a live GPT-2 in the browser; Week 1, Day 2 links to it from its own transformer card.
 - **Phone app.** The site is also a progressive web app: open it on a phone and add it to the home screen (Safari: Share, then Add to Home Screen; Chrome: Install). It opens full screen with its own icon, and every week works offline.
 - **Course doc.** `COURSE.md` is the written course: welcome, setup, every week's learn, try-it, lab and check-yourself sections, a glossary and a progress checklist.
 - **Inside Claude.** The course owner also publishes each page as a Claude artifact (`urls.json`). Two things only work there: the hub's progress sync to a Claude account (elsewhere progress stays in the browser), and the live Claude workbench in Week 2 and the Agent Playground (elsewhere the page says so and keeps the rest working).

@@ -83,7 +83,7 @@ TODAY = {
     2: today(2, 'One experiment on this page, one in Claude. Use made-up data.', [
         li('d2-1', 'Press Train on the ticket sorter and let it run to 60 rounds at 1× speed. Watch where the curve flattens. Then press Start over and run it again at 8×.',
            'the model never saw a rule. It saw labelled examples, and a lot of them. The flattening curve is the moment more examples stop helping much.'),
-        li('d2-2', 'In the transformer card, press Play and watch one full pass. Then drag Temperature to 0.3 and press Sample five times; Reset, drag it to 1.8 and sample five more. Decide which setting you would want for a refund email.',
+        li('d2-2', 'In the transformer card, press Generate and watch the flow run left to right. Then drag Temperature to 0.3 and generate five words; pick the example again, drag it to 1.8 and generate five more. Decide which setting you would want for a refund email.',
            'low temperature makes the same safe choice every time; high temperature wanders. Claude\'s default sits near 1, and you will set this knob yourself in the Console in Week 8.'),
         try_items[1],
     ], email),

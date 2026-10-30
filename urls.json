@@ -13,5 +13,6 @@
     "https://claude.ai/artifact/V8eaPCrMHEza3yy2WrUU9i",
     "https://claude.ai/artifact/5DhRAKr4j7PtNXeEfq8NWe",
     "https://claude.ai/artifact/WjEDU4hesh8cnvJrY6CXp5"
-  ]
+  ],
+  "explainer": "https://poloclub.github.io/transformer-explainer/"
 }
