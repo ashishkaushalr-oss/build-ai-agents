@@ -136,98 +136,123 @@ html.no-motion .motif *,html.no-motion .tok{animation:none!important}
 .scorebar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px}
 .scorebar b{font-family:var(--font-display);font-size:1.6rem;font-variant-numeric:tabular-nums}
 .ok{color:var(--ok)}.bad{color:var(--bad)}
-/* ---------- concept 5: inside the guess, a transformer in one pass (laid out after Polo Club's Transformer Explainer) ---------- */
+/* ---------- concept 5: inside the guess, a transformer in one pass (Polo Club shape on a responsive dark stage) ---------- */
 .concept--wide{grid-template-columns:minmax(0,1fr)}
 .concept--wide .concept__viz{order:0}
 .concept--wide .concept__text p{max-width:72ch}
-.tx{gap:12px;align-content:start;--rowh:34px;--mono:var(--font-mono,ui-monospace,SFMono-Regular,Menlo,monospace)}
+.tx{gap:12px;align-content:start;--rowh:30px;--cell:7px;--mono:var(--font-mono,ui-monospace,SFMono-Regular,Menlo,monospace);--sline:rgba(255,255,255,.14);--spanel:rgba(255,255,255,.045)}
 .tx .btn--act{background:var(--act);border-color:var(--act);color:#fff}
+/* controls, in the original's order */
 .tx__bar{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:var(--r-m);background:var(--bg)}
 .tx__bar>label,.tx__ctl{display:flex;align-items:center;gap:8px;font-size:.8rem;color:var(--muted);font-weight:600;white-space:nowrap}
-.tx__bar select{font:inherit;font-size:.84rem;padding:5px 8px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--fg);max-width:240px}
-.tx__input{display:flex;gap:8px;flex:1 1 280px;min-width:0}
+.tx__bar select{font:inherit;font-size:.84rem;padding:5px 8px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--fg);max-width:min(240px,55vw)}
+.tx__input{display:flex;gap:8px;flex:1 1 260px;min-width:0}
 .tx__input input{flex:1;min-width:0;padding:7px 12px;border:1px solid var(--line);border-radius:999px;background:var(--surface);color:var(--fg);font:inherit;font-size:.92rem}
-.tx__ctl input[type=range]{width:104px;accent-color:var(--think)}
-.tx__ctl b{color:var(--fg);font-variant-numeric:tabular-nums;min-width:40px}
+.tx__ctl input[type=range]{width:100px;accent-color:var(--think)}
+.tx__ctl b{color:var(--fg);font-variant-numeric:tabular-nums;min-width:42px}
 .tx__ctl .seg button{padding:3px 9px;font-size:.76rem}
 .tx__ctl .seg button.is-on{background:var(--think);color:#fff}
-.tx__scroll{overflow-x:auto;overflow-y:hidden;padding:4px 2px 12px}
-.tx__diagram{position:relative;display:grid;grid-template-columns:auto 52px auto 52px minmax(230px,270px);align-items:start;min-width:max-content}
+/* the stage: three fluid columns on a laptop, a vertical stack on a phone */
+.tx__stage{position:relative;display:grid;grid-template-columns:minmax(168px,.9fr) 28px minmax(296px,1.5fr) 28px minmax(168px,.9fr);align-items:start;padding:14px;border-radius:var(--r-l);background:radial-gradient(120% 80% at 50% -10%,#1C2456 0%,var(--stage) 58%);color:var(--stage-fg);border:1px solid var(--stage-line);overflow:hidden;min-width:0}
 .tx__overlay{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible;z-index:1}
-.tx__overlay path{fill:none;stroke:var(--line);stroke-width:1.5;transition:stroke .25s,stroke-width .25s,opacity .25s}
+.tx__overlay path{fill:none;stroke:var(--sline);stroke-width:1.5;transition:stroke .25s,stroke-width .25s,opacity .25s}
 .tx__overlay path.is-hot{stroke:var(--think);stroke-width:2.5}
 .tx__overlay path.faint{opacity:.35;stroke-dasharray:2 4}
-.tx__overlay.is-flow path:not(.faint){stroke:var(--think);stroke-dasharray:6 9;animation:txflow .7s linear infinite}
-.tx__overlay.is-flow-b path.to-out{stroke:var(--act);stroke-dasharray:6 9;animation:txflow .7s linear infinite}
-@keyframes txflow{to{stroke-dashoffset:-30}}
-.tx__col{border:1px solid var(--line);border-radius:var(--r-m);background:var(--bg);padding:10px 12px 12px;position:relative}
-.tx__col--block{background:var(--surface);box-shadow:5px 5px 0 -1px var(--bg),5px 5px 0 0 var(--line),10px 10px 0 -1px var(--bg),10px 10px 0 0 var(--line);margin:0 10px 10px 0}
-.tx__colhead{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:700;min-height:26px}
-.tx__colhead button,.tx__sub>header button{appearance:none;border:0;background:transparent;color:var(--fg);font:inherit;letter-spacing:inherit;text-transform:inherit;font-weight:inherit;cursor:pointer;display:inline-flex;align-items:center;gap:7px;padding:2px 0}
-.tx .caret{display:inline-block;width:0;height:0;border-top:5px solid transparent;border-bottom:5px solid transparent;border-left:6px solid currentColor;transition:transform .25s}
-.is-open>.tx__colhead .caret,.is-open>header .caret{transform:rotate(90deg)}
-.tx__lbl{font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:600;white-space:nowrap}
-.tx__steps{display:none;gap:10px;font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin:0 0 6px 4px;font-weight:600}
-.is-open>.tx__steps{display:flex}
+.tx__overlay.is-flow path.a,.tx__overlay.is-flow-b path.to-out{stroke:url(#txgrad);stroke-width:2;stroke-dasharray:6 8;animation:txflow .6s linear infinite}
+@keyframes txflow{to{stroke-dashoffset:-28}}
+.tx__col{background:var(--spanel);border:1px solid var(--stage-line);border-radius:12px;padding:10px 10px 12px;min-width:0;position:relative;z-index:2}
+.tx__col--block{background:rgba(255,255,255,.06);box-shadow:5px 5px 0 -1px var(--stage),5px 5px 0 0 var(--stage-line),10px 10px 0 -1px var(--stage),10px 10px 0 0 var(--stage-line);margin:0 10px 10px 0}
+.tx__colhead{display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--stage-muted);font-weight:700;min-height:24px;flex-wrap:wrap}
+.tx__colhead .tx__lbl{margin-left:auto}
+.tx__num{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--think);color:#fff;font-size:.7rem;letter-spacing:0;flex:none}
+.tx__title{color:var(--stage-fg)}
+.tx__colhead button,.tx__sub>header button{appearance:none;border:0;background:transparent;color:var(--stage-fg);font:inherit;letter-spacing:inherit;text-transform:inherit;font-weight:inherit;cursor:pointer;display:inline-flex;align-items:center;gap:6px;padding:2px 0}
+.tx .tx__caret{display:inline-block;width:0;height:0;border-top:4px solid transparent;border-bottom:4px solid transparent;border-left:5px solid currentColor;transition:transform .25s;opacity:.8}
+.is-open>.tx__colhead .tx__caret,.is-open>header .tx__caret{transform:rotate(90deg)}
+.tx__lbl{font-size:.6rem;color:var(--stage-muted);text-transform:uppercase;letter-spacing:.06em;font-weight:600;white-space:nowrap}
+.tx__lbl em{font-style:normal;font-weight:800}
+.tx__lbl .tx__q{color:var(--think)}.tx__lbl .tx__k{color:var(--act)}.tx__lbl .tx__v{color:var(--observe)}
+.tx__gap{position:relative;align-self:stretch;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
+.tx__gap i,.tx__gap span{display:none}
+/* rows: one per token, the same height in every column so the connectors line up */
 .tx__rows{display:grid}
-.tx__row{display:flex;align-items:center;gap:8px;height:var(--rowh);padding:0 4px;border-radius:8px;transition:background .25s}
-.tx__row.is-hot{background:var(--think-soft)}
+.tx__row{display:flex;align-items:center;gap:8px;height:var(--rowh);padding:0 4px;border-radius:7px;transition:background .25s;min-width:0}
+.tx__row.is-hot{background:rgba(143,123,255,.18)}
 .tx__row.is-new{animation:txslide .5s ease}
 @keyframes txslide{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:none}}
-.tx__tok{font-family:var(--mono);font-size:.84rem;padding:3px 8px;border-radius:7px;background:var(--surface);border:1px solid var(--line);white-space:nowrap;min-width:70px;text-align:center}
+.tx__tok{font-family:var(--mono);font-size:.78rem;padding:2px 7px;border-radius:6px;background:rgba(255,255,255,.07);border:1px solid var(--stage-line);color:var(--stage-fg);white-space:nowrap;min-width:0;max-width:92px;overflow:hidden;text-overflow:ellipsis;flex:1 1 auto}
 .tx__tok.is-piece{border-style:dashed}
-.tx__tok.sm{min-width:58px;font-size:.74rem;padding:2px 6px;background:transparent;border-color:transparent;color:var(--muted);text-align:right}
-.tx__id{font-family:var(--mono);font-size:.64rem;color:var(--muted);min-width:46px;display:none}
-.is-open .tx__id{display:inline}
-.vec{display:grid;grid-template-columns:repeat(8,7px);gap:2px}
-.vec i{display:block;width:7px;height:7px;border-radius:2px;background:var(--surface-2);transition:background .45s}
-.vec.extra,.tx__op{display:none}
-.is-open .vec.extra{display:grid}
-.is-open .tx__op{display:inline;font-size:.78rem;color:var(--muted);min-width:10px;text-align:center}
-.tx__sub{border:1px dashed var(--line);border-radius:10px;padding:8px 10px;margin-top:8px}
-.tx__sub>header{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:6px}
-.tx__sub .vec.q i{outline:1px solid rgba(106,82,245,.25)}
-.tx__sub .vec.k i{outline:1px solid rgba(242,85,46,.25)}
-.tx__sub .vec.v i{outline:1px solid rgba(14,159,134,.25)}
-.tx__qkvlbl{display:flex;gap:8px;padding:0 4px 2px 70px;font-size:.6rem;color:var(--muted);font-weight:700;text-transform:uppercase}
-.tx__qkvlbl span{width:70px}
-.tx__qkvlbl .q{color:var(--think)}.tx__qkvlbl .k{color:var(--act)}.tx__qkvlbl .v{color:var(--observe)}
-.tx__detail{display:none;margin-top:8px;padding-top:8px;border-top:1px dashed var(--line)}
+.tx__tok.sm{flex:0 0 52px;max-width:52px;font-size:.7rem;padding:1px 4px;background:transparent;border-color:transparent;color:var(--stage-muted);text-align:right}
+.tx__id{font-family:var(--mono);font-size:.62rem;color:var(--stage-muted);display:none}
+.tx__vec{display:grid;grid-template-columns:repeat(8,var(--cell));gap:2px;flex:none}
+.tx__vec i{display:block;width:var(--cell);height:var(--cell);border-radius:2px;background:rgba(255,255,255,.08);transition:background .45s}
+.tx__mini{display:flex;gap:2px;align-items:flex-end;height:18px;flex:none}
+.tx__mini i{display:block;width:7px;border-radius:2px 2px 0 0;opacity:.95}
+.tx__mini .tx__q{background:var(--think)}.tx__mini .tx__k{background:var(--act)}.tx__mini .tx__v{background:var(--observe)}
+.tx__arrow{font-size:.74rem;color:var(--stage-muted);flex:none}
+.tx__sub{border:1px dashed var(--stage-line);border-radius:10px;padding:8px 8px;margin-top:8px;min-width:0}
+.tx__sub>header{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:.66rem;letter-spacing:.08em;text-transform:uppercase;color:var(--stage-muted);font-weight:700;margin-bottom:6px;flex-wrap:wrap}
+.tx__res{font-size:.6rem;color:var(--stage-muted);text-transform:uppercase;letter-spacing:.06em;font-weight:600;margin:8px 4px 0}
+/* details open beneath their rows, for the token you point at; they never widen the diagram */
+.tx__detail{display:none;margin-top:8px;padding-top:8px;border-top:1px dashed var(--stage-line);font-size:.74rem;color:var(--stage-muted);min-width:0}
 .is-open>.tx__detail{display:block}
-.tx__heads{display:flex;flex-wrap:wrap;gap:4px;margin:0 0 6px}
-.tx__heads button{border:1px solid var(--line);background:var(--bg);color:var(--muted);border-radius:6px;padding:2px 7px;font:inherit;font-size:.68rem;font-weight:700;cursor:pointer}
+.tx__detail b{color:var(--stage-fg)}
+.tx__embd{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center}
+.tx__embd .tx__st{display:grid;gap:3px;justify-items:center}
+.tx__embd .tx__st span{font-size:.58rem;text-transform:uppercase;letter-spacing:.06em}
+.tx__embd .tx__opx{font-size:.9rem;color:var(--stage-muted)}
+.tx__heads{display:flex;flex-wrap:wrap;gap:3px;margin:0 0 6px}
+.tx__heads button{border:1px solid var(--stage-line);background:transparent;color:var(--stage-muted);border-radius:5px;padding:1px 6px;font:inherit;font-size:.64rem;font-weight:700;cursor:pointer}
 .tx__heads button.is-on{background:var(--think);border-color:var(--think);color:#fff}
-.tx__grid{display:grid;gap:2px}
-.tx__grid .lab{font-family:var(--mono);font-size:.62rem;color:var(--muted);display:flex;align-items:center;justify-content:flex-end;padding-right:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:70px}
-.tx__grid .lab.top{justify-content:flex-start;padding:0 0 3px;writing-mode:vertical-rl;transform:rotate(180deg);height:46px;align-items:center;text-overflow:clip}
-.tx__grid .cell{width:16px;height:16px;border-radius:3px;background:var(--surface-2);transition:background .4s;outline:2px solid transparent;outline-offset:-2px}
-.tx__grid .cell.masked{background:repeating-linear-gradient(45deg,transparent 0 3px,var(--line) 3px 4px);opacity:.6}
-.tx__grid .cell.is-row{outline-color:var(--think)}
-.tx__attnsteps{display:flex;gap:10px;flex-wrap:wrap;font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:600;margin-top:6px}
-.tx__mlpviz{display:grid;grid-template-columns:auto 44px auto 44px auto;align-items:center;gap:6px;margin-top:4px}
-.tx__mlpviz .col{display:grid;gap:2px}
-.tx__mlpviz .wide{display:grid;grid-template-columns:repeat(4,7px);gap:2px}
-.tx__mlpviz i{display:block;width:7px;height:7px;border-radius:2px;background:var(--surface-2)}
-.tx__mlpviz .wide i.off{opacity:.15}
+.tx__grid{display:grid;gap:2px;max-width:100%}
+.tx__grid .tx__lab{font-family:var(--mono);font-size:.6rem;color:var(--stage-muted);display:flex;align-items:center;justify-content:flex-end;padding-right:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.tx__grid .tx__lab.tx__top{justify-content:flex-start;padding:0 0 3px;writing-mode:vertical-rl;transform:rotate(180deg);height:42px;align-items:center;text-overflow:clip}
+.tx__grid .tx__cell{aspect-ratio:1;border-radius:2px;background:rgba(255,255,255,.07);transition:background .4s;outline:2px solid transparent;outline-offset:-2px;min-width:0}
+.tx__grid .tx__cell.tx__masked{background:repeating-linear-gradient(45deg,transparent 0 3px,var(--stage-line) 3px 4px);opacity:.7}
+.tx__grid .tx__cell.is-row{outline-color:var(--act)}
+.tx__qkv3{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;margin-top:6px}
+.tx__qkv3 .tx__st{display:flex;align-items:center;gap:5px}
+.tx__attnsteps{display:flex;gap:8px;flex-wrap:wrap;font-size:.58rem;text-transform:uppercase;letter-spacing:.06em;font-weight:600;margin-top:6px}
+.tx__mlpviz{display:grid;grid-template-columns:auto minmax(24px,40px) auto minmax(24px,40px) auto;align-items:center;gap:6px;margin-top:2px}
+.tx__mlpviz .tx__mcol{display:grid;gap:2px}
+.tx__mlpviz .tx__mwide{display:grid;grid-template-columns:repeat(4,var(--cell));gap:2px}
+.tx__mlpviz i{display:block;width:var(--cell);height:var(--cell);border-radius:2px;background:rgba(255,255,255,.08)}
+.tx__mlpviz .tx__mwide i.tx__off{opacity:.15}
 .tx__mlpviz svg{width:100%;height:70px;display:block}
-.tx__mlpviz svg line{stroke:var(--line);stroke-width:1}
-.tx__mlpviz svg line.on{stroke:var(--think);stroke-width:1.5;opacity:.7}
-.tx__mlpviz .cap{font-size:.6rem;color:var(--muted);text-align:center;margin-top:3px;white-space:nowrap}
-.tx__outsteps{font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:600;margin-bottom:8px}
+.tx__mlpviz svg line{stroke:var(--sline);stroke-width:1}
+.tx__mlpviz svg line.on{stroke:var(--think);stroke-width:1.5;opacity:.8}
+.tx__mlpviz .tx__mcap{font-size:.58rem;text-align:center;margin-top:3px;white-space:nowrap}
+/* output */
+.tx__outsteps{font-size:.6rem;color:var(--stage-muted);text-transform:uppercase;letter-spacing:.06em;font-weight:600;margin-bottom:8px}
 .tx__bars{display:grid;gap:5px}
-.tx__barrow{display:grid;grid-template-columns:minmax(64px,auto) minmax(0,1fr) 42px;gap:8px;align-items:center;font-size:.82rem;transition:opacity .3s}
-.tx__barrow .w{font-family:var(--mono);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.tx__barrow .track{height:9px;border-radius:999px;background:var(--surface-2);overflow:hidden}
-.tx__barrow .track>i{display:block;height:100%;width:0;border-radius:999px;background:var(--think);transition:width .6s cubic-bezier(.2,.8,.2,1),background .3s}
-.tx__barrow.is-top .track>i{background:var(--act)}
-.tx__barrow.is-pick .track>i{background:var(--observe)}
+.tx__barrow{display:grid;grid-template-columns:minmax(52px,auto) minmax(0,1fr) 38px;gap:7px;align-items:center;font-size:.78rem;transition:opacity .3s}
+.tx__barrow .tx__w{font-family:var(--mono);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--stage-fg)}
+.tx__barrow .tx__track{height:9px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden}
+.tx__barrow .tx__track>i{display:block;height:100%;width:0;border-radius:999px;background:linear-gradient(90deg,#6A52F5,#A596FF);transition:width .6s cubic-bezier(.2,.8,.2,1),background .3s;box-shadow:0 0 8px rgba(143,123,255,.45)}
+.tx__barrow.is-top .tx__track>i{background:linear-gradient(90deg,#F2552E,#FF9A7E);box-shadow:0 0 8px rgba(255,122,88,.45)}
+.tx__barrow.is-pick .tx__track>i{background:linear-gradient(90deg,#0E9F86,#5BE3C9);box-shadow:0 0 10px rgba(44,210,178,.6)}
 .tx__barrow.is-cut{opacity:.3}
-.tx__barrow .p{text-align:right;color:var(--muted);font-variant-numeric:tabular-nums}
+.tx__barrow .tx__p{text-align:right;color:var(--stage-muted);font-variant-numeric:tabular-nums}
+.tx__outnote{font-size:.72rem;color:var(--stage-muted);margin-top:8px;line-height:1.4}
+.tx__blockpick{display:inline-flex;align-items:center;gap:5px;letter-spacing:0;color:var(--stage-fg);margin-left:auto}
+.tx__blockpick button{border:1px solid var(--stage-line);background:rgba(255,255,255,.06);color:var(--stage-fg);border-radius:6px;width:22px;height:22px;cursor:pointer;font:inherit;line-height:1;padding:0}
+.tx__blockpick b{min-width:16px;text-align:center}
 .tx__status{font-size:.92rem;color:var(--fg);padding:8px 12px;border-left:3px solid var(--think);background:var(--surface-2);border-radius:0 10px 10px 0;line-height:1.45}
 .tx__status .new{background:var(--observe-soft);color:var(--observe);border-radius:5px;padding:0 4px;font-weight:600}
-.tx__blockpick{display:inline-flex;align-items:center;gap:5px;letter-spacing:0;color:var(--fg)}
-.tx__blockpick button{border:1px solid var(--line);background:var(--bg);color:var(--fg);border-radius:6px;width:22px;height:22px;cursor:pointer;font:inherit;line-height:1;padding:0}
-.tx__blockpick b{min-width:16px;text-align:center}
+/* narrow screens: stack the three columns and let the flow run top to bottom */
+@media (max-width:899px){
+  .tx__stage{grid-template-columns:minmax(0,1fr);padding:10px}
+  .tx__overlay{display:none}
+  .tx__col--block{margin:0;box-shadow:none}
+  .tx__gap{height:40px;justify-self:center}
+  .tx__gap i{display:block;width:2px;flex:1;background:repeating-linear-gradient(to bottom,var(--think) 0 5px,transparent 5px 11px);background-size:2px 11px;opacity:.8}
+  .tx__stage.is-flow .tx__gap i,.tx__stage.is-flow-b .tx__gap i{animation:txdrop .5s linear infinite;background-image:repeating-linear-gradient(to bottom,var(--act) 0 5px,transparent 5px 11px)}
+  .tx__gap span{display:block;font-size:.56rem;text-transform:uppercase;letter-spacing:.08em;color:var(--stage-muted);white-space:nowrap}
+  .tx__colhead .tx__lbl{margin-left:0;flex-basis:100%}
+  .tx .tx__id{display:none!important}
+}
+@keyframes txdrop{to{background-position:0 11px}}
+@media (max-width:420px){.tx{--cell:6px}.tx__tok{max-width:76px}.tx__tok.sm{flex-basis:44px;max-width:44px}}
 @media (prefers-reduced-motion:reduce){.tx *{transition:none!important;animation:none!important}}
 </style>
 
@@ -369,49 +394,46 @@ html.no-motion .motif *,html.no-motion .tok{animation:none!important}
           <label class="tx__ctl">Temperature <input type="range" id="txTemp" min="0.1" max="2" step="0.1" value="0.8"><b id="txTempV">0.8</b></label>
           <div class="tx__ctl">Sampling <div class="seg" role="tablist" aria-label="Sampling method"><button type="button" class="is-on" data-samp="k" role="tab" aria-selected="true">Top-k</button><button type="button" data-samp="p" role="tab" aria-selected="false">Top-p</button></div><input type="range" id="txSamp" min="1" max="10" step="1" value="5" aria-label="Sampling value"><b id="txSampV">k = 5</b></div>
         </div>
-        <div class="tx__scroll">
-          <div class="tx__diagram" id="txDiagram">
-            <svg class="tx__overlay" id="txLinks" aria-hidden="true"></svg>
-            <section class="tx__col" id="colEmbed">
-              <div class="tx__colhead"><button type="button" data-toggle="colEmbed" aria-expanded="false"><i class="caret"></i>Embedding</button><span class="tx__lbl">768 numbers each · 8 shown</span></div>
-              <div class="tx__steps"><span>Tokenization</span><span>→ Token embedding</span><span>+ Positional encoding</span><span>= Final embedding</span></div>
-              <div class="tx__rows" id="embRows"></div>
-            </section>
-            <div></div>
-            <section class="tx__col tx__col--block" id="colBlock">
-              <div class="tx__colhead"><span>Transformer block</span><span class="tx__blockpick"><button type="button" id="txBlockPrev" aria-label="Previous block">‹</button><b id="txBlockN">1</b>/ 12<button type="button" id="txBlockNext" aria-label="Next block">›</button></span></div>
-              <div class="tx__sub" id="subAttn">
-                <header><button type="button" data-toggle="subAttn" aria-expanded="false"><i class="caret"></i>Multi-head self-attention</button><span class="tx__lbl">query · key · value</span></header>
-                <div class="tx__qkvlbl"><span class="q">Q</span><span class="k">K</span><span class="v">V</span><span>out</span></div>
-                <div class="tx__rows" id="attnRows"></div>
-                <div class="tx__detail" id="attnDetail"></div>
-              </div>
-              <div class="tx__lbl" style="margin:8px 4px 0">+ residual · layer norm</div>
-              <div class="tx__sub" id="subMlp">
-                <header><button type="button" data-toggle="subMlp" aria-expanded="false"><i class="caret"></i>MLP</button><span class="tx__lbl">768 → 3072 → 768</span></header>
-                <div class="tx__rows" id="mlpRows"></div>
-                <div class="tx__detail" id="mlpDetail"></div>
-              </div>
-              <div class="tx__lbl" style="margin:8px 4px 0">+ residual · layer norm · on to the next block</div>
-            </section>
-            <div></div>
-            <section class="tx__col" id="colOut">
-              <div class="tx__colhead"><span>Output probabilities</span><span class="tx__lbl">last token only</span></div>
-              <div class="tx__outsteps">logits ÷ temperature → softmax → top-k / top-p → sample</div>
-              <div class="tx__bars" id="txBars" aria-label="Most likely next tokens"></div>
-              <div class="muted" style="font-size:.74rem;margin-top:8px" id="txOutNote"></div>
-            </section>
-          </div>
+        <div class="tx__stage" id="txDiagram">
+          <svg class="tx__overlay" id="txLinks" aria-hidden="true"></svg>
+          <section class="tx__col" id="colEmbed">
+            <header class="tx__colhead"><span class="tx__num">1</span><button type="button" data-toggle="colEmbed" aria-expanded="false">Embedding<i class="tx__caret"></i></button><span class="tx__lbl">768 numbers · 8 shown</span></header>
+            <div class="tx__rows" id="embRows"></div>
+            <div class="tx__detail" id="embDetail"></div>
+          </section>
+          <div class="tx__gap" aria-hidden="true"><i></i><span>into block 1</span></div>
+          <section class="tx__col tx__col--block" id="colBlock">
+            <header class="tx__colhead"><span class="tx__num">2</span><span class="tx__title">Transformer block</span><span class="tx__blockpick"><button type="button" id="txBlockPrev" aria-label="Previous block">‹</button><b id="txBlockN">1</b>/ 12<button type="button" id="txBlockNext" aria-label="Next block">›</button></span></header>
+            <div class="tx__sub" id="subAttn">
+              <header><button type="button" data-toggle="subAttn" aria-expanded="false">Self-attention<i class="tx__caret"></i></button><span class="tx__lbl"><em class="tx__q">Q</em> <em class="tx__k">K</em> <em class="tx__v">V</em> → out</span></header>
+              <div class="tx__rows" id="attnRows"></div>
+              <div class="tx__detail" id="attnDetail"></div>
+            </div>
+            <div class="tx__res">+ residual · layer norm</div>
+            <div class="tx__sub" id="subMlp">
+              <header><button type="button" data-toggle="subMlp" aria-expanded="false">MLP<i class="tx__caret"></i></button><span class="tx__lbl">768 → 3072 → 768</span></header>
+              <div class="tx__rows" id="mlpRows"></div>
+              <div class="tx__detail" id="mlpDetail"></div>
+            </div>
+            <div class="tx__res">+ residual · layer norm · on to the next block</div>
+          </section>
+          <div class="tx__gap" aria-hidden="true"><i></i><span>last token → every word</span></div>
+          <section class="tx__col" id="colOut">
+            <header class="tx__colhead"><span class="tx__num">3</span><span class="tx__title">Output probabilities</span><span class="tx__lbl">last token only</span></header>
+            <div class="tx__outsteps">logits ÷ temperature → softmax → top-k / top-p → sample</div>
+            <div class="tx__bars" id="txBars" aria-label="Most likely next tokens"></div>
+            <div class="tx__outnote" id="txOutNote"></div>
+          </section>
         </div>
-        <div class="tx__status" id="txNarr" aria-live="polite">Read it left to right: the text becomes tokens and numbers, every token looks back at the ones before it, each is refined on its own, and the last token's numbers become odds for the next word. Press <b>Generate</b> to watch one word being made.</div>
+        <div class="tx__status" id="txNarr" aria-live="polite">Read it in order: the text becomes tokens and numbers, every token looks back at the ones before it, each is refined on its own, and the last token's numbers become odds for the next word. Press <b>Generate</b> to watch one word being made. Point at any token to follow it through.</div>
         <div class="viz-caption"><span>Illustrative numbers, drawn to the shape of the Polo Club's <a href="https://poloclub.github.io/transformer-explainer/" target="_blank" rel="noopener">Transformer Explainer</a>. The real one runs an actual GPT-2 (small): 124 million weights, 12 blocks, 12 heads. <a data-href="explainer">Open the real one</a>.</span><span class="row chip chip--think">one pass, one word</span></div>
       </div>
       <div class="concept__text">
         <h3>Inside the guess: one pass through a transformer</h3>
         <p>The guesser on the card above is a transformer, the design behind Claude, GPT and Gemini. I want to show you the inside once, not because you will ever build one, but because every behaviour you will meet in this course has its reason in here: why an answer reads fluently even when it is wrong, why a long document goes fuzzy in the middle, and what the temperature knob you will meet in Week 8 actually does.</p>
-        <p>Read the diagram left to right. <b>Embedding</b>: the text is cut into tokens, long words into pieces, and each token becomes a list of numbers with its position added in. Open the section to see the four steps. <b>Transformer block</b>: in attention, every token makes a query, a key and a value, and looks back at the tokens before it to decide which matter now. In "the customer asked for a refund because", the word "because" leans on "refund" and "asked", not on "the". Open the attention section to see the grid of who looks at whom, one head at a time, with the future masked out. Then the MLP refines each token on its own. The block repeats twelve times; the stepper walks through them. <b>Output</b>: the last token's numbers become a score for every piece in the vocabulary, softmax turns the scores into odds, and one is picked.</p>
-        <p>Do this now: press Generate and watch the flow run through, then press it again and again and read the sentence it builds. Drag the temperature down to 0.3 and generate a few words, then up to 1.8 and generate again. Switch sampling to Top-p and see how the cut changes. The low setting is what you want for a refund email; the high one is what you want when brainstorming names.</p>
-        <div class="aside"><b>Illustrative, on purpose.</b> The numbers on this card are hand-made so the mechanics stay visible: real embeddings have 768 numbers per token, not 8, and a real head's habits are learned, not written down. The real thing is one click away: the Polo Club's <a data-href="explainer">Transformer Explainer</a> runs an actual GPT-2 model in your browser, laid out exactly like this card, and every number in it is computed live.</div>
+        <p>Read the stage in order: left to right on a laptop, top to bottom on a phone. <b>Embedding</b>: the text is cut into tokens, long words into pieces, and each token becomes a list of numbers with its position added in. <b>Transformer block</b>: in self-attention every token makes a query, a key and a value, and looks back at the tokens before it to decide which matter now. In "the customer asked for a refund because", the word "because" leans on "refund" and "asked", not on "the". Then the MLP refines each token on its own. The block repeats twelve times; the stepper walks through them. <b>Output</b>: the last token's numbers become a score for every piece in the vocabulary, softmax turns the scores into odds, and one is picked.</p>
+        <p>Open any section and its detail unfolds beneath it for the token you are pointing at: the four embedding steps, the attention grid for each of twelve heads with the future masked out, the MLP stretching and squeezing. Then do this: press Generate and watch the flow run through, then press it again and read the sentence it builds. Drag the temperature down to 0.3 and generate a few words, then up to 1.8 and generate again. Switch sampling to Top-p and see how the cut changes. The low setting is what you want for a refund email; the high one is what you want when brainstorming names.</p>
+        <div class="aside"><b>Illustrative, on purpose.</b> The numbers on this card are hand-made so the mechanics stay visible: real embeddings have 768 numbers per token, not 8, and a real head's habits are learned, not written down. The real thing is one click away: the Polo Club's <a data-href="explainer">Transformer Explainer</a> runs an actual GPT-2 model in your browser, laid out like this card, and every number in it is computed live.</div>
         <div class="key"><p>A transformer is next-word prediction with attention: every token looks back at the ones before it, twelve times over, and then the last token's numbers become odds for every possible next word.</p></div>
       </div>
     </article>
@@ -1408,8 +1430,8 @@ $('#riskReset').addEventListener('click', renderRisks);
 renderRisks();
 
 /* ---------- Concept 5: inside the guess, one pass through a transformer ----------
-   Laid out after the Polo Club Transformer Explainer: Embedding -> Transformer block (self-attention, MLP) x12 -> Output
-   probabilities, read left to right, with the same controls (examples, Generate, temperature, top-k / top-p).
+   The Polo Club Transformer Explainer's shape (Embedding -> Transformer block (self-attention, MLP) x12 -> Output probabilities)
+   on a responsive stage: three fluid columns on a laptop, a vertical stack on a phone, details opening beneath their rows.
    The numbers are illustrative and deterministic from the text, so the same sentence always draws the same picture. */
 (function transformerExplainer(){
   var root = document.getElementById('tx'); if (!root) return;
@@ -1454,11 +1476,13 @@ renderRisks();
   function bigrams(s){ s = s.toLowerCase(); var b = {}; for (var i = 0; i < s.length - 1; i++) b[s.slice(i, i + 2)] = 1; return b; }
   function sim(a, b){ var A = bigrams(a), B = bigrams(b), n = 0, t = 0, k; for (k in A) { t++; if (B[k]) n++; } for (k in B) t++; return t ? 2 * n / t : 0; }
   function softmax(xs){ var m = Math.max.apply(null, xs), es = xs.map(function(x){ return Math.exp(x - m); }), s = es.reduce(function(a, b){ return a + b; }, 0); return es.map(function(e){ return e / s; }); }
-  function color(v){ var a = Math.min(1, Math.abs(v)); return v < 0 ? 'rgba(106,82,245,' + (0.12 + 0.8 * a).toFixed(2) + ')' : 'rgba(14,159,134,' + (0.12 + 0.8 * a).toFixed(2) + ')'; }
-  function heat(w){ return 'rgba(106,82,245,' + (0.06 + 0.9 * Math.min(1, w)).toFixed(2) + ')'; }
+  function color(v){ var a = Math.min(1, Math.abs(v)); return v < 0 ? 'rgba(143,123,255,' + (0.16 + 0.8 * a).toFixed(2) + ')' : 'rgba(44,210,178,' + (0.16 + 0.8 * a).toFixed(2) + ')'; }
+  function heat(w){ return 'rgba(143,123,255,' + (0.07 + 0.9 * Math.min(1, w)).toFixed(2) + ')'; }
   function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]; }); }
   function wait(ms){ return new Promise(function(res){ setTimeout(res, reduce ? 0 : ms); }); }
-  function vecHtml(vals, cls){ return '<span class="vec ' + (cls || '') + '">' + vals.map(function(v){ return '<i style="background:' + color(v) + '"></i>'; }).join('') + '</span>'; }
+  function vecHtml(vals, cls){ return '<span class="tx__vec ' + (cls || '') + '">' + vals.map(function(v){ return '<i style="background:' + color(v) + '"></i>'; }).join('') + '</span>'; }
+  function mag(v){ return v.reduce(function(a, b){ return a + Math.abs(b); }, 0) / v.length; }
+  function miniHtml(k){ var h = function(v){ return Math.round(5 + 13 * mag(v)); }; return '<span class="tx__mini" title="query, key and value sizes"><i class="tx__q" style="height:' + h(k.q) + 'px"></i><i class="tx__k" style="height:' + h(k.k) + 'px"></i><i class="tx__v" style="height:' + h(k.v) + 'px"></i></span>'; }
 
   function tokenize(text){
     var raw = text.match(/[A-Za-z0-9']+|[^\sA-Za-z0-9']/g) || [], toks = [];
@@ -1513,10 +1537,12 @@ renderRisks();
   }
 
   /* ---------- state ---------- */
-  var S = {text: PRESETS[0][0], toks: [], rows: null, head: 0, block: 1, hot: -1, temp: 0.8, samp: 'k', k: 5, p: 0.9, busy: false, added: 0};
-  var diagram = $('txDiagram'), overlay = $('txLinks');
+  var S = {text: PRESETS[0][0], toks: [], rows: null, head: 0, block: 1, hot: -1, temp: 0.8, samp: 'k', k: 5, p: 0.9, busy: false};
+  var stage = $('txDiagram'), overlay = $('txLinks');
   function isOpen(id){ return $(id).classList.contains('is-open'); }
   function status(html){ $('txNarr').innerHTML = html; }
+  function focusIdx(){ return S.hot >= 0 && S.hot < S.toks.length ? S.hot : S.toks.length - 1; }
+  function narrow(){ return getComputedStyle(overlay).display === 'none'; }
 
   function compute(){
     S.toks = tokenize(S.text);
@@ -1525,53 +1551,65 @@ renderRisks();
     if (S.hot >= S.toks.length) S.hot = -1;
   }
 
-  /* ---------- rendering, one row per token in each column ---------- */
+  /* ---------- rendering: one row per token in each column, details beneath ---------- */
+  function rowOpen(i, newIdx){ return '<div class="tx__row' + (i === newIdx ? ' is-new' : '') + (i === S.hot ? ' is-hot' : '') + '" data-i="' + i + '">'; }
   function renderEmbed(newIdx){
     $('embRows').innerHTML = S.toks.map(function(k, i){
-      return '<div class="tx__row' + (i === newIdx ? ' is-new' : '') + '" data-i="' + i + '" title="token ' + (i + 1) + (k.piece ? ', a word piece' : '') + '">'
-        + '<span class="tx__tok' + (k.piece ? ' is-piece' : '') + '">' + esc(k.t) + (k.piece === 1 ? '·' : '') + '</span><span class="tx__id">#' + k.id + '</span>'
-        + vecHtml(k.e, 'extra') + '<span class="tx__op">+</span>' + vecHtml(k.p, 'extra') + '<span class="tx__op">=</span>' + vecHtml(k.x, 'x') + '</div>';
+      return rowOpen(i, newIdx) + '<span class="tx__tok' + (k.piece ? ' is-piece' : '') + '" title="token ' + (i + 1) + (k.piece ? ', a word piece' : '') + ', id ' + k.id + '">' + esc(k.t) + (k.piece === 1 ? '·' : '') + '</span><span class="tx__id">#' + k.id + '</span>' + vecHtml(k.x, 'x') + '</div>';
     }).join('');
+    renderEmbedDetail();
+  }
+  function renderEmbedDetail(){
+    var box = $('embDetail'); if (!isOpen('colEmbed') || !S.toks.length) { box.innerHTML = ''; return; }
+    var i = focusIdx(), k = S.toks[i];
+    box.innerHTML = '<div class="tx__embd">'
+      + '<div class="tx__st"><span>token ' + (i + 1) + '</span><b class="tx__tok" style="max-width:none">' + esc(k.t) + '</b></div><span class="tx__opx">→</span>'
+      + '<div class="tx__st"><span>id</span><b>#' + k.id + '</b></div><span class="tx__opx">→</span>'
+      + '<div class="tx__st"><span>token vector</span>' + vecHtml(k.e) + '</div><span class="tx__opx">+</span>'
+      + '<div class="tx__st"><span>position ' + (i + 1) + '</span>' + vecHtml(k.p) + '</div><span class="tx__opx">=</span>'
+      + '<div class="tx__st"><span>embedding</span>' + vecHtml(k.x) + '</div></div>'
+      + '<div style="margin-top:6px">Each id looks up its own vector from a table of 50,257; the position vector is added so the model knows the order. Point at another token to follow it.</div>';
   }
   function renderAttn(newIdx){
     $('attnRows').innerHTML = S.toks.map(function(k, i){
-      return '<div class="tx__row' + (i === newIdx ? ' is-new' : '') + '" data-i="' + i + '"><span class="tx__tok sm">' + esc(k.t) + '</span>'
-        + vecHtml(k.q, 'q') + vecHtml(k.k, 'k') + vecHtml(k.v, 'v') + '<span style="font-size:.78rem;color:var(--muted)">→</span>' + vecHtml(k.a, 'o') + '</div>';
+      return rowOpen(i, newIdx) + '<span class="tx__tok sm" title="' + esc(k.t) + '">' + esc(k.t) + '</span>' + miniHtml(k) + '<span class="tx__arrow">→</span>' + vecHtml(k.a, 'o') + '</div>';
     }).join('');
     renderAttnDetail();
   }
   function renderAttnDetail(){
-    var box = $('attnDetail'); if (!isOpen('subAttn')) { box.innerHTML = ''; return; }
-    var n = S.toks.length, i, j, html = '<div class="tx__heads">';
+    var box = $('attnDetail'); if (!isOpen('subAttn') || !S.toks.length) { box.innerHTML = ''; return; }
+    var n = S.toks.length, i, j, f = focusIdx(), k = S.toks[f], html = '<div class="tx__heads">';
     for (i = 0; i < HEADS; i++) html += '<button type="button" data-head="' + i + '" class="' + (i === S.head ? 'is-on' : '') + '" title="' + esc(PATTERNS[i % 4]) + '">H' + (i + 1) + '</button>';
-    html += '</div><div class="tx__grid" style="grid-template-columns:70px repeat(' + n + ',16px)"><div class="lab"></div>';
-    html += S.toks.map(function(k){ return '<div class="lab top" title="' + esc(k.t) + '">' + esc(k.t.slice(0, 6)) + '</div>'; }).join('');
+    html += '</div><div class="tx__grid" style="grid-template-columns:56px repeat(' + n + ',minmax(7px,16px))"><div class="tx__lab"></div>';
+    html += S.toks.map(function(t){ return '<div class="tx__lab tx__top" title="' + esc(t.t) + '">' + esc(t.t.slice(0, 6)) + '</div>'; }).join('');
     for (i = 0; i < n; i++) {
-      html += '<div class="lab" title="' + esc(S.toks[i].t) + '">' + esc(S.toks[i].t) + '</div>';
+      html += '<div class="tx__lab" title="' + esc(S.toks[i].t) + '">' + esc(S.toks[i].t) + '</div>';
       for (j = 0; j < n; j++) html += j > i
-        ? '<div class="cell masked" title="masked: ' + esc(S.toks[i].t) + ' may not look ahead"></div>'
-        : '<div class="cell" data-i="' + i + '" data-j="' + j + '" style="background:' + heat(S.rows[i][j]) + '" title="' + esc(S.toks[i].t) + ' → ' + esc(S.toks[j].t) + ': ' + Math.round(S.rows[i][j] * 100) + '%"></div>';
+        ? '<div class="tx__cell tx__masked" title="masked: ' + esc(S.toks[i].t) + ' may not look ahead"></div>'
+        : '<div class="tx__cell' + (i === f ? ' is-row' : '') + '" data-i="' + i + '" data-j="' + j + '" style="background:' + heat(S.rows[i][j]) + '" title="' + esc(S.toks[i].t) + ' → ' + esc(S.toks[j].t) + ': ' + Math.round(S.rows[i][j] * 100) + '%"></div>';
     }
+    var best = 0; for (j = 0; j <= f; j++) if (S.rows[f][j] > S.rows[f][best]) best = j;
     html += '</div><div class="tx__attnsteps"><span>query · key</span><span>→ dot product</span><span>→ scale</span><span>→ mask the future</span><span>→ softmax</span><span>→ × values</span></div>';
-    html += '<div class="muted" id="attnNote" style="font-size:.72rem;margin-top:5px">Head ' + (S.head + 1) + ' ' + esc(PATTERNS[S.head % 4]) + '. Rows add up to 1; hatched cells are the future, masked out.</div>';
+    html += '<div class="tx__qkv3"><span>for <b>' + esc(k.t) + '</b>:</span><span class="tx__st"><em class="tx__lbl" style="color:var(--think)">Q</em>' + vecHtml(k.q) + '</span><span class="tx__st"><em class="tx__lbl" style="color:var(--act)">K</em>' + vecHtml(k.k) + '</span><span class="tx__st"><em class="tx__lbl" style="color:var(--observe)">V</em>' + vecHtml(k.v) + '</span></div>';
+    html += '<div id="attnNote" style="margin-top:6px"><b>' + esc(k.t) + '</b> looks mostly at <b>' + esc(S.toks[best].t) + '</b> (' + Math.round(S.rows[f][best] * 100) + '%) in head ' + (S.head + 1) + ', block ' + S.block + '. Head ' + (S.head + 1) + ' ' + esc(PATTERNS[S.head % 4]) + '. Rows add up to 1; hatched cells are the future, masked out.</div>';
     box.innerHTML = html;
     each(box.querySelectorAll('[data-head]'), function(b){ b.addEventListener('click', function(){ S.head = +b.getAttribute('data-head'); compute(); render(); }); });
-    each(box.querySelectorAll('.cell[data-i]'), function(c){ c.addEventListener('mouseenter', function(){ setHot(+c.getAttribute('data-i')); }); });
+    each(box.querySelectorAll('.tx__cell[data-i]'), function(c){ c.addEventListener('mouseenter', function(){ setHot(+c.getAttribute('data-i')); }); c.addEventListener('click', function(){ setHot(+c.getAttribute('data-i')); }); });
   }
   function renderMlp(newIdx){
     $('mlpRows').innerHTML = S.toks.map(function(k, i){
-      return '<div class="tx__row' + (i === newIdx ? ' is-new' : '') + '" data-i="' + i + '"><span class="tx__tok sm">' + esc(k.t) + '</span>' + vecHtml(k.m, 'm') + '</div>';
+      return rowOpen(i, newIdx) + '<span class="tx__tok sm" title="' + esc(k.t) + '">' + esc(k.t) + '</span>' + vecHtml(k.m, 'm') + '</div>';
     }).join('');
     renderMlpDetail();
   }
   function renderMlpDetail(){
     var box = $('mlpDetail'); if (!isOpen('subMlp') || !S.toks.length) { box.innerHTML = ''; return; }
-    var i = S.hot >= 0 ? S.hot : S.toks.length - 1, k = S.toks[i];
-    var col = function(vals, cap){ return '<div><span class="col">' + vals.map(function(v){ return '<i style="background:' + color(v) + '"></i>'; }).join('') + '</span><div class="cap">' + cap + '</div></div>'; };
+    var i = focusIdx(), k = S.toks[i];
+    var col = function(vals, cap){ return '<div><span class="tx__mcol">' + vals.map(function(v){ return '<i style="background:' + color(v) + '"></i>'; }).join('') + '</span><div class="tx__mcap">' + cap + '</div></div>'; };
     var fan = function(id){ var s = '<svg viewBox="0 0 60 70" preserveAspectRatio="none" aria-hidden="true">'; for (var a = 0; a < 8; a++) for (var b = 0; b < 8; b++) if ((a + b + id) % 3 === 0) s += '<line class="' + ((a * 7 + b + id) % 4 === 0 ? 'on' : '') + '" x1="0" y1="' + (3 + a * 9) + '" x2="60" y2="' + (3 + b * 9) + '"/>'; return s + '</svg>'; };
-    var wide = '<div><span class="wide">' + k.act.map(function(v, idx){ return '<i class="' + (k.wide[idx] <= 0 ? 'off' : '') + '" style="background:' + color(v / 2) + '"></i>'; }).join('') + '</span><div class="cap">×4 · GELU</div></div>';
+    var wide = '<div><span class="tx__mwide">' + k.act.map(function(v, idx){ return '<i class="' + (k.wide[idx] <= 0 ? 'tx__off' : '') + '" style="background:' + color(v / 2) + '"></i>'; }).join('') + '</span><div class="tx__mcap">×4 · GELU</div></div>';
     box.innerHTML = '<div class="tx__mlpviz">' + col(k.a, 'in') + fan(0) + wide + fan(1) + col(k.m, 'out') + '</div>'
-      + '<div class="muted" style="font-size:.72rem;margin-top:5px">For <b>' + esc(k.t) + '</b>, on its own: 8 of 768 numbers in, 32 of 3,072 inside (the dim ones are switched off), 8 out, added back onto the token.</div>';
+      + '<div style="margin-top:6px">For <b>' + esc(k.t) + '</b>, on its own: 8 of 768 numbers in, 32 of 3,072 inside (the dim ones are switched off), 8 out, added back onto the token.</div>';
   }
   function probs(){
     var c = candidates(S.text, S.toks), ps = softmax(c.map(function(x){ return x.l / S.temp; }));
@@ -1583,44 +1621,57 @@ renderRisks();
   }
   function renderBars(pick){
     var list = probs(), box = $('txBars');
-    box.innerHTML = list.map(function(c, i){ return '<div class="tx__barrow' + (i === 0 ? ' is-top' : '') + (c.cut ? ' is-cut' : '') + (pick === c.w ? ' is-pick' : '') + '"><span class="w">' + esc(c.w) + '</span><span class="track"><i></i></span><span class="p">' + (c.cut ? 'cut' : Math.round(c.q * 100) + '%') + '</span></div>'; }).join('');
-    requestAnimationFrame(function(){ each(box.querySelectorAll('.tx__barrow'), function(b, i){ b.querySelector('.track>i').style.width = (list[i].q * 100).toFixed(1) + '%'; }); });
+    box.innerHTML = list.map(function(c, i){ return '<div class="tx__barrow' + (i === 0 ? ' is-top' : '') + (c.cut ? ' is-cut' : '') + (pick === c.w ? ' is-pick' : '') + '"><span class="tx__w">' + esc(c.w) + '</span><span class="tx__track"><i></i></span><span class="tx__p">' + (c.cut ? 'cut' : Math.round(c.q * 100) + '%') + '</span></div>'; }).join('');
+    var fill = function(){ each(box.querySelectorAll('.tx__barrow'), function(b, i){ b.querySelector('.tx__track>i').style.width = (list[i].q * 100).toFixed(1) + '%'; }); };
+    requestAnimationFrame(fill); setTimeout(fill, 40);
     $('txOutNote').textContent = (S.temp < 0.6 ? 'Low temperature: the top word takes nearly everything. ' : S.temp > 1.4 ? 'High temperature: the odds flatten out. ' : 'Temperature ' + S.temp.toFixed(1) + ' leaves the odds roughly as the model made them. ')
       + (S.samp === 'k' ? 'Top-k keeps the ' + S.k + ' most likely.' : 'Top-p keeps the smallest set that adds up to ' + Math.round(S.p * 100) + '%.');
     return list;
   }
   function drawLinks(){
-    var d = diagram.getBoundingClientRect(), W = Math.round(d.width), H = Math.round(d.height), html = '';
+    if (narrow()) { overlay.innerHTML = ''; return; }
+    var d = stage.getBoundingClientRect(), W = Math.round(d.width), H = Math.round(d.height);
+    if (!W || !H) return;
     overlay.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+    var html = '<defs><linearGradient id="txgrad" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="' + W + '" y2="0"><stop offset="0" stop-color="#8F7BFF"/><stop offset="1" stop-color="#FF7A58"/></linearGradient></defs>';
     var emb = $('embRows').children, att = $('attnRows').children, ml = $('mlpRows').children, out = $('colOut').getBoundingClientRect();
     for (var i = 0; i < emb.length && i < att.length; i++) {
       var a = emb[i].getBoundingClientRect(), b = att[i].getBoundingClientRect();
       var x0 = a.right - d.left, y0 = a.top + a.height / 2 - d.top, x1 = b.left - d.left, y1 = b.top + b.height / 2 - d.top;
-      html += '<path data-i="' + i + '" class="' + (i === S.hot ? 'is-hot' : '') + '" d="M' + x0.toFixed(1) + ' ' + y0.toFixed(1) + ' C' + (x0 + 26).toFixed(1) + ' ' + y0.toFixed(1) + ' ' + (x1 - 26).toFixed(1) + ' ' + y1.toFixed(1) + ' ' + x1.toFixed(1) + ' ' + y1.toFixed(1) + '"/>';
+      html += '<path id="txl' + i + '" data-i="' + i + '" class="a' + (i === S.hot ? ' is-hot' : '') + '" d="M' + x0.toFixed(1) + ' ' + y0.toFixed(1) + ' C' + (x0 + 18).toFixed(1) + ' ' + y0.toFixed(1) + ' ' + (x1 - 18).toFixed(1) + ' ' + y1.toFixed(1) + ' ' + x1.toFixed(1) + ' ' + y1.toFixed(1) + '"/>';
     }
     for (var j = 0; j < ml.length; j++) {
-      var m = ml[j].getBoundingClientRect(), mx = m.right - d.left + 10, my = m.top + m.height / 2 - d.top;
-      if (j === ml.length - 1) { var ox = out.left - d.left, oy = out.top - d.top + 44; html += '<path class="to-out" data-i="' + j + '" d="M' + mx.toFixed(1) + ' ' + my.toFixed(1) + ' C' + (mx + 30).toFixed(1) + ' ' + my.toFixed(1) + ' ' + (ox - 30).toFixed(1) + ' ' + oy.toFixed(1) + ' ' + ox.toFixed(1) + ' ' + oy.toFixed(1) + '"/>'; }
-      else html += '<path class="faint" d="M' + mx.toFixed(1) + ' ' + my.toFixed(1) + ' h 24"/>';
+      var m = ml[j].getBoundingClientRect(), mx = m.right - d.left + 12, my = m.top + m.height / 2 - d.top;
+      if (j === ml.length - 1) { var ox = out.left - d.left, oy = out.top - d.top + 40; html += '<path id="txlout" class="to-out" d="M' + mx.toFixed(1) + ' ' + my.toFixed(1) + ' C' + (mx + 22).toFixed(1) + ' ' + my.toFixed(1) + ' ' + (ox - 22).toFixed(1) + ' ' + oy.toFixed(1) + ' ' + ox.toFixed(1) + ' ' + oy.toFixed(1) + '"/>'; }
+      else html += '<path class="faint" d="M' + mx.toFixed(1) + ' ' + my.toFixed(1) + ' h 16"/>';
     }
     overlay.innerHTML = html;
   }
-  /* connectors are drawn from live positions: right away, again on the next frame, and whenever the diagram's size or visibility changes */
+  /* small lights travelling along the connectors while a word is made (SVG animateMotion, no per-frame script) */
+  function sparks(selector, colour, dur){
+    if (narrow() || reduce) return;
+    var paths = overlay.querySelectorAll(selector), g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    each(paths, function(p, i){
+      var c = document.createElementNS('http://www.w3.org/2000/svg', 'circle'); c.setAttribute('r', '3.2'); c.setAttribute('fill', colour); c.setAttribute('opacity', '.95');
+      var am = document.createElementNS('http://www.w3.org/2000/svg', 'animateMotion'); am.setAttribute('dur', dur + 's'); am.setAttribute('begin', (i * 0.04) + 's'); am.setAttribute('fill', 'freeze'); am.setAttribute('path', p.getAttribute('d'));
+      c.appendChild(am); g.appendChild(c);
+    });
+    overlay.appendChild(g);
+    setTimeout(function(){ if (g.parentNode) g.parentNode.removeChild(g); }, (dur + 0.5) * 1000);
+  }
   function render(newIdx){ renderEmbed(newIdx); renderAttn(newIdx); renderMlp(newIdx); renderBars(); $('txBlockN').textContent = S.block; drawLinks(); requestAnimationFrame(drawLinks); setTimeout(drawLinks, 60); }
   function setHot(i){
     S.hot = i;
     ['embRows', 'attnRows', 'mlpRows'].forEach(function(id){ each($(id).children, function(r){ r.classList.toggle('is-hot', +r.getAttribute('data-i') === i); }); });
-    each(overlay.querySelectorAll('path[data-i]'), function(p){ p.classList.toggle('is-hot', +p.getAttribute('data-i') === i && !p.classList.contains('to-out')); });
-    each($('attnDetail').querySelectorAll('.cell[data-i]'), function(c){ c.classList.toggle('is-row', +c.getAttribute('data-i') === i); });
-    if (isOpen('subAttn') && S.rows && i >= 0) { var best = 0; for (var j = 0; j <= i; j++) if (S.rows[i][j] > S.rows[i][best]) best = j; var n = $('attnNote'); if (n) n.innerHTML = '<b>' + esc(S.toks[i].t) + '</b> looks mostly at <b>' + esc(S.toks[best].t) + '</b> (' + Math.round(S.rows[i][best] * 100) + '%) in head ' + (S.head + 1) + ', block ' + S.block + '. Rows add up to 1; hatched cells are the future, masked out.'; }
-    renderMlpDetail();
+    each(overlay.querySelectorAll('path.a'), function(p){ p.classList.toggle('is-hot', +p.getAttribute('data-i') === i); });
+    renderEmbedDetail(); renderAttnDetail(); renderMlpDetail();
   }
   ['embRows', 'attnRows', 'mlpRows'].forEach(function(id){
     $(id).addEventListener('mouseover', function(e){ var r = e.target.closest('.tx__row'); if (r) setHot(+r.getAttribute('data-i')); });
-    $(id).addEventListener('mouseleave', function(){ setHot(-1); });
+    $(id).addEventListener('click', function(e){ var r = e.target.closest('.tx__row'); if (r) setHot(+r.getAttribute('data-i')); });
   });
 
-  /* ---------- Generate: one word, animated left to right ---------- */
+  /* ---------- Generate: one word, animated along the flow ---------- */
   function pickOne(){
     var list = probs().filter(function(c){ return !c.cut; }), r = Math.random(), acc = 0;
     for (var i = 0; i < list.length; i++) { acc += list[i].q; if (r <= acc) return list[i]; }
@@ -1631,20 +1682,21 @@ renderRisks();
     if (S.toks.length >= MAXTOK) { status('Twelve tokens is as far as this card goes. Pick an example or shorten the text to continue.'); return; }
     S.busy = true; $('txGen').disabled = true;
     status('Embeddings flow into block 1…');
-    overlay.classList.add('is-flow');
-    wait(800).then(function(){
-      overlay.classList.remove('is-flow');
+    overlay.classList.add('is-flow'); stage.classList.add('is-flow'); sparks('path.a', '#FF7A58', 0.75);
+    wait(850).then(function(){
+      overlay.classList.remove('is-flow'); stage.classList.remove('is-flow');
       status('The twelve blocks run in turn; every token is refined twelve times.');
       return new Promise(function(res){ var b = 1; (function tick(){ S.block = b; compute(); renderAttn(); renderMlp(); $('txBlockN').textContent = b; if (b >= BLOCKS) return res(); b++; setTimeout(tick, reduce ? 0 : 95); })(); });
     }).then(function(){
-      overlay.classList.add('is-flow-b'); status('The last token’s numbers become a score for every word in the vocabulary, then odds.');
-      return wait(700);
+      overlay.classList.add('is-flow-b'); stage.classList.add('is-flow-b'); sparks('path.to-out', '#2CD2B2', 0.7);
+      status('The last token’s numbers become a score for every word in the vocabulary, then odds.');
+      return wait(750);
     }).then(function(){
-      overlay.classList.remove('is-flow-b');
+      overlay.classList.remove('is-flow-b'); stage.classList.remove('is-flow-b');
       var pick = pickOne(); renderBars(pick.w);
       return wait(750).then(function(){ return pick; });
     }).then(function(pick){
-      S.text = S.text.replace(/\s+$/, '') + ' ' + pick.w; $('txText').value = S.text; S.added++;
+      S.text = S.text.replace(/\s+$/, '') + ' ' + pick.w; $('txText').value = S.text;
       S.block = 1; S.hot = -1; compute(); render(S.toks.length - 1);
       status('Picked <span class="new">' + esc(pick.w) + '</span> at ' + Math.round(pick.q * 100) + '%. It joins the text as a new token, and the next word starts from the top. ' + (S.toks.length >= MAXTOK ? 'That is the card’s limit of twelve tokens.' : 'Press <b>Generate</b> again.'));
       S.busy = false; $('txGen').disabled = false;
@@ -1654,12 +1706,12 @@ renderRisks();
   /* ---------- controls ---------- */
   var sel = $('txEx');
   PRESETS.forEach(function(p, i){ var o = document.createElement('option'); o.value = String(i); o.textContent = p[0]; sel.appendChild(o); });
-  sel.addEventListener('change', function(){ if (S.busy) return; S.text = PRESETS[+sel.value][0]; $('txText').value = S.text; S.block = 1; S.hot = -1; S.added = 0; compute(); render(); status('New text. Press <b>Generate</b> to make the next word, or open the sections to look inside.'); });
+  sel.addEventListener('change', function(){ if (S.busy) return; S.text = PRESETS[+sel.value][0]; $('txText').value = S.text; S.block = 1; S.hot = -1; compute(); render(); status('New text. Press <b>Generate</b> to make the next word, or open the sections to look inside.'); });
   $('txForm').addEventListener('submit', function(e){
     e.preventDefault(); if (S.busy) return;
     var t = $('txText').value.trim(); if (!t) return;
-    S.text = t; S.block = 1; S.hot = -1; S.added = 0; compute();
-    if (S.toks.length >= MAXTOK) { S.text = S.toks.map(function(k){ return k.t; }).join(' '); }
+    S.text = t; S.block = 1; S.hot = -1; compute();
+    if (S.toks.length >= MAXTOK) S.text = S.toks.map(function(k){ return k.t; }).join(' ');
     render(); status(S.toks.length >= MAXTOK ? 'Twelve tokens is the card’s limit, so the text was trimmed. Open the sections to look inside, or shorten it to generate.' : 'Your text, tokenised. Press <b>Generate</b> to make the next word.');
   });
   $('txGen').addEventListener('click', function(e){ e.preventDefault(); generate(); });
@@ -1675,10 +1727,10 @@ renderRisks();
   $('txBlockNext').addEventListener('click', function(){ if (S.busy) return; S.block = S.block < BLOCKS ? S.block + 1 : 1; compute(); render(); });
   each(root.querySelectorAll('[data-toggle]'), function(b){ b.addEventListener('click', function(){
     var sec = $(b.getAttribute('data-toggle')), open = sec.classList.toggle('is-open'); b.setAttribute('aria-expanded', open ? 'true' : 'false');
-    if (sec.id === 'subAttn') renderAttnDetail(); if (sec.id === 'subMlp') renderMlpDetail();
-    requestAnimationFrame(drawLinks);
+    renderEmbedDetail(); renderAttnDetail(); renderMlpDetail();
+    drawLinks(); requestAnimationFrame(drawLinks);
   }); });
-  if ('ResizeObserver' in window) new ResizeObserver(function(){ drawLinks(); }).observe(diagram);
+  if ('ResizeObserver' in window) new ResizeObserver(function(){ drawLinks(); }).observe(stage);
   if ('IntersectionObserver' in window) new IntersectionObserver(function(es){ es.forEach(function(e){ if (e.isIntersecting) drawLinks(); }); }, {threshold: 0.05}).observe(root);
   document.addEventListener('visibilitychange', function(){ if (!document.hidden) drawLinks(); });
   window.addEventListener('resize', function(){ requestAnimationFrame(drawLinks); });
