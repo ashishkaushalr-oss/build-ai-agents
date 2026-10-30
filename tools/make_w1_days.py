@@ -15,8 +15,8 @@ def cut(a, b):
 
 # ---------- pieces of the single-scroll page ----------
 head = s[:s.index('<main class="wrap">') + len('<main class="wrap">\n')]
-concepts = re.findall(r'    <!-- \d+\. [^\n]*-->\n    <article class="concept">.*?\n    </article>\n', s, re.S)
-assert len(concepts) == 10, len(concepts)
+concepts = re.findall(r'    <!-- \d+\. [^\n]*-->\n    <article class="concept[^"]*"[^>]*>.*?\n    </article>\n', s, re.S)
+assert len(concepts) == 11, len(concepts)
 try_items = {int(m.group(1)): m.group(0) for m in re.finditer(r'      <li><span class="step__num"></span><input class="check" type="checkbox" id="try-(\d)".*?</li>\n', s, re.S)}
 assert sorted(try_items) == [1, 2, 3, 4, 5], sorted(try_items)
 email = cut('    <h4 style="margin:22px 0 8px">The customer email for step 1</h4>', '  </section>\n\n  <section class="scene" id="lab">')
@@ -49,18 +49,18 @@ DAYS = [
     dict(n=1, tab='What AI is', mins=35, title='What AI is',
          intro='I will go in the order I would use in a room: first what AI is and where it already sits in your week, then how a machine learns, how a language model works, where it goes wrong, which tools exist, and finally the two questions every AI product has to answer. Today, the first two ideas. Every visual is live. Poke it.',
          concepts=[0, 1]),
-    dict(n=2, tab='Machines that learn', mins=45, title='How a machine learns, and how a language model guesses',
-         intro='Two ideas today. First, how a machine learns without being handed rules. Then the one trick a language model knows: guess the next word. By the end you can explain both to a colleague in plain words, and you will have drafted your first customer reply with Claude.',
-         concepts=[2, 3]),
+    dict(n=2, tab='Machines that learn', mins=65, title='How a machine learns, and how a language model guesses',
+         intro='Three stops today. First, how a machine learns without being handed rules. Then the one trick a language model knows: guess the next word. Then one animated pass through the transformer that makes the guess. By the end you can explain all three to a colleague in plain words, and you will have drafted your first customer reply with Claude.',
+         concepts=[2, 3, 4]),
     dict(n=3, tab='Tokens and the desk', mins=50, title='Tokens, and the desk the model works at',
          intro='Today is about limits. The model reads in chunks, not letters, and it can only see what is on its desk. By the end you can predict when it will miscount, when it will forget, and why.',
-         concepts=[4, 5]),
+         concepts=[5, 6]),
     dict(n=4, tab='Trust, tools, files', mins=60, title='Trust, tools and files',
          intro='Today you learn to tell a grounded answer from an invented one, to pick the right kind of tool for a task, and to hand Claude files, photos and spreadsheets. By the end you will have turned a photo into a table and built your first Artifact.',
-         concepts=[6, 7, 8]),
+         concepts=[7, 8, 9]),
     dict(n=5, tab='Design and the lab', mins=100, title='Design it, then try to break it',
          intro='The longest day. You write your first intelligence target the way the MIT design process asks, spend an hour making Claude fail on purpose and naming the patterns, start your design log, fill your toolkit map, and take the quiz.',
-         concepts=[9]),
+         concepts=[10]),
 ]
 
 def li(cid, text, notice=None, extra=''):
@@ -83,6 +83,8 @@ TODAY = {
     2: today(2, 'One experiment on this page, one in Claude. Use made-up data.', [
         li('d2-1', 'Press Train on the ticket sorter and let it run to 60 rounds at 1× speed. Watch where the curve flattens. Then press Start over and run it again at 8×.',
            'the model never saw a rule. It saw labelled examples, and a lot of them. The flattening curve is the moment more examples stop helping much.'),
+        li('d2-2', 'In the transformer card, press Play and watch one full pass. Then drag Temperature to 0.3 and press Sample five times; Reset, drag it to 1.8 and sample five more. Decide which setting you would want for a refund email.',
+           'low temperature makes the same safe choice every time; high temperature wanders. Claude\'s default sits near 1, and you will set this knob yourself in the Console in Week 8.'),
         try_items[1],
     ], email),
     3: today(3, 'Two experiments in Claude, about 20 minutes.', [try_items[5], try_items[2]]),

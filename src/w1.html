@@ -136,6 +136,91 @@ html.no-motion .motif *,html.no-motion .tok{animation:none!important}
 .scorebar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px}
 .scorebar b{font-family:var(--font-display);font-size:1.6rem;font-variant-numeric:tabular-nums}
 .ok{color:var(--ok)}.bad{color:var(--bad)}
+/* ---------- concept 5: inside the guess, a transformer in one pass ---------- */
+.concept--wide{grid-template-columns:minmax(0,1fr)}
+.concept--wide .concept__viz{order:0}
+.concept--wide .concept__text p{max-width:72ch}
+.tx{gap:14px;align-content:start}
+.tx .bank{display:flex;flex-wrap:wrap;gap:6px}
+.tx .bank .chip{cursor:pointer;border:1px solid var(--line);background:var(--surface);color:var(--fg);font-weight:600}
+.tx .bank .chip.is-on{background:var(--think);color:#fff;border-color:var(--think)}
+.tx .btn--act{background:var(--act);border-color:var(--act);color:#fff}
+.tx__top{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+.tx__input{display:flex;gap:8px;flex:1 1 260px;min-width:0}
+.tx__input input{flex:1;min-width:0;padding:8px 12px;border:1px solid var(--line);border-radius:999px;background:var(--bg);color:var(--fg);font:inherit;font-size:.92rem}
+.tx__controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.tx__narr{flex:1 1 240px;min-width:0;font-size:.92rem;color:var(--fg);padding:7px 12px;border-left:3px solid var(--think);background:var(--surface-2);border-radius:0 10px 10px 0;min-height:36px;display:flex;align-items:center;line-height:1.4}
+.tx__pipe{display:grid;gap:12px}
+.tx__stage{position:relative;overflow:hidden;border:1px solid var(--line);border-radius:var(--r-m);padding:12px 14px 14px;background:var(--bg);transition:box-shadow .35s,border-color .35s,opacity .35s;opacity:.7}
+.tx__stage.is-active,.tx__stage.is-done{opacity:1}
+.tx__stage.is-active{border-color:var(--think);box-shadow:0 0 0 3px var(--think-soft)}
+.tx__stage>h4{margin:0 0 10px;font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.tx__stage>h4 .n{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--think);color:#fff;font-size:.72rem;letter-spacing:0}
+.tx__stage>h4 .sub{letter-spacing:0;text-transform:none;font-weight:500;font-size:.85rem}
+.tx__pulse{position:absolute;left:0;right:0;top:0;height:3px;background:linear-gradient(90deg,transparent,var(--think),transparent);opacity:0;transform:translateX(-40%);pointer-events:none}
+.tx__stage.is-active .tx__pulse{animation:txsweep 1.6s ease-in-out infinite}
+@keyframes txsweep{0%{opacity:0;transform:translateX(-40%)}25%{opacity:1}75%{opacity:1}100%{opacity:0;transform:translateX(40%)}}
+.tx__toks{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:flex-end}
+.tx__tok{display:grid;gap:4px;justify-items:center;opacity:0;transform:translateY(8px);transition:opacity .4s,transform .4s}
+.tx__tok.is-in{opacity:1;transform:none}
+.tx__tok .w{font-family:var(--font-mono,ui-monospace,SFMono-Regular,Menlo,monospace);font-size:.9rem;padding:3px 9px;border-radius:8px;background:var(--surface);border:1px solid var(--line);white-space:nowrap}
+.tx__tok.is-piece .w{border-style:dashed}
+.tx__tok .id{font-size:.68rem;color:var(--muted)}
+.vec{display:grid;grid-template-columns:repeat(8,8px);gap:2px}
+.vec i{display:block;width:8px;height:8px;border-radius:2px;background:var(--surface-2);transition:background .5s}
+.tx__tok .vecs{display:grid;gap:3px;opacity:0;transition:opacity .5s}
+.tx__tok .vecs.is-in{opacity:1}
+.tx__veclab{display:grid;gap:3px;font-size:.68rem;color:var(--muted);padding-bottom:0}
+.tx__veclab span{height:8px;line-height:8px;white-space:nowrap}
+.tx__heads{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px}
+.tx__heads button{border:1px solid var(--line);background:var(--surface);color:var(--muted);border-radius:999px;padding:4px 10px;font:inherit;font-size:.8rem;font-weight:600;cursor:pointer}
+.tx__heads button.is-on{background:var(--think);border-color:var(--think);color:#fff}
+.tx__attn{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px;align-items:start}
+.tx__arcs{width:100%;height:70px;display:block;overflow:visible;color:var(--muted)}
+.tx__arcs path{fill:none;stroke:var(--think);stroke-linecap:round;opacity:.7}
+.tx__grid{display:grid;gap:2px;max-width:440px}
+.tx__grid .lab{font-family:var(--font-mono,ui-monospace,SFMono-Regular,Menlo,monospace);font-size:.68rem;color:var(--muted);display:flex;align-items:center;justify-content:flex-end;padding-right:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.tx__grid .lab.top{justify-content:flex-start;padding:0 0 4px;writing-mode:vertical-rl;transform:rotate(180deg);height:52px;align-items:center;text-overflow:clip}
+.tx__grid .cell{aspect-ratio:1;border-radius:3px;background:var(--surface-2);cursor:pointer;transition:background .45s,outline-color .2s;outline:2px solid transparent;outline-offset:-2px}
+.tx__grid .cell.masked{background:repeating-linear-gradient(45deg,transparent 0 3px,var(--line) 3px 4px);opacity:.6;cursor:default}
+.tx__grid .cell.is-row{outline-color:var(--think)}
+.tx__qkv{display:grid;gap:6px;font-size:.72rem;color:var(--muted);min-width:130px}
+.tx__qkv .row3{display:flex;gap:3px;align-items:flex-end;height:26px;transition:opacity .3s}
+.tx__qkv .row3 i{display:block;width:8px;border-radius:2px 2px 0 0}
+.tx__qkv .row3 span{font-family:var(--font-mono,ui-monospace,SFMono-Regular,Menlo,monospace);align-self:center}
+.tx__qkv .q{background:var(--think)}.tx__qkv .k{background:var(--act)}.tx__qkv .v{background:var(--observe)}
+.tx__block{display:inline-flex;align-items:center;gap:6px;letter-spacing:0;text-transform:none;font-weight:600}
+.tx__block button{border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:6px;width:22px;height:22px;cursor:pointer;font:inherit;line-height:1;padding:0}
+.tx__block b{min-width:18px;text-align:center;color:var(--fg)}
+.tx__mlp{display:grid;grid-template-columns:auto minmax(24px,1fr) auto minmax(24px,1fr) auto;align-items:center;gap:8px;max-width:560px}
+.tx__mlp .col{display:grid;gap:2px}
+.tx__mlp .wide{display:grid;grid-template-columns:repeat(4,8px);gap:2px}
+.tx__mlp .wide i,.tx__mlp .col i{display:block;width:8px;height:8px;border-radius:2px;background:var(--surface-2);transition:background .4s,opacity .4s}
+.tx__mlp .wide i.off{opacity:.15}
+.tx__mlp svg{width:100%;height:78px;display:block}
+.tx__mlp svg line{stroke:var(--line);stroke-width:1}
+.tx__mlp svg line.on{stroke:var(--think);stroke-width:1.5;opacity:.7}
+.tx__mlp .cap{font-size:.68rem;color:var(--muted);text-align:center;margin-top:4px}
+.tx__out{display:grid;grid-template-columns:minmax(0,1fr) minmax(210px,.75fr);gap:16px;align-items:start}
+.tx__sent{font-size:1rem;line-height:1.5;padding:8px 12px;border-radius:10px;background:var(--surface);border:1px solid var(--line);min-height:40px}
+.tx__sent .new{background:var(--observe-soft);color:var(--observe);border-radius:6px;padding:0 4px;animation:txpop .6s ease}
+@keyframes txpop{from{transform:scale(.6);opacity:0}to{transform:none;opacity:1}}
+.tx__bars{display:grid;gap:6px;margin-top:10px}
+.tx__bar{display:grid;grid-template-columns:minmax(64px,auto) minmax(0,1fr) 44px;gap:8px;align-items:center;font-size:.85rem;transition:opacity .3s}
+.tx__bar .w{font-family:var(--font-mono,ui-monospace,SFMono-Regular,Menlo,monospace);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tx__bar .track{height:10px;border-radius:999px;background:var(--surface-2);overflow:hidden}
+.tx__bar .track>i{display:block;height:100%;width:0;border-radius:999px;background:var(--think);transition:width .6s cubic-bezier(.2,.8,.2,1),background .3s}
+.tx__bar.is-top .track>i{background:var(--act)}
+.tx__bar.is-pick .track>i{background:var(--observe)}
+.tx__bar.is-cut{opacity:.35}
+.tx__bar .p{text-align:right;color:var(--muted);font-variant-numeric:tabular-nums}
+.tx__sliders{display:grid;gap:10px;font-size:.85rem}
+.tx__sliders label{display:grid;gap:4px}
+.tx__sliders label span{display:flex;justify-content:space-between;color:var(--muted)}
+.tx__sliders label b{color:var(--fg);font-variant-numeric:tabular-nums}
+.tx__sliders input[type=range]{width:100%;accent-color:var(--think)}
+@media (max-width:720px){.tx__attn,.tx__out{grid-template-columns:1fr}.tx__mlp{max-width:100%}.tx__qkv{min-width:0}}
+@media (prefers-reduced-motion:reduce){.tx *{transition:none!important;animation:none!important}}
 </style>
 
 <header class="rail">
@@ -179,7 +264,7 @@ html.no-motion .motif *,html.no-motion .tok{animation:none!important}
 
   <nav class="days" id="dayTabs" aria-label="The five days of Week 1" role="tablist">
     <button class="dayt" type="button" role="tab" id="dayt1" aria-controls="day1" aria-selected="false"><span class="dayt__n">Day 1</span><b>What AI is</b><span class="dayt__t">about 35 min</span><i class="dayt__dot"></i></button>
-    <button class="dayt" type="button" role="tab" id="dayt2" aria-controls="day2" aria-selected="false"><span class="dayt__n">Day 2</span><b>Machines that learn</b><span class="dayt__t">about 45 min</span><i class="dayt__dot"></i></button>
+    <button class="dayt" type="button" role="tab" id="dayt2" aria-controls="day2" aria-selected="false"><span class="dayt__n">Day 2</span><b>Machines that learn</b><span class="dayt__t">about 65 min</span><i class="dayt__dot"></i></button>
     <button class="dayt" type="button" role="tab" id="dayt3" aria-controls="day3" aria-selected="false"><span class="dayt__n">Day 3</span><b>Tokens and the desk</b><span class="dayt__t">about 50 min</span><i class="dayt__dot"></i></button>
     <button class="dayt" type="button" role="tab" id="dayt4" aria-controls="day4" aria-selected="false"><span class="dayt__n">Day 4</span><b>Trust, tools, files</b><span class="dayt__t">about 60 min</span><i class="dayt__dot"></i></button>
     <button class="dayt" type="button" role="tab" id="dayt5" aria-controls="day5" aria-selected="false"><span class="dayt__n">Day 5</span><b>Design and the lab</b><span class="dayt__t">about 100 min</span><i class="dayt__dot"></i></button>
@@ -238,9 +323,9 @@ html.no-motion .motif *,html.no-motion .tok{animation:none!important}
 
   <section class="scene daypanel" id="day2" role="tabpanel" aria-labelledby="dayt2" hidden>
     <div class="scene__head">
-      <span class="scene__kicker scene__kicker--learn">Day 2 · about 45 minutes</span>
+      <span class="scene__kicker scene__kicker--learn">Day 2 · about 65 minutes</span>
       <h2>How a machine learns, and how a language model guesses</h2>
-      <p>Two ideas today. First, how a machine learns without being handed rules. Then the one trick a language model knows: guess the next word. By the end you can explain both to a colleague in plain words, and you will have drafted your first customer reply with Claude.</p>
+      <p>Three stops today. First, how a machine learns without being handed rules. Then the one trick a language model knows: guess the next word. Then one animated pass through the transformer that makes the guess. By the end you can explain all three to a colleague in plain words, and you will have drafted your first customer reply with Claude.</p>
     </div>
     <!-- 3. How a machine learns -->
     <article class="concept">
@@ -287,11 +372,77 @@ html.no-motion .motif *,html.no-motion .tok{animation:none!important}
         <div class="key"><p>Everything a language model does is next-word prediction, repeated. It is built to be fluent. Whether it is correct is a separate question.</p></div>
       </div>
     </article>
+    <!-- 5. Inside the guess -->
+    <article class="concept concept--wide" id="transformer">
+      <div class="concept__viz tx" id="tx">
+        <div class="tx__top">
+          <div class="bank" id="txBank" aria-label="Pick a sentence to run through the model"></div>
+          <form class="tx__input" id="txForm" autocomplete="off"><input id="txText" type="text" maxlength="64" aria-label="Or type your own sentence" placeholder="or type your own, up to eight words"><button class="btn btn--small" type="submit">Run</button></form>
+        </div>
+        <div class="tx__controls">
+          <button class="btn btn--small btn--think" type="button" id="txPlay">Play the whole pass</button>
+          <button class="btn btn--small" type="button" id="txStep">Step</button>
+          <button class="btn btn--small" type="button" id="txReset">Reset</button>
+          <span class="tx__narr" id="txNarr" aria-live="polite">Pick a sentence, then press Play. Or Step through it one move at a time.</span>
+        </div>
+        <div class="tx__pipe">
+          <section class="tx__stage" data-stage="embed"><i class="tx__pulse"></i>
+            <h4><span class="n">1</span>Tokens become numbers <span class="sub">tokenize → look up each token's vector → add its position</span></h4>
+            <div class="tx__toks" id="txToks"></div>
+          </section>
+          <section class="tx__stage" data-stage="attn"><i class="tx__pulse"></i>
+            <h4><span class="n">2</span>Attention <span class="tx__block">block <button type="button" id="txBlockPrev" aria-label="Previous block">‹</button><b id="txBlockN">1</b> of 12 <button type="button" id="txBlockNext" aria-label="Next block">›</button></span><span class="sub">each token looks back at the ones before it</span></h4>
+            <div class="tx__heads" id="txHeads" role="tablist" aria-label="Attention heads"></div>
+            <div class="tx__attn">
+              <div>
+                <svg class="tx__arcs" id="txArcs" aria-hidden="true"></svg>
+                <div class="tx__grid" id="txGrid" aria-label="Attention weights. Rows: the token looking. Columns: the tokens looked at."></div>
+              </div>
+              <div class="tx__qkv" id="txQkv"></div>
+            </div>
+            <p class="muted" style="font-size:.8rem;margin:10px 0 0" id="txAttnNote">Hover a row. Hatched cells are masked: a token may not look ahead. Each row adds up to 1.</p>
+          </section>
+          <section class="tx__stage" data-stage="mlp"><i class="tx__pulse"></i>
+            <h4><span class="n">3</span>MLP <span class="sub">each token on its own: stretch four times wider, keep what fires, squeeze back</span></h4>
+            <div class="tx__mlp" id="txMlp"></div>
+            <p class="muted" style="font-size:.8rem;margin:10px 0 0">Shown for <b id="txMlpTok">the last token</b>. After attention and again after the MLP, the result is added back onto the token (a residual connection) and re-centred (layer norm). Then the next block starts.</p>
+          </section>
+          <section class="tx__stage" data-stage="out"><i class="tx__pulse"></i>
+            <h4><span class="n">4</span>Output <span class="sub">the last token's numbers become a score for every word, then odds</span></h4>
+            <div class="tx__out">
+              <div>
+                <div class="tx__sent" id="txSent" aria-live="polite"></div>
+                <div class="tx__bars" id="txBars" aria-label="Most likely next words"></div>
+              </div>
+              <div class="tx__sliders">
+                <label><span>Temperature <b id="txTempV">1.0</b></span><input type="range" id="txTemp" min="0.2" max="2" step="0.1" value="1"></label>
+                <label><span>Top-k <b id="txKV">5</b></span><input type="range" id="txK" min="1" max="8" step="1" value="5"></label>
+                <div class="row" style="gap:8px;flex-wrap:wrap">
+                  <button class="btn btn--small btn--act" type="button" id="txSample">Sample the next word</button>
+                  <button class="btn btn--small" type="button" id="txTop">Take the top word</button>
+                </div>
+                <span class="muted" style="font-size:.8rem" id="txOutNote"></span>
+              </div>
+            </div>
+          </section>
+        </div>
+        <div class="viz-caption"><span>Illustrative numbers: the patterns are hand-made so the mechanics stay visible. GPT-2 small, the model the <a href="https://poloclub.github.io/transformer-explainer/" target="_blank" rel="noopener">Polo Club explainer</a> runs live, has 124 million weights, 12 blocks and 12 heads.</span><span class="row chip chip--think">one pass, one word</span></div>
+      </div>
+      <div class="concept__text">
+        <h3>Inside the guess: one pass through a transformer</h3>
+        <p>The guesser on the card above is a transformer, the design behind Claude, GPT and Gemini. I want to show you the inside once, not because you will ever build one, but because every behaviour you will meet in this course has its reason in here: why an answer reads fluently even when it is wrong, why a long document goes fuzzy in the middle, and what the temperature knob you will meet in Week 8 actually does.</p>
+        <p>One pass goes in four moves. First the text is cut into tokens and each token becomes a list of numbers, with its position added in. Second, attention: every token looks back at the tokens before it and decides which ones matter for it right now. In "the customer asked for a refund because", the word "because" leans on "refund" and "asked", not on "the". Third, a small network refines each token on its own. Those two moves repeat twelve times. Fourth, the last token's numbers become a score for every piece in the vocabulary, and softmax turns the scores into odds. Pick one, add it to the text, go again.</p>
+        <p>Do this now: pick a sentence and press Play, then hover the rows of the attention grid and switch between the four heads. Drag the temperature down to 0.3 and sample the next word a few times, then up to 1.8 and sample again. The first setting is what you want for a refund email; the second is what you want when brainstorming names.</p>
+        <div class="aside"><b>Illustrative, on purpose.</b> The numbers on this card are hand-made so the mechanics stay visible: real embeddings have 768 numbers per token, not 8, and a real head's habits are learned, not written down. If you want the real thing, the Polo Club's <a href="https://poloclub.github.io/transformer-explainer/" target="_blank" rel="noopener">Transformer Explainer</a> runs an actual GPT-2 model in your browser with the same four moves. This card is built to its shape.</div>
+        <div class="key"><p>A transformer is next-word prediction with attention: every token looks back at the ones before it, twelve times over, and then the last token's numbers become odds for every possible next word.</p></div>
+      </div>
+    </article>
     <div class="today">
-      <div class="today__head"><span class="scene__kicker scene__kicker--try">Do today</span><div class="meter" data-meter-for="d2"><div class="meter__row"><span>Progress</span><b data-meter-label>0 / 2</b></div><div class="progress"><i></i></div></div></div>
+      <div class="today__head"><span class="scene__kicker scene__kicker--try">Do today</span><div class="meter" data-meter-for="d2"><div class="meter__row"><span>Progress</span><b data-meter-label>0 / 3</b></div><div class="progress"><i></i></div></div></div>
       <p class="muted" style="font-size:.95rem">One experiment on this page, one in Claude. Use made-up data.</p>
       <ol class="steps steps--numbered" data-persist="d2">
         <li><span class="step__num"></span><input class="check" type="checkbox" id="d2-1" aria-label="Done"><div class="step__body"><p>Press Train on the ticket sorter and let it run to 60 rounds at 1× speed. Watch where the curve flattens. Then press Start over and run it again at 8×.</p><p class="step__notice"><strong>Notice:</strong> the model never saw a rule. It saw labelled examples, and a lot of them. The flattening curve is the moment more examples stop helping much.</p></div></li>
+        <li><span class="step__num"></span><input class="check" type="checkbox" id="d2-2" aria-label="Done"><div class="step__body"><p>In the transformer card, press Play and watch one full pass. Then drag Temperature to 0.3 and press Sample five times; Reset, drag it to 1.8 and sample five more. Decide which setting you would want for a refund email.</p><p class="step__notice"><strong>Notice:</strong> low temperature makes the same safe choice every time; high temperature wanders. Claude's default sits near 1, and you will set this knob yourself in the Console in Week 8.</p></div></li>
       <li><span class="step__num"></span><input class="check" type="checkbox" id="try-1" aria-label="Done step 1"><div class="step__body"><p>Paste the customer email below into a fresh chat. Ask: "Draft a reply in a warm, professional tone." Then ask: "Make it shorter and firmer. We do not refund digital goods after download."</p><p class="step__notice"><strong>Notice:</strong> the first draft probably invented a refund policy, because none was in the window. The second follows yours. Everything the model knows about your company, you put there.</p></div></li>
       </ol>
     <h4 style="margin:22px 0 8px">The customer email for the reply exercise</h4>
@@ -312,7 +463,7 @@ Priya Nair · Finance lead, Meridian Logistics <span class="c">(a made-up compan
       <h2>Tokens, and the desk the model works at</h2>
       <p>Today is about limits. The model reads in chunks, not letters, and it can only see what is on its desk. By the end you can predict when it will miscount, when it will forget, and why.</p>
     </div>
-    <!-- 5. Tokens -->
+    <!-- 6. Tokens -->
     <article class="concept">
       <div class="concept__viz">
         <div class="tokbox">
@@ -336,7 +487,7 @@ Priya Nair · Finance lead, Meridian Logistics <span class="c">(a made-up compan
         <div class="key"><p>The model reads in tokens, not letters. Every counting, spelling and arithmetic weakness starts here.</p></div>
       </div>
     </article>
-    <!-- 6. The context window -->
+    <!-- 7. The context window -->
     <article class="concept">
       <div class="concept__viz">
         <canvas id="ctxCanvas" aria-label="A 200,000-token meter that fills as you add standing instructions, a policy PDF, chat turns, a spreadsheet export and a photo; past the limit the oldest block falls off the left in red"></canvas>
@@ -375,7 +526,7 @@ Priya Nair · Finance lead, Meridian Logistics <span class="c">(a made-up compan
       <h2>Trust, tools and files</h2>
       <p>Today you learn to tell a grounded answer from an invented one, to pick the right kind of tool for a task, and to hand Claude files, photos and spreadsheets. By the end you will have turned a photo into a table and built your first Artifact.</p>
     </div>
-    <!-- 7. Confident is not correct -->
+    <!-- 8. Confident is not correct -->
     <article class="concept">
       <div class="concept__viz">
         <div class="pcards">
@@ -409,7 +560,7 @@ Priya Nair · Finance lead, Meridian Logistics <span class="c">(a made-up compan
         <div class="key"><p>Fluent is not the same as true. Know the failure modes by name and plan for them. That is most of the job.</p></div>
       </div>
     </article>
-    <!-- 8. The toolkit -->
+    <!-- 9. The toolkit -->
     <article class="concept">
       <div class="concept__viz">
         <div class="land" id="landGrid">
@@ -449,7 +600,7 @@ Priya Nair · Finance lead, Meridian Logistics <span class="c">(a made-up compan
         <div class="key"><p>Same engine, different wrapping. Start from the business process and the number you want to move, then choose the wrapping.</p></div>
       </div>
     </article>
-    <!-- 9. More than words -->
+    <!-- 10. More than words -->
     <article class="concept">
       <div class="concept__viz">
         <canvas id="mmCanvas" aria-label="A whiteboard photo pixelates into token squares that flow into the model; toggled, tokens flow out and assemble into an interactive page"></canvas>
@@ -481,7 +632,7 @@ Priya Nair · Finance lead, Meridian Logistics <span class="c">(a made-up compan
       <h2>Design it, then try to break it</h2>
       <p>The longest day. You write your first intelligence target the way the MIT design process asks, spend an hour making Claude fail on purpose and naming the patterns, start your design log, fill your toolkit map, and take the quiz.</p>
     </div>
-    <!-- 10. The two questions -->
+    <!-- 11. The two questions -->
     <article class="concept">
       <div class="concept__viz">
         <div class="target">
@@ -1306,6 +1457,334 @@ function updateRiskScore(){
 }
 $('#riskReset').addEventListener('click', renderRisks);
 renderRisks();
+
+/* ---------- Concept 5: inside the guess, one animated pass through a transformer ----------
+   Built to the shape of the Polo Club Transformer Explainer (embedding -> attention -> MLP, x12 -> output odds).
+   The numbers are illustrative: deterministic from the text, so the same sentence always draws the same picture. */
+(function transformerExplainer(){
+  var root = document.getElementById('tx'); if (!root) return;
+  var $ = function(id){ return document.getElementById(id); };
+  var each = function(list, fn){ Array.prototype.forEach.call(list, fn); };
+  var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var DIM = 8, BLOCKS = 12, MAXTOK = 10, MAXADD = 6;
+  var PRESETS = [
+    ['Data visualization empowers users to', [['understand', 3.2], ['see', 2.4], ['explore', 2.2], ['make', 1.9], ['gain', 1.6], ['quickly', 1.4], ['analyze', 1.3], ['identify', 1.1]]],
+    ['Please find attached the', [['invoice', 3.6], ['report', 2.6], ['document', 2.0], ['file', 1.7], ['updated', 1.5], ['signed', 1.3], ['latest', 1.2], ['agenda', 1.0]]],
+    ['The customer asked for a refund because', [['the', 3.0], ['their', 2.3], ['she', 1.8], ['he', 1.7], ['of', 1.6], ['they', 1.5], ['it', 1.3], ['we', 1.0]]],
+    ["Let's take this", [['offline', 2.6], ['one', 2.3], ['opportunity', 2.0], ['conversation', 1.9], ['to', 1.8], ['forward', 1.6], ['further', 1.4], ['back', 1.2]]]
+  ];
+  var BIGRAM = {
+    the: ['same', 'first', 'team', 'customer', 'next', 'best', 'new', 'report'], to: ['the', 'be', 'make', 'see', 'get', 'help', 'do', 'take'],
+    a: ['new', 'few', 'good', 'single', 'customer', 'lot', 'clear', 'better'], and: ['the', 'then', 'we', 'I', 'a', 'it', 'how', 'what'],
+    of: ['the', 'our', 'a', 'this', 'your', 'them', 'all', 'these'], 'for': ['the', 'a', 'your', 'our', 'this', 'each', 'all', 'more'],
+    'in': ['the', 'a', 'this', 'our', 'my', 'your', 'an', 'their'], is: ['a', 'the', 'not', 'to', 'that', 'an', 'now', 'one'],
+    that: ['the', 'we', 'it', 'I', 'you', 'they', 'is', 'this'], we: ['will', 'have', 'are', 'can', 'need', 'should', 'want', 'do'],
+    i: ['will', 'am', 'have', 'think', 'can', 'would', 'was', 'need'], you: ['can', 'will', 'are', 'have', 'need', 'should', 'want', 'may'],
+    it: ['is', 'was', 'will', 'can', 'has', 'would', 'should', 'does'], be: ['a', 'the', 'able', 'used', 'more', 'done', 'ready', 'sure'],
+    'with': ['the', 'a', 'your', 'our', 'this', 'an', 'my', 'them'], on: ['the', 'a', 'this', 'our', 'your', 'my', 'time', 'top'],
+    'this': ['is', 'week', 'will', 'one', 'report', 'morning', 'year', 'time'], our: ['team', 'customers', 'new', 'product', 'next', 'work', 'first', 'data'],
+    your: ['team', 'email', 'account', 'work', 'own', 'time', 'data', 'request'], at: ['the', 'a', 'this', 'our', 'least', 'all', 'work', 'home'],
+    from: ['the', 'a', 'our', 'your', 'this', 'my', 'their', 'each'], as: ['a', 'the', 'well', 'soon', 'we', 'it', 'part', 'you'],
+    by: ['the', 'a', 'our', 'this', 'your', 'next', 'using', 'end'], can: ['be', 'help', 'see', 'also', 'make', 'use', 'get', 'do'],
+    will: ['be', 'need', 'have', 'help', 'also', 'take', 'make', 'send'], not: ['be', 'the', 'a', 'have', 'only', 'just', 'sure', 'yet'],
+    are: ['the', 'a', 'not', 'also', 'now', 'in', 'working', 'looking'], because: ['the', 'it', 'of', 'they', 'we', 'she', 'he', 'our'],
+    please: ['let', 'find', 'see', 'send', 'review', 'note', 'confirm', 'share'], customer: ['service', 'has', 'is', 'asked', 'wants', 'said', 'will', 'can']
+  };
+  var DEFAULT = ['the', 'to', 'and', 'a', 'of', 'in', 'is', 'that'];
+  var STOP = {the: 1, a: 1, an: 1, to: 1, of: 1, and: 1, or: 1, is: 1, are: 1, was: 1, be: 1, 'for': 1, 'in': 1, on: 1, at: 1, by: 1, 'with': 1, 'this': 1, that: 1, it: 1, as: 1, from: 1, we: 1, i: 1, you: 1, he: 1, she: 1, they: 1, because: 1, please: 1, let: 1, s: 1};
+  var HEADS = [
+    {name: 'Head 1 · the word before', note: 'Looks mostly at the previous token: local grammar, like a noun after "the".'},
+    {name: 'Head 2 · the start', note: 'Parks its weight on the first token when nothing else is relevant. Real models do this too; it works as a resting place.'},
+    {name: 'Head 3 · repeats', note: 'Lights up tokens that look like the current one, so a repeated word, or the two halves of a split word, find each other.'},
+    {name: 'Head 4 · content words', note: 'Prefers meaning-carrying words such as "refund" or "attached" over little words, with a tilt toward recent ones.'}
+  ];
+  var SUFFIX = ['ization', 'ation', 'ments', 'ness', 'ing', 'ers', 'ed', 'es', 'ly', 'er', 's'];
+
+  /* ---------- deterministic numbers ---------- */
+  function hash(s){ var h = 2166136261; for (var i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
+  function rng(seed){ var a = seed >>> 0; return function(){ a = (a + 0x6D2B79F5) >>> 0; var t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+  function vec(key){ var r = rng(hash(key)), out = []; for (var i = 0; i < DIM; i++) out.push(Math.round((r() * 2 - 1) * 100) / 100); return out; }
+  function clamp(v){ return Math.max(-1, Math.min(1, v)); }
+  function posvec(i){ var out = []; for (var d = 0; d < DIM; d++) { var f = Math.pow(2, Math.floor(d / 2)); out.push(Math.round((d % 2 ? Math.cos(i / f) : Math.sin(i / f)) * 60) / 100); } return out; }
+  function bigrams(s){ s = s.toLowerCase(); var b = {}; for (var i = 0; i < s.length - 1; i++) b[s.slice(i, i + 2)] = 1; return b; }
+  function sim(a, b){ var A = bigrams(a), B = bigrams(b), n = 0, t = 0, k; for (k in A) { t++; if (B[k]) n++; } for (k in B) t++; return t ? 2 * n / t : 0; }
+  function softmax(xs){ var m = Math.max.apply(null, xs), es = xs.map(function(x){ return Math.exp(x - m); }), s = es.reduce(function(a, b){ return a + b; }, 0); return es.map(function(e){ return e / s; }); }
+  function color(v){ var a = Math.min(1, Math.abs(v)); return v < 0 ? 'rgba(106,82,245,' + (0.12 + 0.8 * a).toFixed(2) + ')' : 'rgba(14,159,134,' + (0.12 + 0.8 * a).toFixed(2) + ')'; }
+  function heat(w){ return 'rgba(106,82,245,' + (0.06 + 0.9 * Math.min(1, w)).toFixed(2) + ')'; }
+  function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]; }); }
+  function wait(ms){ return new Promise(function(res){ setTimeout(res, reduce ? 0 : ms); }); }
+
+  function tokenize(text){
+    var raw = text.match(/[A-Za-z0-9']+|[^\sA-Za-z0-9']/g) || [], toks = [];
+    raw.forEach(function(w){
+      if (w.length >= 8) {
+        for (var i = 0; i < SUFFIX.length; i++) {
+          var suf = SUFFIX[i];
+          if (w.length - suf.length >= 4 && w.toLowerCase().slice(-suf.length) === suf) { toks.push({t: w.slice(0, -suf.length), piece: 1}); toks.push({t: w.slice(-suf.length), piece: 2}); return; }
+        }
+        var cut = Math.ceil(w.length / 2); toks.push({t: w.slice(0, cut), piece: 1}); toks.push({t: w.slice(cut), piece: 2}); return;
+      }
+      toks.push({t: w, piece: 0});
+    });
+    toks = toks.slice(0, MAXTOK);
+    toks.forEach(function(k, i){
+      var low = k.t.toLowerCase();
+      k.id = hash(low) % 50257; k.e = vec(low + '|tok'); k.p = posvec(i);
+      k.x = k.e.map(function(v, d){ return clamp(v + k.p[d]); });
+      k.q = vec(low + '|q'); k.k = vec(low + '|k'); k.v = vec(low + '|v');
+    });
+    return toks;
+  }
+  function attention(toks, head, block){
+    var r = rng(hash('block' + block + 'head' + head)), rows = [];
+    toks.forEach(function(ti, i){
+      var sc = [];
+      for (var j = 0; j <= i; j++) {
+        var tj = toks[j], low = tj.t.toLowerCase(), s;
+        if (head === 0) s = j === i - 1 ? 2.4 : j === i ? 0.4 : -0.9 * (i - j);
+        else if (head === 1) s = j === 0 ? 2.2 : j === i ? 0.7 : -0.6;
+        else if (head === 2) s = 3 * sim(ti.t, tj.t) + (j === i ? 0.6 : 0) + (ti.piece === 2 && j === i - 1 ? 1.8 : 0) - 0.12 * (i - j);
+        else s = (STOP[low] || /^[^A-Za-z0-9]$/.test(tj.t) ? -0.6 : Math.min(1, tj.t.length / 6) * 1.6) - 0.2 * (i - j) + (j === i ? 0.3 : 0);
+        sc.push(s + (r() - 0.5) * 0.5);
+      }
+      rows.push(softmax(sc));
+    });
+    return rows;
+  }
+  function attnOut(toks, rows, i){ var out = []; for (var d = 0; d < DIM; d++) { var s = 0; for (var j = 0; j <= i; j++) s += rows[i][j] * toks[j].v[d]; out.push(clamp(toks[i].x[d] + 0.6 * s)); } return out; }
+  function mlp(x, block){
+    var r = rng(hash('mlp' + block)), wide = [], out = [], d, k;
+    for (k = 0; k < DIM * 4; k++) { var s = 0; for (d = 0; d < DIM; d++) s += x[d] * (r() * 2 - 1); wide.push(s); }
+    var act = wide.map(function(v){ return v > 0 ? v : 0.05 * v; });
+    for (d = 0; d < DIM; d++) { var t = 0; for (k = 0; k < DIM * 4; k++) t += act[k] * (r() * 2 - 1) / 4; out.push(clamp(x[d] + 0.5 * t)); }
+    return {wide: wide, act: act, out: out};
+  }
+  function candidates(text, toks){
+    var norm = text.trim().replace(/\s+/g, ' ').toLowerCase();
+    for (var i = 0; i < PRESETS.length; i++) if (PRESETS[i][0].toLowerCase() === norm) return PRESETS[i][1].map(function(c){ return {w: c[0], l: c[1]}; });
+    var last = toks.length ? toks[toks.length - 1].t.toLowerCase() : '', list = BIGRAM[last] || DEFAULT, r = rng(hash(norm));
+    return list.map(function(w, k){ return {w: w, l: 3 - 0.42 * k + (r() - 0.5) * 0.4}; });
+  }
+
+  /* ---------- state ---------- */
+  var S = {text: PRESETS[0][0], toks: [], head: 0, block: 1, row: -1, rows: null, temp: 1, k: 5, step: 0, playing: false, added: []};
+  var stages = {}; each(root.querySelectorAll('.tx__stage'), function(el){ stages[el.getAttribute('data-stage')] = el; });
+  function setStage(name){ Object.keys(stages).forEach(function(k){ stages[k].classList.toggle('is-active', k === name); }); }
+  function doneStage(name){ stages[name].classList.add('is-done'); }
+  function stageOn(name){ return stages[name].classList.contains('is-active') || stages[name].classList.contains('is-done'); }
+  function narrate(html){ $('txNarr').innerHTML = html; }
+  function fullText(){ return S.text + (S.added.length ? ' ' + S.added.join(' ') : ''); }
+
+  /* ---------- stage 1: tokens and embeddings ---------- */
+  function drawTokens(instant){
+    var box = $('txToks'); box.innerHTML = '';
+    var lab = document.createElement('div'); lab.className = 'tx__veclab';
+    lab.innerHTML = '<span>&nbsp;</span><span>&nbsp;</span><span>token vector</span><span>+ position</span><span>= embedding</span>'; box.appendChild(lab);
+    S.toks.forEach(function(k, i){
+      var el = document.createElement('div'); el.className = 'tx__tok' + (k.piece ? ' is-piece' : '');
+      el.innerHTML = '<span class="w">' + esc(k.t) + (k.piece === 1 ? '·' : '') + '</span><span class="id">#' + k.id + '</span>'
+        + '<div class="vecs">' + ['e', 'p', 'x'].map(function(key){ return '<div class="vec">' + k[key].map(function(v){ return '<i data-v="' + v + '"></i>'; }).join('') + '</div>'; }).join('') + '</div>';
+      el.title = 'token ' + (i + 1) + (k.piece ? ', a word piece' : '') + ', id ' + k.id;
+      box.appendChild(el);
+      if (instant) { el.classList.add('is-in'); el.querySelector('.vecs').classList.add('is-in'); each(el.querySelectorAll('.vec i'), function(c){ c.style.background = color(parseFloat(c.getAttribute('data-v'))); }); }
+    });
+  }
+  function showTokens(){ return S.toks.reduce(function(p, k, i){ return p.then(function(){ $('txToks').children[i + 1].classList.add('is-in'); return wait(140); }); }, Promise.resolve()); }
+  function showVectors(which){
+    each($('txToks').querySelectorAll('.tx__tok'), function(el){
+      el.querySelector('.vecs').classList.add('is-in');
+      each(el.querySelectorAll('.vec')[which].querySelectorAll('i'), function(c){ c.style.background = color(parseFloat(c.getAttribute('data-v'))); });
+    });
+    return wait(550);
+  }
+
+  /* ---------- stage 2: attention ---------- */
+  function drawHeads(){
+    var box = $('txHeads'); box.innerHTML = '';
+    HEADS.forEach(function(h, i){
+      var b = document.createElement('button'); b.type = 'button'; b.setAttribute('role', 'tab'); b.textContent = h.name;
+      b.className = i === S.head ? 'is-on' : ''; b.setAttribute('aria-selected', i === S.head ? 'true' : 'false');
+      b.addEventListener('click', function(){ S.head = i; drawHeads(); if (S.rows) drawAttention('animate'); narrate('<b>' + esc(h.name) + '.</b> ' + esc(h.note)); });
+      box.appendChild(b);
+    });
+  }
+  /* mode: 'skeleton' draws the empty grid, 'animate' fills it row by row, 'instant' fills it at once */
+  function drawAttention(mode){
+    var n = S.toks.length, grid = $('txGrid'); if (!n) return;
+    S.rows = attention(S.toks, S.head, S.block);
+    grid.style.gridTemplateColumns = '64px repeat(' + n + ', minmax(14px, 1fr))';
+    var html = '<div class="lab"></div>' + S.toks.map(function(k){ return '<div class="lab top" title="' + esc(k.t) + '">' + esc(k.t.slice(0, 7)) + '</div>'; }).join('');
+    S.toks.forEach(function(k, i){
+      html += '<div class="lab" title="' + esc(k.t) + '">' + esc(k.t) + '</div>';
+      for (var j = 0; j < n; j++) html += j > i
+        ? '<div class="cell masked" title="masked: ' + esc(k.t) + ' may not look ahead at ' + esc(S.toks[j].t) + '"></div>'
+        : '<div class="cell" data-i="' + i + '" data-j="' + j + '" title="' + esc(k.t) + ' → ' + esc(S.toks[j].t) + ': ' + Math.round(S.rows[i][j] * 100) + '%"></div>';
+    });
+    grid.innerHTML = html;
+    var cells = grid.querySelectorAll('.cell[data-i]');
+    function paintRow(i){ each(grid.querySelectorAll('.cell[data-i="' + i + '"]'), function(c){ c.style.background = heat(S.rows[i][+c.getAttribute('data-j')]); }); }
+    if (mode === 'instant') for (var i = 0; i < n; i++) paintRow(i);
+    else if (mode === 'animate') { var r = 0; (function tick(){ if (r >= n) return; paintRow(r); r++; setTimeout(tick, reduce ? 0 : 90); })(); }
+    each(cells, function(c){ var i = +c.getAttribute('data-i'); c.addEventListener('mouseenter', function(){ selectRow(i); }); c.addEventListener('click', function(){ selectRow(i); }); });
+    drawQkv();
+    selectRow(S.row < 0 ? n - 1 : Math.min(S.row, n - 1), mode === 'skeleton');
+  }
+  function drawQkv(){
+    var box = $('txQkv'), html = '<div><b style="color:var(--think)">Q</b> query · <b style="color:var(--act)">K</b> key · <b style="color:var(--observe)">V</b> value</div>';
+    var h = function(v){ return Math.round(6 + 18 * (v.reduce(function(a, b){ return a + Math.abs(b); }, 0) / DIM)); };
+    S.toks.forEach(function(k, i){ html += '<div class="row3" data-i="' + i + '" title="' + esc(k.t) + '"><i class="q" style="height:' + h(k.q) + 'px"></i><i class="k" style="height:' + h(k.k) + 'px"></i><i class="v" style="height:' + h(k.v) + 'px"></i><span style="margin-left:6px">' + esc(k.t.slice(0, 8)) + '</span></div>'; });
+    box.innerHTML = html;
+  }
+  function selectRow(i, quiet){
+    S.row = i; var grid = $('txGrid');
+    each(grid.querySelectorAll('.cell[data-i]'), function(c){ c.classList.toggle('is-row', +c.getAttribute('data-i') === i); });
+    each($('txQkv').querySelectorAll('.row3'), function(r){ r.style.opacity = +r.getAttribute('data-i') <= i ? 1 : 0.3; });
+    if (quiet) { $('txArcs').innerHTML = ''; return; }
+    drawArcs(i);
+    if (S.rows) {
+      var best = 0; for (var j = 0; j <= i; j++) if (S.rows[i][j] > S.rows[i][best]) best = j;
+      $('txAttnNote').innerHTML = '<b>' + esc(S.toks[i].t) + '</b> looks mostly at <b>' + esc(S.toks[best].t) + '</b> (' + Math.round(S.rows[i][best] * 100) + '%) in this head and block. Hatched cells are masked: no looking ahead. Each row adds up to 1.';
+    }
+    if (stageOn('mlp')) drawMlp();
+  }
+  function drawArcs(i){
+    var svg = $('txArcs'), n = S.toks.length, w = svg.clientWidth || 320, html = '';
+    var x = function(j){ return 64 + (j + 0.5) * (w - 64) / n; };
+    if (S.rows) for (var j = 0; j <= i; j++) {
+      var wt = S.rows[i][j]; if (wt < 0.04) continue;
+      var x0 = x(i), x1 = x(j), mid = (x0 + x1) / 2, lift = j === i ? 14 : Math.min(60, 12 + Math.abs(x0 - x1) / 3);
+      html += '<path d="M' + x0.toFixed(1) + ' 68 Q' + mid.toFixed(1) + ' ' + (68 - lift).toFixed(1) + ' ' + x1.toFixed(1) + ' 68" stroke-width="' + (1 + 9 * wt).toFixed(1) + '"/>';
+    }
+    html += '<text x="' + x(i).toFixed(1) + '" y="11" text-anchor="middle" font-size="10" fill="currentColor">' + esc(S.toks[i].t) + ' looks back</text>';
+    svg.setAttribute('viewBox', '0 0 ' + w + ' 70'); svg.innerHTML = html;
+  }
+
+  /* ---------- stage 3: MLP ---------- */
+  function drawMlp(){
+    var i = S.row < 0 ? S.toks.length - 1 : S.row, box = $('txMlp'); if (!S.toks.length || !S.rows) return;
+    var x = attnOut(S.toks, S.rows, i), m = mlp(x, S.block);
+    $('txMlpTok').textContent = '"' + S.toks[i].t + '"';
+    var col = function(vals, cap, title){ return '<div title="' + title + '"><div class="col">' + vals.map(function(v){ return '<i style="background:' + color(v) + '"></i>'; }).join('') + '</div><div class="cap">' + cap + '</div></div>'; };
+    var wide = '<div title="4 times wider: 32 of 3,072 numbers"><div class="wide">' + m.act.map(function(v, k){ return '<i class="' + (m.wide[k] <= 0 ? 'off' : '') + '" style="background:' + color(v / 2) + '"></i>'; }).join('') + '</div><div class="cap">×4, then filter</div></div>';
+    var fan = function(id){ var s = '<svg viewBox="0 0 60 76" preserveAspectRatio="none" aria-hidden="true">'; for (var a = 0; a < 8; a++) for (var b = 0; b < 8; b++) if ((a + b + id) % 3 === 0) s += '<line class="' + ((a * 7 + b + id) % 4 === 0 ? 'on' : '') + '" x1="0" y1="' + (4 + a * 10) + '" x2="60" y2="' + (4 + b * 10) + '"/>'; return s + '</svg>'; };
+    box.innerHTML = col(x, 'in', 'the token after attention: 8 of its 768 numbers') + fan(0) + wide + fan(1) + col(m.out, 'out', 'back to 8 of 768, added onto the token');
+  }
+
+  /* ---------- stage 4: output ---------- */
+  function drawSentence(){ $('txSent').innerHTML = esc(S.text) + S.added.map(function(w){ return ' <span class="new">' + esc(w) + '</span>'; }).join(''); }
+  function probs(){
+    var c = candidates(fullText(), S.toks), ps = softmax(c.map(function(x){ return x.l / S.temp; }));
+    var order = ps.map(function(p, i){ return i; }).sort(function(a, b){ return ps[b] - ps[a]; });
+    var kept = order.slice(0, S.k), sum = kept.reduce(function(a, i){ return a + ps[i]; }, 0);
+    return c.map(function(x, i){ var inK = kept.indexOf(i) >= 0; return {w: x.w, p: ps[i], q: inK ? ps[i] / sum : 0, cut: !inK, rank: order.indexOf(i)}; }).sort(function(a, b){ return a.rank - b.rank; });
+  }
+  function drawBars(pick){
+    var list = probs(), box = $('txBars');
+    box.innerHTML = list.map(function(c, i){ return '<div class="tx__bar' + (i === 0 ? ' is-top' : '') + (c.cut ? ' is-cut' : '') + (pick === c.w ? ' is-pick' : '') + '"><span class="w">' + esc(c.w) + '</span><div class="track"><i></i></div><span class="p">' + (c.cut ? 'cut' : Math.round(c.q * 100) + '%') + '</span></div>'; }).join('');
+    requestAnimationFrame(function(){ each(box.querySelectorAll('.tx__bar'), function(b, i){ b.querySelector('.track>i').style.width = (list[i].q * 100).toFixed(1) + '%'; }); });
+    $('txOutNote').textContent = S.temp < 0.6 ? 'Low temperature: the top word takes nearly everything. Predictable, sometimes repetitive.'
+      : S.temp > 1.4 ? 'High temperature: the odds flatten out. Surprising, sometimes nonsense.'
+      : 'Temperature 1 leaves the odds as the model made them. Top-k keeps only the ' + S.k + ' most likely words.';
+    return list;
+  }
+  function sample(top){
+    var list = probs().filter(function(c){ return !c.cut; }), pick = list[0].w;
+    if (!top) { var r = Math.random(), acc = 0; for (var i = 0; i < list.length; i++) { acc += list[i].q; if (r <= acc) { pick = list[i].w; break; } } }
+    drawBars(pick);
+    return wait(700).then(function(){
+      S.added.push(pick); drawSentence();
+      narrate('Picked <b>' + esc(pick) + '</b>' + (top ? ', the top word' : ' by its odds') + '. It joins the text and the whole pass runs again for the next word.');
+      return play(true);
+    });
+  }
+
+  /* ---------- the guided pass ---------- */
+  var STEPS = [
+    {stage: 'embed', text: function(){ return '<b>Tokenize.</b> The text is cut into ' + S.toks.length + ' tokens. Long words split into pieces (dashed boxes): a model knows about 50,000 pieces, not every word.'; }, run: showTokens},
+    {stage: 'embed', text: function(){ return '<b>Look up.</b> Each token id fetches its own vector, the embedding: 768 numbers in GPT-2 small, 8 shown. Violet is negative, teal positive.'; }, run: function(){ return showVectors(0); }},
+    {stage: 'embed', text: function(){ return '<b>Position.</b> A second vector says where the token sits. Add the two: the final embedding that enters block 1.'; }, run: function(){ return showVectors(1).then(function(){ return showVectors(2); }); }},
+    {stage: 'attn', text: function(){ return '<b>Attention, block ' + S.block + ' of 12.</b> From its embedding every token makes a query (what am I looking for?), a key (what do I offer?) and a value (what do I pass on?).'; }, run: function(){ doneStage('embed'); drawAttention('skeleton'); return wait(500); }},
+    {stage: 'attn', text: function(){ return '<b>Query meets key.</b> Each token scores every earlier token. Later tokens are masked (hatched): no peeking at the future. Hover a row to see where it looks.'; }, run: function(){ drawAttention('animate'); return wait(100 * S.toks.length + 400); }},
+    {stage: 'attn', text: function(){ return '<b>Softmax.</b> Each row of scores becomes weights that add up to 1, and values flow back along them: the token now carries a bit of what it looked at. Four heads do this at once, each with its own habit.'; }, run: function(){ selectRow(S.toks.length - 1); return wait(500); }},
+    {stage: 'mlp', text: function(){ return '<b>MLP.</b> Each token on its own: stretched four times wider, negatives mostly switched off, squeezed back. The result is added onto the token (residual) and re-centred (layer norm).'; }, run: function(){ doneStage('attn'); drawMlp(); return wait(650); }},
+    {stage: 'mlp', text: function(){ return '<b>Twelve blocks.</b> Attention and MLP repeat 12 times; each pass refines every token a little more. Watch the block counter.'; }, run: countBlocks},
+    {stage: 'out', text: function(){ return '<b>Output.</b> The last token\'s numbers are turned into a score for each of the 50,257 pieces in the vocabulary, and softmax turns the scores into odds.'; }, run: function(){ doneStage('mlp'); drawSentence(); drawBars(); return wait(700); }},
+    {stage: 'out', text: function(){ return '<b>Sample.</b> Temperature reshapes the odds, top-k trims the list. Sample a word and it joins the text; the whole pass runs again for the next one. A 200-word reply is about 250 of these.'; }, run: function(){ doneStage('out'); return wait(10); }}
+  ];
+  function countBlocks(){
+    return new Promise(function(res){
+      var b = 1;
+      (function tick(){
+        S.block = b; $('txBlockN').textContent = b;
+        if (b % 3 === 0 || b === BLOCKS) { drawAttention('instant'); drawMlp(); }
+        if (b >= BLOCKS) return res(); b++; setTimeout(tick, reduce ? 0 : 110);
+      })();
+    });
+  }
+  function runStep(i){ var st = STEPS[i]; setStage(st.stage); narrate(st.text()); return st.run(); }
+  function play(fast){
+    if (S.playing) return Promise.resolve();
+    reset(false);
+    if (!S.toks.length) { narrate('Type a few words first.'); return Promise.resolve(); }
+    S.playing = true; $('txPlay').disabled = true;
+    var p = Promise.resolve();
+    STEPS.forEach(function(st, i){ p = p.then(function(){ return runStep(i).then(function(){ S.step = i + 1; return wait(fast ? 150 : 700); }); }); });
+    return p.then(function(){ S.playing = false; $('txPlay').disabled = false; });
+  }
+  function step(){
+    if (S.playing) return;
+    if (S.step >= STEPS.length) reset(false);
+    if (!S.toks.length) { narrate('Type a few words first.'); return; }
+    var i = S.step; S.step++; runStep(i);
+  }
+  function reset(all){
+    if (all) S.added = [];
+    S.step = 0; S.block = 1; S.row = -1; S.rows = null; $('txBlockN').textContent = '1';
+    S.toks = tokenize(fullText());
+    Object.keys(stages).forEach(function(k){ stages[k].classList.remove('is-active', 'is-done'); });
+    drawTokens(false); drawSentence();
+    $('txGrid').innerHTML = ''; $('txArcs').innerHTML = ''; $('txQkv').innerHTML = ''; $('txMlp').innerHTML = ''; $('txBars').innerHTML = ''; $('txOutNote').textContent = '';
+    $('txMlpTok').textContent = 'the last token';
+    $('txAttnNote').textContent = 'Hover a row. Hatched cells are masked: a token may not look ahead. Each row adds up to 1.';
+    if (all) narrate('Pick a sentence, then press Play. Or Step through it one move at a time.');
+  }
+
+  /* ---------- wiring ---------- */
+  var bank = $('txBank');
+  PRESETS.forEach(function(p, i){
+    var b = document.createElement('button'); b.type = 'button'; b.className = 'chip' + (i === 0 ? ' is-on' : ''); b.textContent = p[0];
+    b.addEventListener('click', function(){ if (S.playing) return; S.text = p[0]; $('txText').value = ''; each(bank.children, function(c){ c.classList.toggle('is-on', c === b); }); reset(true); play(false); });
+    bank.appendChild(b);
+  });
+  $('txForm').addEventListener('submit', function(e){
+    e.preventDefault(); if (S.playing) return;
+    var t = $('txText').value.trim(); if (!t) return;
+    S.text = t.split(/\s+/).slice(0, 8).join(' '); each(bank.children, function(c){ c.classList.remove('is-on'); }); reset(true); play(false);
+  });
+  $('txPlay').addEventListener('click', function(){ play(false); });
+  $('txStep').addEventListener('click', step);
+  $('txReset').addEventListener('click', function(){ if (!S.playing) reset(true); });
+  $('txBlockPrev').addEventListener('click', function(){ if (S.playing) return; S.block = S.block > 1 ? S.block - 1 : BLOCKS; $('txBlockN').textContent = S.block; if (S.rows) drawAttention('instant'); });
+  $('txBlockNext').addEventListener('click', function(){ if (S.playing) return; S.block = S.block < BLOCKS ? S.block + 1 : 1; $('txBlockN').textContent = S.block; if (S.rows) drawAttention('instant'); });
+  $('txTemp').addEventListener('input', function(){ S.temp = parseFloat(this.value); $('txTempV').textContent = S.temp.toFixed(1); if (stageOn('out')) drawBars(); });
+  $('txK').addEventListener('input', function(){ S.k = parseInt(this.value, 10); $('txKV').textContent = S.k; if (stageOn('out')) drawBars(); });
+  function wantSample(top){
+    if (S.playing) return;
+    if (!stageOn('out')) { play(false); return; }
+    if (S.added.length >= MAXADD) { narrate(MAXADD + ' words added. Press Reset to start again, or pick another sentence.'); return; }
+    sample(top);
+  }
+  $('txSample').addEventListener('click', function(){ wantSample(false); });
+  $('txTop').addEventListener('click', function(){ wantSample(true); });
+  window.addEventListener('resize', function(){ if (S.rows && S.row >= 0 && !S.playing) drawArcs(S.row); });
+
+  drawHeads(); reset(true); drawTokens(true);
+  /* the first pass starts on its own when the card scrolls into view, once */
+  if ('IntersectionObserver' in window) {
+    var seen = false, io = new IntersectionObserver(function(es){ es.forEach(function(e){ if (e.isIntersecting && !seen) { seen = true; io.disconnect(); play(false); } }); }, {threshold: 0.12});
+    io.observe(root);
+  }
+})();
 
 Course.days();
 </script>

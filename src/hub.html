@@ -98,7 +98,7 @@
 <section class="hero">
   <div class="wrap">
     <div class="hero__text">
-      <span class="eyebrow">10 weeks · 57 hours · 98 concepts · 10 labs</span>
+      <span class="eyebrow">10 weeks · 57 hours · 99 concepts · 10 labs</span>
       <h1>Build Your Own AI Agents</h1>
       <p class="lede">Ten weeks from "what is a token" to a deployed assistant that reads documents, does the maths, answers on a website and sends alerts. This hub tracks what you have covered and what is still ahead.</p>
       <div class="ringwrap">
@@ -127,7 +127,7 @@
     <div class="sumgrid">
       <div class="sumcard"><b id="sWeeks">0</b><span>weeks done</span></div>
       <div class="sumcard"><b id="sHours">0</b><span>of 57 hours</span></div>
-      <div class="sumcard"><b id="sConcepts">0</b><span>of 98 concepts</span></div>
+      <div class="sumcard"><b id="sConcepts">0</b><span>of 99 concepts</span></div>
       <div class="sumcard"><b id="sLabs">0</b><span>of 50 days</span></div>
       <div class="sumcard"><b id="sQuiz">0</b><span>of 10 lab days</span></div>
     </div>
@@ -192,7 +192,7 @@ Course.init({week: 0, title: 'Course Hub'});
 (function(){
   var $ = Course.$, el = Course.el;
   var WEEKS = [
-    {n: 1, title: 'Meet Modern AI', hours: 5, lab: 'Failure notebook and design log', make: 'A workplace AI failure notebook, your first design-log entry and a toolkit map', viz: 'Five day tabs: autocomplete hero, AI family tree, training loop, tokenizer, context meter, tool matcher', concepts: ['What AI is', 'The AI family tree', 'How machines learn', 'Next-word prediction', 'Tokens', 'The context window', 'Confident vs correct', 'The AI toolkit', 'Files, images, Artifacts', 'Intelligence targets']},
+    {n: 1, title: 'Meet Modern AI', hours: 5, lab: 'Failure notebook and design log', make: 'A workplace AI failure notebook, your first design-log entry and a toolkit map', viz: 'Five day tabs: autocomplete hero, AI family tree, training loop, animated transformer pass, tokenizer, context meter, tool matcher', concepts: ['What AI is', 'The AI family tree', 'How machines learn', 'Next-word prediction', 'Inside a transformer', 'Tokens', 'The context window', 'Confident vs correct', 'The AI toolkit', 'Files, images, Artifacts', 'Intelligence targets']},
     {n: 2, title: 'Prompt Craft', hours: 5, lab: 'Lab 1.1 · guardrail prompt', make: 'A guardrail system prompt for a software company\'s support assistant that holds 9 of 10 attacks, plus design-log entry 2', viz: 'Five day tabs: prompt anatomy hero, system-prompt plate, injection quarantine, template builder, prompt test bench, guardrail gate, live attack workbench', concepts: ['Role and Task', 'Context, Rules, Format', 'System prompt vs messages', 'XML tags and injection', 'Few-shot examples', 'Output shape: markdown, JSON', 'Think step by step', 'Templates with slots', 'Testing a prompt', 'Guardrails as scope']},
     {n: 3, title: 'Claude Projects', hours: 5, lab: 'Lab 1.2 · policy assistant', make: 'A company policy helper Project with a ten-question score sheet, a New starter FAQ Artifact and design-log entry 3', viz: 'Five day tabs: one-Project-many-chats hero, pinned-instructions chat, token budget meter, retrieval desk, versioned Artifact panel, metadata namer, team fan-out, Project-or-agent lanes, answer anatomy', concepts: ['What a Project holds', 'Instructions that persist', 'Files on the desk', 'Retrieval from a big binder', 'Artifacts you keep and version', 'Documents are the data', 'Who sees what when you share', 'Project or agent?', 'Cite, say when not covered, hand over']},
     {n: 4, title: 'Context Engineering', hours: 5, lab: 'Lab 2.1 · caching test', make: 'A caching cost table, a question-order accuracy comparison and design-log entry 4', viz: 'Five day tabs: context assembly, tool results on the desk, needle-in-a-haystack game, lost-in-the-middle curves, briefing-pack builder, 33-step pruning timeline, prefix-cache demo, caching calculator, Workbench readout, product planner', concepts: ['Prompt vs context engineering', 'Claude\'s native tools', 'Needle in a haystack', 'Lost in the middle', 'Context packing', 'Document pruning', 'Prefix caching', 'What caching saves', 'The Workbench counters', 'Static and dynamic context']},
@@ -205,7 +205,7 @@ Course.init({week: 0, title: 'Course Hub'});
   ];
   /* Day titles and minutes mirror each module's day strip; days are numbered straight through the course, 1 to 50. */
   var DAYS = {
-    1: [['What AI is', 35], ['Machines that learn', 45], ['Tokens and the desk', 50], ['Trust, tools, files', 60], ['Design and the lab', 100]],
+    1: [['What AI is', 35], ['Machines that learn', 65], ['Tokens and the desk', 50], ['Trust, tools, files', 60], ['Design and the lab', 100]],
     2: [['A prompt is a brief', 40], ['Where the rules live', 45], ['Show it what good looks like', 50], ['Templates and tests', 60], ['Guardrails and the lab', 100]],
     3: [['What a Project is', 40], ['Files and the desk', 45], ['Artifacts and good data', 50], ['Sharing, or an agent?', 60], ['The policy helper lab', 100]],
     4: [['Prompt versus context', 40], ['Where a fact sits', 45], ['Packing and pruning', 50], ['Prompt caching', 60], ['Design and the lab', 100]],
