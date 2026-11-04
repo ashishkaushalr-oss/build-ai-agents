@@ -433,6 +433,93 @@ footer.site{padding-block:32px 48px;color:var(--muted);font-size:.9rem;display:g
 .w5-pick code{font-size:.75rem;color:var(--muted);background:transparent;padding:0}
 .w5-scorebar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px}
 .w5-scorebar b{font-family:var(--font-display);font-size:1.6rem;font-variant-numeric:tabular-nums}
+/* ---------- concept 8: the production pipeline (twelve stages, run a question through, break it on purpose) ---------- */
+.concept--wide{grid-template-columns:minmax(0,1fr)}
+.concept--wide .concept__viz{order:0}
+.concept--wide .concept__text p{max-width:72ch}
+.w5-pipe{display:grid;gap:12px}
+.w5-pipe__bar{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;justify-content:space-between}
+.w5-pipe__qs{display:flex;flex-wrap:wrap;gap:6px}
+.w5-pipe__qs button{border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:999px;padding:5px 11px;font:inherit;font-size:.82rem;font-weight:600;cursor:pointer}
+.w5-pipe__qs button.is-on{background:var(--think);border-color:var(--think);color:#fff}
+.w5-pipe__board{display:grid;gap:8px;padding:12px;border-radius:var(--r-m);background:var(--bg);border:1px solid var(--line)}
+.w5-pipe__lane{display:grid;gap:6px}
+.w5-pipe__lanelbl{display:flex;align-items:baseline;gap:8px;font-family:var(--font-display);font-size:.74rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:800}
+.w5-pipe__lanelbl small{font-family:inherit;font-weight:600;letter-spacing:0;text-transform:none;font-size:.74rem;opacity:.8}
+.w5-pipe__tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:6px}
+.w5-tile{position:relative;display:grid;gap:4px;justify-items:start;text-align:left;padding:9px 10px 9px 12px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--fg);font:inherit;cursor:pointer;min-height:66px;transition:transform .25s,box-shadow .25s,border-color .25s,background .25s;--c:var(--act);--soft:var(--act-soft)}
+.w5-tile[data-kind=think]{--c:var(--think);--soft:var(--think-soft)}
+.w5-tile[data-kind=result]{--c:var(--observe);--soft:var(--observe-soft)}
+.w5-tile::before{content:"";position:absolute;left:0;top:10px;bottom:10px;width:3px;border-radius:3px;background:var(--c);opacity:.7}
+.w5-tile__n{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--c);color:#fff;font-size:.7rem;font-weight:800}
+.w5-tile__name{font-size:.8rem;font-weight:700;line-height:1.25}
+.w5-tile__tag{font-size:.6rem;letter-spacing:.06em;text-transform:uppercase;font-weight:800;color:var(--muted);padding:1px 6px;border-radius:999px;background:var(--surface-2)}
+.w5-tile__tag.is-new{background:var(--think);color:#fff}
+.w5-tile.is-on{background:var(--soft);border-color:var(--c);transform:translateY(-2px);box-shadow:0 6px 18px rgba(14,22,38,.12)}
+.w5-tile.is-done{border-color:color-mix(in srgb,var(--c) 55%,var(--line))}
+.w5-tile.is-broken{border-color:#E5484D;background:rgba(229,72,77,.09)}
+.w5-tile.is-broken .w5-tile__n{background:#E5484D}
+.w5-tile.is-skipped{opacity:.45;border-style:dashed}
+.w5-tile.is-skipped .w5-tile__name{text-decoration:line-through}
+.w5-pipe__progress{height:4px;border-radius:999px;background:var(--surface-2);overflow:hidden}
+.w5-pipe__progress>i{display:block;height:100%;width:0;border-radius:999px;background:linear-gradient(90deg,var(--act),var(--think),var(--observe));transition:width .4s ease}
+.w5-pipe__detail{display:grid;gap:10px;padding:14px 16px;border-radius:var(--r-m);background:var(--surface-2);min-height:120px}
+.w5-pipe__dhead{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center}
+.w5-pipe__dhead h4{margin:0;font-size:1.02rem}
+.w5-pipe__dhead .chip{font-size:.72rem}
+.w5-pipe__plain{font-size:.98rem}
+.w5-pipe__lib{font-size:.9rem;color:var(--muted);padding-left:12px;border-left:3px solid var(--line)}
+.w5-pipe__lib b{color:var(--fg)}
+.w5-pipe__data{display:grid;gap:8px;padding:10px 12px;border-radius:10px;background:var(--surface);border:1px solid var(--line);font-size:.86rem}
+.w5-pipe__data h5{margin:0;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.w5-pipe__data .mono{font-family:var(--font-mono);font-size:.8rem}
+.w5-pipe__why{font-size:.86rem;color:var(--muted)}
+.w5-pipe__why b{color:#E5484D}
+.w5-pipe__cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
+.w5-pipe__list{display:grid;gap:4px}
+.w5-pipe__list .r{display:flex;align-items:center;gap:8px;padding:4px 8px;border-radius:8px;background:var(--surface-2);font-family:var(--font-mono);font-size:.78rem}
+.w5-pipe__list .r i{font-style:normal;display:inline-grid;place-items:center;width:18px;height:18px;border-radius:50%;background:var(--line);font-size:.68rem;font-weight:800;flex:none}
+.w5-pipe__list .r.is-keep{background:var(--observe-soft)}
+.w5-pipe__list .r.is-keep i{background:var(--observe);color:#fff}
+.w5-pipe__list .r.is-bad{background:rgba(229,72,77,.12)}
+.w5-pipe__list .r b{margin-left:auto;font-weight:700;white-space:nowrap}
+.w5-pipe__docs{display:flex;flex-wrap:wrap;gap:6px}
+.w5-pipe__docs span{padding:4px 9px;border-radius:8px;background:var(--surface-2);font-size:.8rem;font-weight:600}
+.w5-pipe__chunk{padding:8px 10px;border-radius:8px;background:var(--surface-2);font-size:.82rem;border-left:3px solid var(--observe)}
+.w5-pipe__chunk.is-bad{border-left-color:#E5484D;background:rgba(229,72,77,.1)}
+.w5-pipe__chunk .id{font-family:var(--font-mono);font-size:.72rem;color:var(--muted);display:block;margin-bottom:2px}
+.w5-pipe__cells{display:inline-grid;grid-template-columns:repeat(8,10px);gap:2px;vertical-align:middle}
+.w5-pipe__cells i{display:block;width:10px;height:10px;border-radius:2px}
+.w5-pipe__label{display:grid;grid-template-columns:auto 1fr;gap:2px 10px;font-family:var(--font-mono);font-size:.78rem}
+.w5-pipe__label span:nth-child(odd){color:var(--muted)}
+.w5-pipe__sent{display:grid;gap:5px}
+.w5-pipe__sent .s{padding:6px 9px;border-radius:8px;background:var(--surface-2);font-size:.88rem;line-height:1.45}
+.w5-pipe__sent .s .src{font-family:var(--font-mono);font-size:.72rem;color:var(--observe);margin-left:4px;white-space:nowrap}
+.w5-pipe__sent .s .src.is-missing{color:#E5484D}
+.w5-pipe__sent .s.is-invented{background:rgba(229,72,77,.1)}
+.w5-pipe__sent .s.is-caught{text-decoration:line-through;opacity:.6}
+.w5-pipe__sent .s.is-noise{background:rgba(242,85,46,.1)}
+.w5-pipe__sent .s .flag{font-size:.7rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;margin-left:6px;color:#E5484D}
+.w5-pipe__checks{display:grid;gap:4px;font-size:.86rem}
+.w5-pipe__checks .k{display:flex;gap:8px;align-items:flex-start}
+.w5-pipe__checks .k i{font-style:normal;flex:none;width:20px;height:20px;border-radius:50%;display:inline-grid;place-items:center;font-size:.72rem;font-weight:800;background:var(--observe-soft);color:var(--observe)}
+.w5-pipe__checks .k.is-fail i{background:rgba(229,72,77,.15);color:#E5484D}
+.w5-pipe__breaks{display:grid;gap:8px;padding:12px 14px;border-radius:var(--r-m);border:1px dashed var(--line)}
+.w5-pipe__breaks .w5-pipe__lbl{font-family:var(--font-display);font-size:.74rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:800}
+.w5-pipe__sw{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px}
+.w5-sw{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--fg);font:inherit;text-align:left;cursor:pointer;font-size:.84rem;line-height:1.3}
+.w5-sw i{flex:none;width:34px;height:20px;border-radius:999px;background:var(--line);position:relative;transition:background .25s}
+.w5-sw i::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:transform .25s;box-shadow:0 1px 2px rgba(0,0,0,.25)}
+.w5-sw.is-on{border-color:#E5484D;background:rgba(229,72,77,.07)}
+.w5-sw.is-on i{background:#E5484D}
+.w5-sw.is-on i::after{transform:translateX(14px)}
+.w5-sw small{display:block;color:var(--muted);font-size:.74rem}
+.w5-pipe__final{display:grid;gap:8px;padding:14px 16px;border-radius:var(--r-m);background:var(--surface);border:1px solid var(--line)}
+.w5-pipe__final .top{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;align-items:center}
+.w5-pipe__final h4{margin:0;font-size:.95rem}
+.w5-pipe__stars{font-size:1.05rem;letter-spacing:2px;color:var(--act)}
+.w5-pipe__stars small{font-size:.74rem;letter-spacing:0;color:var(--muted);margin-left:6px}
+@media (max-width:520px){.w5-pipe__tiles{grid-template-columns:repeat(2,minmax(0,1fr))}.w5-tile{min-height:60px}}
 </style>
 
 <header class="rail">
@@ -489,7 +576,7 @@ footer.site{padding-block:32px 48px;color:var(--muted);font-size:.9rem;display:g
   <nav class="days" id="dayTabs" aria-label="The five days of Week 5" role="tablist">
     <button class="dayt" type="button" role="tab" id="dayt1" aria-controls="day1" aria-selected="false"><span class="dayt__n">Day 1</span><b>Meaning as numbers</b><span class="dayt__t">about 45 min</span><i class="dayt__dot"></i></button>
     <button class="dayt" type="button" role="tab" id="dayt2" aria-controls="day2" aria-selected="false"><span class="dayt__n">Day 2</span><b>Groups and chunks</b><span class="dayt__t">about 55 min</span><i class="dayt__dot"></i></button>
-    <button class="dayt" type="button" role="tab" id="dayt3" aria-controls="day3" aria-selected="false"><span class="dayt__n">Day 3</span><b>Store, search, loop</b><span class="dayt__t">about 60 min</span><i class="dayt__dot"></i></button>
+    <button class="dayt" type="button" role="tab" id="dayt3" aria-controls="day3" aria-selected="false"><span class="dayt__n">Day 3</span><b>Store, search, loop</b><span class="dayt__t">about 85 min</span><i class="dayt__dot"></i></button>
     <button class="dayt" type="button" role="tab" id="dayt4" aria-controls="day4" aria-selected="false"><span class="dayt__n">Day 4</span><b>Sources and failures</b><span class="dayt__t">about 70 min</span><i class="dayt__dot"></i></button>
     <button class="dayt" type="button" role="tab" id="dayt5" aria-controls="day5" aria-selected="false"><span class="dayt__n">Day 5</span><b>Measure, then the lab</b><span class="dayt__t">about 130 min</span><i class="dayt__dot"></i></button>
   </nav>
@@ -636,9 +723,9 @@ Charged twice this month</code></pre>
 
   <section class="scene daypanel" id="day3" role="tabpanel" aria-labelledby="dayt3" hidden>
     <div class="scene__head">
-      <span class="scene__kicker scene__kicker--learn">Day 3 · about 60 minutes</span>
+      <span class="scene__kicker scene__kicker--learn">Day 3 · about 85 minutes</span>
       <h2>The store, the search and the loop</h2>
-      <p>Today the pieces become a system. A vector store answers one question very fast, semantic search beats the keyword search you have used for twenty years, and the full RAG loop ties ingest and answer together. By the end you can draw the loop on a whiteboard, you will have made Claude act as a toy vector store, and your real store will be ready for Day 5.</p>
+      <p>Today the pieces become a system. A vector store answers one question very fast, semantic search beats the keyword search you have used for twenty years, the full RAG loop ties ingest and answer together, and the twelve-stage pipeline shows what the serious version adds and why. By the end you can draw the loop on a whiteboard, you will have made Claude act as a toy vector store, and your real store will be ready for Day 5.</p>
     </div>
     <!-- 5. Vector stores -->
     <article class="concept">
@@ -698,13 +785,48 @@ Charged twice this month</code></pre>
         <div class="key"><p>Ingest once: chunk, embed, store. Per question: embed, retrieve, build &lt;context&gt;, answer with citations. Claude only ever sees the retrieved chunks.</p></div>
       </div>
     </article>
+    <!-- 8. The production pipeline -->
+    <article class="concept concept--wide" id="pipeline">
+      <div class="concept__viz w5-pipe" id="w5-pipe">
+        <div class="w5-pipe__bar">
+          <div class="w5-pipe__qs" id="w5-pipeQs" role="tablist" aria-label="Pick a question"></div>
+          <div class="row" style="gap:8px">
+            <button class="btn btn--small btn--think" type="button" id="w5-pipeRun">Run the question through</button>
+            <button class="btn btn--small" type="button" id="w5-pipeStep">Step</button>
+            <button class="btn btn--small" type="button" id="w5-pipeReset">Reset</button>
+          </div>
+        </div>
+        <div class="w5-pipe__board" id="w5-pipeBoard">
+          <div class="w5-pipe__lane"><span class="w5-pipe__lanelbl">A · Get the documents ready <small>done once, before anyone asks</small></span><div class="w5-pipe__tiles" data-lane="A"></div></div>
+          <div class="w5-pipe__lane"><span class="w5-pipe__lanelbl">B · Build the memory <small>done once, redone when a document changes</small></span><div class="w5-pipe__tiles" data-lane="B"></div></div>
+          <div class="w5-pipe__lane"><span class="w5-pipe__lanelbl">C · Answer a question <small>every single time</small></span><div class="w5-pipe__tiles" data-lane="C"></div></div>
+          <div class="w5-pipe__progress"><i id="w5-pipeProg"></i></div>
+        </div>
+        <div class="w5-pipe__detail" id="w5-pipeDetail" aria-live="polite"></div>
+        <div class="w5-pipe__breaks">
+          <span class="w5-pipe__lbl">Break it on purpose · the four mistakes that kill most real systems</span>
+          <div class="w5-pipe__sw" id="w5-pipeSw"></div>
+        </div>
+        <div class="w5-pipe__final" id="w5-pipeFinal"></div>
+        <div class="viz-caption"><span>Made-up policy chunks from Day 3. The search results and scores are illustrative, chosen to behave like a real system.</span><span class="row chip chip--act">12 stages · 4 new today</span></div>
+      </div>
+      <div class="concept__text">
+        <h3>The real pipeline has twelve stages, not seven</h3>
+        <p>The loop above is the version you can draw on a whiteboard. The version that runs inside a bank, a hospital or a big support team has twelve stages, and most of the extra ones are there for one reason: to stop a confident wrong answer from reaching a person. Think of the whole thing as a very careful librarian helping you with homework. She first prepares the library (lanes A and B, done once), and then, every time you ask something, she does six things before she hands you an answer (lane C).</p>
+        <p>Eight of the twelve you already know from this week and Week 4. Four are new today, and they are the ones real teams argue about most. <b>Rewrite the question</b>: people type "taxi?", not a full question, so the librarian turns it into a proper question first, and may even imagine what a good answer would sound like and search for pages that look like that. <b>Search two ways and merge</b>: one search understands meaning, one matches exact words, and each one misses things the other finds, so you run both and add up the points. <b>Re-read and re-order</b>: a slower, more careful reader takes the top ten and scores each one against the actual question, because "similar" is not the same as "answers it". <b>Check before sending</b>: a checker asks whether every sentence is backed by a chunk and whether the sources are real, and holds the answer back if not.</p>
+        <p>Do this now: pick a question and press Run, then click any stage to see exactly what happened to your question there. Then flip the four "break it" switches one at a time and watch two things: which stage turns red, and what happens to the final answer. The switch that does the most damage is the one most teams get wrong.</p>
+        <div class="aside"><b>Do you need all twelve?</b> For a fifty-page corpus and friendly users, no: the seven-step loop with good chunks and citations is enough, and you will build exactly that in the lab. You add rewriting when users type fragments, hybrid search when they use exact names and codes, reranking when the top five keeps containing "nearly right" chunks, and the checker the moment a wrong answer would cost money or trust. Add stages when a measured failure asks for them, not before.</div>
+        <div class="key"><p>Production RAG is the seven-step loop plus four safety stages: rewrite the question, search two ways and merge, re-read and re-order, and check the answer before it goes out. Chunking is still the stage that breaks most systems, and a checker cannot repair a bad chunk.</p></div>
+      </div>
+    </article>
     <div class="today">
-      <div class="today__head"><span class="scene__kicker scene__kicker--try">Do today</span><div class="meter" data-meter-for="d3"><div class="meter__row"><span>Progress</span><b data-meter-label>0 / 3</b></div><div class="progress"><i></i></div></div></div>
-      <p class="muted" style="font-size:.95rem">One experiment on this page, one in Claude, and the account setup for the lab. About 30 minutes.</p>
+      <div class="today__head"><span class="scene__kicker scene__kicker--try">Do today</span><div class="meter" data-meter-for="d3"><div class="meter__row"><span>Progress</span><b data-meter-label>0 / 4</b></div><div class="progress"><i></i></div></div></div>
+      <p class="muted" style="font-size:.95rem">Two experiments on this page, one in Claude, and the account setup for the lab. About 45 minutes.</p>
       <ol class="steps steps--numbered" data-persist="d3">
         <li><span class="step__num"></span><input class="check" type="checkbox" id="d3-1" aria-label="Done"><div class="step__body"><p>On this page: press Play on the loop and read all seven steps. Then press Search again on the store and watch which ids light up, and in what order.</p><p class="step__notice"><strong>Notice:</strong> six of the seven steps happen before Claude reads a word. Most of the quality, and most of the bugs, live in those six.</p></div></li>
         <li><span class="step__num"></span><input class="check" type="checkbox" id="d3-2" aria-label="Done"><div class="step__body"><p>In Claude: make it act as a vector store. Paste the eight chunks below with their ids, then ask: "For each of the three questions, return the three chunk ids most likely to answer it, most likely first, each with a one-line reason."</p><p class="step__notice"><strong>Notice:</strong> Claude ranks by meaning the way the store would, slowly and at some cost per question. The store does the same with arithmetic in milliseconds, and cannot explain itself.</p><textarea data-note="d3-note" id="d3Note" placeholder="Where Claude's ranking surprised you, and which store you chose for the lab and why"></textarea></div></li>
         <li><span class="step__num"></span><input class="check" type="checkbox" id="d3-3" aria-label="Done"><div class="step__body"><p>Set up for Day 5. Either create a free Qdrant Cloud cluster and keep its URL and API key in a password manager, or confirm you can open n8n and add an In-Memory Vector Store node (newer versions call it Simple Vector Store). You also need a key for an embedding model from a provider such as Voyage AI, OpenAI, Cohere or Google.</p><p class="step__notice"><strong>Notice:</strong> none of these keys ever goes into a chat window, a prompt or this page. They live in a password manager and, later, in environment variables or n8n credentials.</p></div></li>
+        <li><span class="step__num"></span><input class="check" type="checkbox" id="d3-4" aria-label="Done"><div class="step__body"><p>On this page: run all three questions through the twelve-stage pipeline and click stages 7, 8, 9 and 12 to read what happened. Then flip the four "break it" switches one at a time, with question 1 selected, and write down which switch did the most damage to the final answer and why.</p><p class="step__notice"><strong>Notice:</strong> the checker catches the invented sentence but passes the badly cut chunk. A later stage can only check what an earlier stage gave it.</p></div></li>
       </ol>
       <h4 style="margin:22px 0 8px">Eight chunks and three questions to paste</h4>
 <pre class="code"><code><span class="c"># chunks from the made-up policy set, with their ids</span>
@@ -730,7 +852,7 @@ Charged twice this month</code></pre>
       <h2>Sources you can check, and the ways retrieval fails</h2>
       <p>Citations turn "the AI said so" into "section 3 of the expense policy says so". Today you learn how a citation is tracked from the store to the sentence, how to verify one, and the five ways a RAG pipeline produces a wrong answer with a perfectly good model. By the end you will have written the five test questions you will use in the lab.</p>
     </div>
-    <!-- 8. Citation tracking -->
+    <!-- 9. Citation tracking -->
     <article class="concept">
       <div class="concept__viz">
         <div class="w5-cite">
@@ -750,7 +872,7 @@ Charged twice this month</code></pre>
         <div class="key"><p>A citation is a chunk_id that travels from the store, through the prompt, into the answer. Verify every id against the context before anyone reads the answer.</p></div>
       </div>
     </article>
-    <!-- 9. Where RAG fails -->
+    <!-- 10. Where RAG fails -->
     <article class="concept">
       <div class="concept__viz">
         <div class="w5-fail">
@@ -789,7 +911,7 @@ Charged twice this month</code></pre>
       <h2>Measure it, then build it</h2>
       <p>The long day. One idea first, borrowed from the MIT course: you do not know retrieval is good until you measure it on questions with known answers. Then Lab 2.2, where you build the retrieval assistant, score it at three chunk sizes, verify its citations and write design-log entry 5. The quiz and a practice round close the week.</p>
     </div>
-    <!-- 10. Measuring retrieval -->
+    <!-- 11. Measuring retrieval -->
     <article class="concept">
       <div class="concept__viz">
         <div class="w5-rec">
@@ -812,9 +934,9 @@ Charged twice this month</code></pre>
       <div class="scene__head">
         <span class="scene__kicker scene__kicker--lab">Lab 2.2</span>
         <h2>A retrieval assistant with citation tracking</h2>
-        <p>You build the loop by hand first, so that every step is visible: a store you fill, five test questions you wrote in advance, answers in the Console Workbench with citations you verify, and a scorecard at three chunk sizes. In Week 8 you automate the same pipeline in n8n with vector store nodes. Use made-up documents only, and never paste a key into a chat.</p>
+        <p>You build the loop by hand first, so that every step is visible: a store you fill, five test questions you wrote in advance, answers in the Console Workbench with citations you verify, and a scorecard at three chunk sizes plus a rewrite-and-rerank pass. In Week 8 you automate the same pipeline in n8n with vector store nodes. Use made-up documents only, and never paste a key into a chat.</p>
       </div>
-      <div class="meter" data-meter-for="lab" style="margin-bottom:14px"><div class="meter__row"><span>Lab progress</span><b data-meter-label>0 / 9</b></div><div class="progress progress--act"><i></i></div></div>
+      <div class="meter" data-meter-for="lab" style="margin-bottom:14px"><div class="meter__row"><span>Lab progress</span><b data-meter-label>0 / 10</b></div><div class="progress progress--act"><i></i></div></div>
       <ol class="steps steps--numbered" data-persist="lab">
         <li><span class="step__num"></span><input class="check" type="checkbox" id="lab-1" aria-label="Done lab step 1"><div class="step__body"><p>Pick a store and open it. Either create a free Qdrant Cloud cluster with a collection named <code>company-docs</code>, or open n8n and add an In-Memory Vector Store node (newer versions call it Simple Vector Store).</p>
           <details class="hint"><summary>Stuck? Show a hint</summary><p>Qdrant: the free tier is enough. Choose the region nearest you, and create the collection with the vector size your embedding model produces (1,024 for Voyage's voyage-3, 1,536 for OpenAI's text-embedding-3-small) and cosine distance. Put the URL and API key in a password manager. n8n: the in-memory store forgets everything when the workflow restarts, which is fine for a lab and wrong for a product.</p></details></div></li>
@@ -833,7 +955,12 @@ Charged twice this month</code></pre>
         <li><span class="step__num"></span><input class="check" type="checkbox" id="lab-7" aria-label="Done lab step 7"><div class="step__body"><p>Ask one question your documents do not cover. The assistant should say "The documents do not cover this" and stop. If it answers anyway, tighten the prompt until it does, and keep the final wording.</p></div></li>
         <li><span class="step__num"></span><input class="check" type="checkbox" id="lab-8" aria-label="Done lab step 8"><div class="step__body"><p>Break it on purpose. Re-chunk one document into 2,000-token pieces, re-embed, re-run the five questions and fill the second column. Then 100-token pieces, third column. Watch which column wins and where each one fails.</p>
           <details class="hint"><summary>Stuck? Show a hint</summary><p>In n8n, change the splitter's chunk size and run the ingest again into a fresh store. On Qdrant, make a second and third collection, one per size, so you can compare them side by side instead of overwriting.</p></details></div></li>
-        <li><span class="step__num"></span><input class="check" type="checkbox" id="lab-9" aria-label="Done lab step 9"><div class="step__body"><p>Verify three answers, tick the three boxes below, and write design-log entry 5.</p></div></li>
+        <li><span class="step__num"></span><input class="check" type="checkbox" id="lab-8b" aria-label="Done lab step 9"><div class="step__body"><p>Add two production stages by hand and measure them. Back at 300-token chunks: for each test question, first ask Claude to rewrite it into one full, clear question (stage 7), search the store with the rewritten question and keep the top ten, then paste those ten into the Workbench and ask Claude to score each chunk 0 to 100 on "does this answer the question?" and return them in order (stage 9). Record the rank of the correct chunk in the fourth column.</p><p class="step__notice"><strong>Notice:</strong> rewriting mostly helps short or vague questions; reranking mostly helps when several chunks are about the right topic. If a column did not change, say so in your design log: a stage you measured and did not need is a good decision too.</p><details class="hint"><summary>Copy the two prompts</summary><pre class="code"><code><span class="c"># stage 7, rewrite</span>
+Rewrite this question as one full, clear question a policy document could answer. Keep every detail. Return only the question.
+Question: {your test question}
+<span class="c"># stage 9, rerank</span>
+Here are ten chunks and a question. Score each chunk from 0 to 100 on how directly it answers the question, then list the chunk ids from highest to lowest with their scores. Do not answer the question.</code></pre></details></div></li>
+        <li><span class="step__num"></span><input class="check" type="checkbox" id="lab-9" aria-label="Done lab step 10"><div class="step__body"><p>Verify three answers, tick the three boxes below, and write design-log entry 5.</p></div></li>
       </ol>
       <h4 style="margin:22px 0 8px">Prompts and snippets to copy</h4>
 <pre class="code"><code><span class="c"># system prompt for the Workbench</span>
@@ -858,9 +985,9 @@ QDRANT_API_KEY and the embedding key from environment variables. Print how many 
       <p class="muted" style="margin-bottom:10px">Your five test questions, and the rank of the chunk that should answer each (1 to 5), or 0 if it did not appear in the top five. Edit the questions to match yours. Totals update as you type and everything stays in this browser.</p>
       <div class="table-wrap">
         <table class="tbl w5-score" id="w5-scoreTable">
-          <thead><tr><th>Test question</th><th>Rank @ 300 tokens</th><th>Rank @ 2,000 tokens</th><th>Rank @ 100 tokens</th></tr></thead>
+          <thead><tr><th>Test question</th><th>Rank @ 300 tokens</th><th>Rank @ 2,000 tokens</th><th>Rank @ 100 tokens</th><th>Rank @ 300 + rewrite &amp; rerank</th></tr></thead>
           <tbody></tbody>
-          <tfoot><tr><th>Found in top 5</th><th id="w5-avg0">–</th><th id="w5-avg1">–</th><th id="w5-avg2">–</th></tr></tfoot>
+          <tfoot><tr><th>Found in top 5</th><th id="w5-avg0">–</th><th id="w5-avg1">–</th><th id="w5-avg2">–</th><th id="w5-avg3">–</th></tr></tfoot>
         </table>
       </div>
       <p class="muted" id="w5-scoreVerdict" style="margin-top:8px;font-size:.9rem"></p>
@@ -1538,12 +1665,12 @@ window.FIREBASE_CONFIG = {
 /* The scorecard rows are built before Course.init so their data-note fields are restored and saved like every other note. */
 (function buildScorecard(){
   var DEFAULT_Q = ['Can I claim a taxi from the airport?', 'How many days of annual leave do I get?', 'Can I work from another country for a month?', 'Who approves a laptop purchase?', 'What happens if I lose my security badge?'];
-  var SIZES = ['300', '2,000', '100'];
+  var SIZES = ['300', '2,000', '100', '300 with rewrite and rerank'];
   var tb = document.querySelector('#w5-scoreTable tbody'); if (!tb) return;
   DEFAULT_Q.forEach(function(q, i){
     var tr = document.createElement('tr');
     tr.innerHTML = '<td><input type="text" id="w5-q' + i + '" data-note="sc-q' + i + '" value="' + q.replace(/"/g, '&quot;') + '" aria-label="Test question ' + (i + 1) + '"></td>' +
-      [0, 1, 2].map(function(c){ return '<td><input type="number" min="0" max="5" id="w5-rk' + i + '-' + c + '" data-note="rk' + i + '-' + c + '" aria-label="Rank of the correct chunk for question ' + (i + 1) + ' at ' + SIZES[c] + ' tokens" placeholder="0 to 5"></td>'; }).join('');
+      [0, 1, 2, 3].map(function(c){ return '<td><input type="number" min="0" max="5" id="w5-rk' + i + '-' + c + '" data-note="rk' + i + '-' + c + '" aria-label="Rank of the correct chunk for question ' + (i + 1) + ' at ' + SIZES[c] + ' tokens" placeholder="0 to 5"></td>'; }).join('');
     tb.appendChild(tr);
   });
 })();
@@ -1979,7 +2106,7 @@ function simFromDist(d){ return Course.clamp(1 - d / 1.6, 0, 1); }
   var NAMES = ['300 tokens', '2,000 tokens', '100 tokens'];
   function totals(){
     var best = -1, bestN = -1, filledAll = true;
-    for (var c = 0; c < 3; c++) { var found = 0, filled = 0; for (var i = 0; i < 5; i++) { var v = $('#w5-rk' + i + '-' + c).value; if (v !== '') { filled++; if (+v >= 1 && +v <= 5) found++; } } $('#w5-avg' + c).textContent = filled ? found + ' / ' + filled : '–'; if (filled < 5) filledAll = false; if (filled && found > bestN) { bestN = found; best = c; } }
+    for (var c = 0; c < 4; c++) { var found = 0, filled = 0; for (var i = 0; i < 5; i++) { var v = $('#w5-rk' + i + '-' + c).value; if (v !== '') { filled++; if (+v >= 1 && +v <= 5) found++; } } $('#w5-avg' + c).textContent = filled ? found + ' / ' + filled : '–'; if (filled < 5) filledAll = false; if (filled && found > bestN) { bestN = found; best = c; } }
     $('#w5-scoreVerdict').textContent = best < 0 ? '' : (filledAll ? 'All three sizes scored. ' : '') + 'Best so far: ' + NAMES[best] + ', ' + bestN + ' of 5 found in the top five.' + (filledAll && bestN < 5 ? ' Look at the question that failed: was the answer cut in half, or never in the documents?' : '');
   }
   tb.addEventListener('input', totals); totals();
@@ -2040,5 +2167,239 @@ Course.quiz('#quizBox', {passPct: 80, questions: [
 })();
 
 Course.days();
+/* ---------- Concept 8: the production pipeline. Twelve stages, a question walked through them, four switches that break it. ----------
+   Everything here is hand-written to behave like a real system on the Day 3 chunks; no model runs. */
+(function productionPipeline(){
+  var root = document.getElementById('w5-pipe'); if (!root) return;
+  var $ = function(id){ return document.getElementById(id); };
+  var each = function(l, fn){ Array.prototype.forEach.call(l, fn); };
+  var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]; }); }
+
+  var CHUNKS = {
+    'expenses-03': {doc: 'Expense policy', sec: '3. Travel', text: 'Taxis are reimbursed for airport transfers when public transport is unavailable, when you carry equipment, or when you arrive after 10pm.'},
+    'handbook-07': {doc: 'Staff handbook', sec: '7. Clients', text: "Staff are expected to arrive on time for client meetings and dress appropriately for the client's environment."},
+    'expenses-04': {doc: 'Expense policy', sec: '4. Receipts', text: 'Keep every receipt. Claims without a receipt are capped at 20 units and may be refused for travel over 50 units.'},
+    'remote-02': {doc: 'Remote work policy', sec: '2. Allowances', text: 'Remote workers may claim a home-office allowance of 15 units a month for internet costs.'},
+    'expenses-02': {doc: 'Expense policy', sec: '2. Approval', text: 'Any expense over 100 units needs written approval from your manager before you spend it.'},
+    'travel-01': {doc: 'Travel policy', sec: '1. Exceptions', text: 'Exception: taxis to and from the airport are always allowed for flights departing before 7am or landing after 10pm, with a receipt.'},
+    'travel-01a': {doc: 'Travel policy', sec: '1. Exceptions', text: 'Exception: taxis to and from the airport are always allowed', cut: true},
+    'leave-05': {doc: 'Leave policy', sec: '5. Travel days', text: 'Travel days for work count as working days, not leave days, when they fall on a weekday.'},
+    'it-sec-09': {doc: 'IT security policy', sec: '9. Networks', text: 'Never connect a company laptop to public airport Wi-Fi without the VPN switched on.'}
+  };
+  var DOCS = ['Expense policy', 'Travel policy', 'Remote work policy', 'Leave policy', 'IT security policy', 'Staff handbook'];
+  /* the twelve stages, in the librarian's words */
+  var STAGES = [
+    {n: 1, lane: 'A', kind: 'tool', tag: 'Week 3', name: 'Collect the documents', plain: 'Gather everything the assistant is allowed to know: policies, PDFs, web pages, old tickets. Nothing else.', lib: 'The librarian decides which books go on the shelf. A wrong book on the shelf means wrong answers later.', why: 'Garbage in, garbage out. If an old or wrong document gets in, every answer built on it is wrong, and nothing downstream can tell.'},
+    {n: 2, lane: 'A', kind: 'tool', tag: 'Week 1', name: 'Open and read them', plain: 'Turn every file into clean text. A table must stay a table, a number must stay a number, a heading must stay a heading.', lib: 'She photocopies each book onto plain pages, carefully, so the price list is still a list and not one long smear of words.', why: 'If a table of limits is flattened into a sentence, "20 units" and "50 units" lose their meaning, and the search cannot find the right number later.'},
+    {n: 3, lane: 'A', kind: 'tool', tag: 'Day 2', name: 'Cut into chunks that mean one thing', plain: 'Split the text into pieces of a few sentences, cutting where the meaning changes, not every 500 characters.', lib: 'She cuts each page into cards, one rule per card. Never in the middle of a sentence.', why: 'A rule cut in half becomes two half-truths. This is the make-or-break stage: a bad cut here fools every stage after it, including the checker.'},
+    {n: 4, lane: 'A', kind: 'tool', tag: 'Day 4', name: 'Write a label on each chunk', plain: 'Give every chunk a label: which document, which section, when it was updated, who may read it. This is called metadata.', lib: 'She writes on the back of each card where it came from and when. Without it, a card is just a sentence from nowhere.', why: 'No label means no citations, no way to prefer this year’s policy over last year’s, and no way to keep one team’s documents away from another team.'},
+    {n: 5, lane: 'B', kind: 'tool', tag: 'Day 1', name: 'Turn each chunk into numbers', plain: 'An embedding model turns each chunk into a list of numbers that captures its meaning. Chunks about the same thing get similar numbers.', lib: 'She gives each card a position on a giant map of meanings. Taxi cards land near each other, Wi-Fi cards somewhere else.', why: 'Skipping this leaves only word matching: "cab" would never find the "taxi" rule.'},
+    {n: 6, lane: 'B', kind: 'tool', tag: 'Day 3', name: 'Put them in the memory', plain: 'Store the numbers in a vector database, and the words in a normal word index. Two ways to look things up later.', lib: 'The map goes on the wall and the cards go into a drawer with an index of every word.', why: 'Without the word index, exact names and codes ("form T-42") are easy to miss; without the map, meaning is.'},
+    {n: 7, lane: 'C', kind: 'think', tag: 'new', name: 'Rewrite the question', plain: 'People type fragments. The assistant first turns the question into a full, clear one, and can even imagine what a good answer would sound like and search for text like that.', lib: 'You mumble "taxi?" and she says "You mean: can you get your money back for a taxi from the airport, and are there conditions?" Then she pictures the answer before she looks.', why: 'A two-word question gives the search almost nothing to go on. The imagined answer trick is called HyDE, and it works because answers look like other answers.'},
+    {n: 8, lane: 'C', kind: 'tool', tag: 'Day 3 + new', name: 'Search two ways and merge', plain: 'Run a meaning search and an exact-word search at the same time. Each ranks the chunks; add up the points from both lists and sort.', lib: 'She asks two helpers: one who understands what you mean, one who only matches exact words. Then she adds up their votes.', why: 'The meaning search misses exact codes and names; the word search misses synonyms. Merged, each covers the other’s blind spot. The adding-up rule is called Reciprocal Rank Fusion.'},
+    {n: 9, lane: 'C', kind: 'think', tag: 'new', name: 'Re-read the top ones and re-order', plain: 'A slower, more careful model reads the top ten chunks together with the question and scores each from 0 to 100 on "does this actually answer it?" Keep only the best.', lib: 'She reads the top ten cards properly, with your question in her other hand, and keeps the three that really answer it.', why: '"Similar" is not "answers it". Without this step, the prompt fills with nearly-right chunks and the model picks one at random.'},
+    {n: 10, lane: 'C', kind: 'tool', tag: 'Week 4', name: 'Pack the best into the prompt', plain: 'Put the kept chunks inside <context> tags, best first, each with its label, and add the question. This is the desk from Week 4.', lib: 'She lays the three cards on the desk in front of the writer, best on top, labels showing.', why: 'Too many chunks and the writer loses the thread (lost in the middle, Week 4). Too few and the answer is incomplete.'},
+    {n: 11, lane: 'C', kind: 'think', tag: 'Day 4', name: 'Write the answer with sources', plain: 'Claude reads the packed chunks and writes the answer, adding [source: chunk id] after every factual sentence.', lib: 'The writer answers in plain words and points at the card each sentence came from.', why: 'Sometimes the writer adds a sentence from memory that is not on any card. That is why the next stage exists.'},
+    {n: 12, lane: 'C', kind: 'think', tag: 'new', name: 'Check the answer before it goes out', plain: 'A checker asks three questions: is every sentence backed by a chunk? Are the sources real? Does it answer what was asked? If not, hold it back.', lib: 'Before handing you the page, she checks every sentence against the cards. One she cannot match, she crosses out.', why: 'Without a checker, an invented sentence ships with the same confident tone as the true ones. Nobody notices until a customer does.'}
+  ];
+  var BREAKS = [
+    {id: 'cut', stage: 3, name: 'Chunks cut for speed, not meaning', small: 'cut every 500 characters, mid-sentence'},
+    {id: 'nolabel', stage: 4, name: 'Labels skipped to save time', small: 'no document name, section or date'},
+    {id: 'volume', stage: 9, name: 'Search for volume, not relevance', small: 'keep the top 8, no re-reading'},
+    {id: 'nocheck', stage: 12, name: 'No check before sending', small: 'the first draft goes straight out'}
+  ];
+  /* three questions, with what each stage does to them. Ranks are 1 = best. */
+  var QS = [
+    {q: 'Can I claim a taxi from the airport?',
+     rewrite: 'Is a taxi from the airport reimbursed under the travel expense rules, and under what conditions?',
+     hyde: 'Taxis from the airport are reimbursed when there is no public transport or the flight is late, and a receipt is required.',
+     words: ['taxi', 'airport', 'claim'],
+     meaning: ['travel-01', 'expenses-03', 'expenses-04', 'leave-05', 'it-sec-09'],
+     word: ['expenses-03', 'travel-01', 'expenses-04', 'remote-02', 'leave-05'],
+     scores: {'travel-01': 96, 'expenses-03': 94, 'expenses-04': 71, 'leave-05': 12, 'remote-02': 8, 'it-sec-09': 5, 'travel-01a': 90},
+     answer: [
+       {t: 'Yes, in two cases.', src: null},
+       {t: 'A taxi from the airport is reimbursed when there is no public transport, when you carry equipment, or when you land after 10pm.', src: 'expenses-03'},
+       {t: 'For flights landing after 10pm or leaving before 7am, a taxi is always allowed, as long as you keep the receipt.', src: 'travel-01'},
+       {t: 'Keep the receipt: claims without one are capped at 20 units.', src: 'expenses-04'}
+     ],
+     cut: {src: 'travel-01', t: 'Taxis to and from the airport are always allowed.'},
+     noise: {t: 'Remote workers can also claim 15 units a month for internet costs.', src: 'remote-02'},
+     invented: 'Taxis under 50 units never need a receipt.'},
+    {q: 'Do I need a receipt for a 30-unit taxi?',
+     rewrite: 'Is a receipt required to claim a 30-unit taxi fare, and what happens to the claim without one?',
+     hyde: 'Receipts are required for expense claims; a claim without a receipt is capped or refused.',
+     words: ['receipt', 'taxi', 'units'],
+     meaning: ['expenses-04', 'expenses-03', 'travel-01', 'expenses-02', 'remote-02'],
+     word: ['expenses-04', 'travel-01', 'expenses-03', 'remote-02', 'expenses-02'],
+     scores: {'expenses-04': 97, 'travel-01': 55, 'expenses-03': 40, 'expenses-02': 22, 'remote-02': 6, 'leave-05': 3, 'travel-01a': 30},
+     answer: [
+       {t: 'Yes, keep the receipt.', src: null},
+       {t: 'Claims without a receipt are capped at 20 units, so a 30-unit taxi without one would not be paid in full.', src: 'expenses-04'},
+       {t: 'Airport taxis need a receipt too, even when they are always allowed.', src: 'travel-01'}
+     ],
+     cut: {src: 'travel-01', t: 'Airport taxis are always allowed.'},
+     noise: {t: 'Anything over 100 units needs written approval first.', src: 'expenses-02'},
+     invented: 'Receipts are only needed above 50 units.'},
+    {q: 'Can I use the airport Wi-Fi on my laptop?',
+     rewrite: 'Is a company laptop allowed to connect to public airport Wi-Fi, and under what condition?',
+     hyde: 'Company laptops may use public Wi-Fi only with the VPN switched on.',
+     words: ['airport', 'wi-fi', 'laptop'],
+     meaning: ['it-sec-09', 'travel-01', 'expenses-03', 'leave-05', 'remote-02'],
+     word: ['it-sec-09', 'expenses-03', 'travel-01', 'remote-02', 'handbook-07'],
+     scores: {'it-sec-09': 98, 'remote-02': 15, 'travel-01': 9, 'expenses-03': 7, 'leave-05': 4, 'handbook-07': 2, 'travel-01a': 8},
+     answer: [
+       {t: 'Only with the VPN switched on.', src: 'it-sec-09'},
+       {t: 'Never connect a company laptop to public airport Wi-Fi without it.', src: 'it-sec-09'}
+     ],
+     cut: null,
+     noise: {t: 'Taxis to and from the airport are allowed for early or late flights.', src: 'travel-01'},
+     invented: 'Hotel Wi-Fi is fine without the VPN.'}
+  ];
+
+  var S = {q: 0, stage: 0, breaks: {}, playing: false, timer: null};
+  function on(id){ return !!S.breaks[id]; }
+  function cur(){ return QS[S.q]; }
+
+  /* ---------- the maths, simplified: points for places, like a race ---------- */
+  function points(rank){ return rank > 0 ? 11 - rank : 0; }   /* 1st = 10 points … 5th = 6. The real rule is 1 ÷ (60 + rank): same idea. */
+  function lists(){
+    var q = cur(), m = q.meaning.slice(), w = q.word.slice();
+    if (on('cut')) { m = m.map(function(id){ return id === 'travel-01' ? 'travel-01a' : id; }); w = w.map(function(id){ return id === 'travel-01' ? 'travel-01a' : id; }); }
+    return {m: m, w: w};
+  }
+  function fused(){
+    var L = lists(), tally = {}, ids = [];
+    [L.m, L.w].forEach(function(list){ list.forEach(function(id, i){ if (!(id in tally)) { tally[id] = {m: 0, w: 0}; ids.push(id); } }); });
+    L.m.forEach(function(id, i){ tally[id].m = i + 1; }); L.w.forEach(function(id, i){ tally[id].w = i + 1; });
+    return ids.map(function(id){ return {id: id, mr: tally[id].m, wr: tally[id].w, pts: points(tally[id].m) + points(tally[id].w)}; }).sort(function(a, b){ return b.pts - a.pts; });
+  }
+  function reranked(){ var q = cur(); return fused().map(function(c){ return {id: c.id, score: q.scores[c.id] || 5}; }).sort(function(a, b){ return b.score - a.score; }); }
+  function kept(){ if (on('volume')) return fused().slice(0, 8).map(function(c){ return c.id; }); return reranked().filter(function(c){ return c.score >= 50; }).slice(0, 3).map(function(c){ return c.id; }); }
+  /* the writer's draft, then what the checker does to it */
+  function draft(){
+    var q = cur(), out = q.answer.map(function(s){ return {t: s.t, src: s.src, kind: 'ok'}; });
+    if (on('cut') && q.cut) out = out.map(function(s){ return s.src === q.cut.src ? {t: q.cut.t, src: 'travel-01a', kind: 'cut'} : s; });
+    if (on('volume')) out.push({t: q.noise.t, src: q.noise.src, kind: 'noise'});
+    out.push({t: q.invented, src: null, kind: 'invented'});
+    if (on('nolabel')) out = out.map(function(s){ s.src = s.src ? '?' : s.src; return s; });
+    return out;
+  }
+  function checked(){
+    var d = draft(), checks = [], held = [];
+    if (on('nocheck')) return {sent: d, checks: null, held: held};
+    var ok = d.map(function(s){ if (s.kind === 'invented') { s.caught = true; held.push(s); return false; } return true; });
+    checks.push({ok: held.length > 0, t: held.length ? 'Every sentence backed by a chunk? One was not: it is crossed out and held back.' : 'Every sentence backed by a chunk? Yes.'});
+    checks.push({ok: !on('nolabel'), t: on('nolabel') ? 'Are the sources real? There are no sources to check: the chunks have no labels.' : 'Are the sources real? Yes, every id is in the packed context.'});
+    checks.push({ok: !on('volume'), t: on('volume') ? 'Does it answer the question? Yes, but with an off-topic sentence mixed in.' : 'Does it answer the question? Yes.'});
+    if (on('cut') && cur().cut) checks.push({ok: false, soft: true, t: 'Passed, but wrongly: the cut chunk really does say "always allowed", so the checker cannot see that the condition was lost. Bad chunking fools the checker.'});
+    return {sent: d.filter(function(s){ return !s.caught; }), checks: checks, held: held, drafted: d};
+  }
+  function stars(){
+    var n = 5, q = cur();
+    if (on('cut') && q.cut) n -= 2; if (on('nolabel')) n -= 1; if (on('volume')) n -= 1; if (on('nocheck')) n -= 1;
+    return Math.max(1, n);
+  }
+
+  /* ---------- rendering ---------- */
+  function cells(seed){ var h = 0; for (var i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) >>> 0; var s = ''; for (var d = 0; d < 8; d++) { h = (h * 1103515245 + 12345) >>> 0; var v = ((h >>> 8) % 200) / 100 - 1; s += '<i style="background:' + (v < 0 ? 'rgba(106,82,245,' + (0.15 + 0.8 * -v).toFixed(2) + ')' : 'rgba(14,159,134,' + (0.15 + 0.8 * v).toFixed(2) + ')') + '"></i>'; } return '<span class="w5-pipe__cells">' + s + '</span>'; }
+  function chunkCard(id, bad){ var c = CHUNKS[id]; return '<div class="w5-pipe__chunk' + (bad || (c && c.cut) ? ' is-bad' : '') + '"><span class="id">' + esc(id) + (c && c.cut ? ' · cut mid-sentence' : '') + '</span>' + (c ? esc(c.text) : '') + '</div>'; }
+  function list(items, keepN){ return '<div class="w5-pipe__list">' + items.map(function(it, i){ return '<span class="r' + (i < keepN ? ' is-keep' : '') + (CHUNKS[it.id] && CHUNKS[it.id].cut ? ' is-bad' : '') + '"><i>' + (i + 1) + '</i>' + esc(it.id) + (it.right != null ? '<b>' + it.right + '</b>' : '') + '</span>'; }).join('') + '</div>'; }
+  function sentences(arr, showFlags){
+    return '<div class="w5-pipe__sent">' + arr.map(function(s){
+      var cls = 's' + (s.kind === 'invented' ? ' is-invented' : '') + (s.kind === 'noise' ? ' is-noise' : '') + (s.caught ? ' is-caught' : '');
+      var src = s.src === '?' ? '<span class="src is-missing">[source: ?]</span>' : s.src ? '<span class="src">[source: ' + esc(s.src) + ']</span>' : (s.kind === 'invented' ? '<span class="src is-missing">[no source]</span>' : '');
+      var flag = !showFlags ? '' : s.kind === 'invented' ? '<span class="flag">' + (s.caught ? 'caught' : 'from memory, not checked') + '</span>' : s.kind === 'noise' ? '<span class="flag" style="color:var(--act)">off topic</span>' : s.kind === 'cut' ? '<span class="flag">condition lost</span>' : '';
+      return '<span class="' + cls + '">' + esc(s.t) + src + flag + '</span>';
+    }).join('') + '</div>';
+  }
+  function dataFor(n){
+    var q = cur(), L, F, R, K, h;
+    switch (n) {
+      case 1: return '<h5>On the shelf for this assistant</h5><div class="w5-pipe__docs">' + DOCS.map(function(d){ return '<span>' + d + '</span>'; }).join('') + '</div><div class="muted">Six made-up policies. The 2019 travel policy and the office lunch menu did not make the shelf.</div>';
+      case 2: return '<h5>One table, read two ways</h5><div class="w5-pipe__cols"><div><div class="muted" style="margin-bottom:4px">Kept as a table ✓</div><div class="mono">no receipt → cap 20 units<br>travel over 50 units, no receipt → may be refused</div></div><div><div class="muted" style="margin-bottom:4px">Flattened ✗</div><div class="mono">no receipt cap 20 units travel over 50 units no receipt may be refused</div></div></div><div class="muted">In the flattened version nobody can tell which number goes with which rule.</div>';
+      case 3: return '<h5>The travel exception, cut two ways</h5><div class="w5-pipe__cols"><div><div class="muted" style="margin-bottom:4px">Cut where the meaning ends ✓</div>' + chunkCard('travel-01') + '</div><div><div class="muted" style="margin-bottom:4px">Cut every 500 characters ✗</div>' + chunkCard('travel-01a', true) + '<div class="w5-pipe__chunk is-bad"><span class="id">travel-01b · the other half</span>for flights departing before 7am or landing after 10pm, with a receipt.</div></div></div>' + (on('cut') ? '<div class="muted"><b style="color:#E5484D">Switch is on:</b> the search below will find the half that says "always allowed" and nothing about the condition.</div>' : '');
+      case 4: return '<h5>The label on travel-01</h5>' + (on('nolabel') ? '<div class="mono" style="color:#E5484D">(no label written)</div><div class="muted">The chunk is now just a sentence from nowhere: no document, no date, no citation possible.</div>' : '<div class="w5-pipe__label"><span>chunk_id</span><span>travel-01</span><span>doc_name</span><span>Travel policy</span><span>section</span><span>1. Exceptions</span><span>last_updated</span><span>2026-03-01</span><span>who may read</span><span>all staff</span></div>');
+      case 5: return '<h5>Chunks as numbers (8 of 1,024 shown)</h5><div class="w5-pipe__list">' + ['travel-01', 'expenses-03', 'it-sec-09', 'remote-02'].map(function(id){ return '<span class="r">' + esc(id) + ' ' + cells(id) + '</span>'; }).join('') + '</div><div class="muted">The two taxi chunks get similar patterns; the Wi-Fi chunk does not.</div>';
+      case 6: return '<h5>Two ways in</h5><div class="w5-pipe__cols"><div><div class="muted" style="margin-bottom:4px">The map of meanings (vector store)</div><div class="w5-pipe__docs">' + Object.keys(CHUNKS).filter(function(k){ return !CHUNKS[k].cut; }).map(function(k){ return '<span>' + esc(k) + '</span>'; }).join('') + '</div></div><div><div class="muted" style="margin-bottom:4px">The word index</div><div class="mono">taxi → expenses-03, travel-01<br>receipt → expenses-04, travel-01<br>airport → expenses-03, travel-01, it-sec-09<br>Wi-Fi → it-sec-09</div></div></div>';
+      case 7: return '<h5>Your question, rewritten</h5><div class="mono">you typed: ' + esc(q.q) + '</div><div class="mono" style="color:var(--think)">rewritten: ' + esc(q.rewrite) + '</div><div class="mono" style="color:var(--muted)">imagined answer (HyDE): ' + esc(q.hyde) + '</div><div class="muted">Both the rewritten question and the imagined answer go into the search.</div>';
+      case 8: L = lists(); F = fused();
+        return '<h5>Two searches, one merged list</h5><div class="w5-pipe__cols"><div><div class="muted" style="margin-bottom:4px">By meaning</div>' + list(L.m.map(function(id, i){ return {id: id, right: points(i + 1) + ' pts'}; }), 0) + '</div><div><div class="muted" style="margin-bottom:4px">By exact words (' + q.words.join(', ') + ')</div>' + list(L.w.map(function(id, i){ return {id: id, right: points(i + 1) + ' pts'}; }), 0) + '</div><div><div class="muted" style="margin-bottom:4px">Merged: points added up</div>' + list(F.map(function(c){ return {id: c.id, right: c.pts + ' pts'}; }), 0) + '</div></div><div class="muted">1st place earns 10 points, 2nd 9, and so on. A chunk high on both lists wins. (The real rule is 1 ÷ (60 + rank): same idea, smaller numbers.)</div>';
+      case 9: R = reranked();
+        if (on('volume')) return '<h5>Skipped</h5><div class="muted"><b style="color:#E5484D">Switch is on:</b> no careful re-reading. The top 8 of the merged list go straight into the prompt, including chunks about leave days and home-office internet.</div>' + list(fused().slice(0, 8).map(function(c){ return {id: c.id, right: c.pts + ' pts'}; }), 8);
+        return '<h5>Read properly, scored against the question</h5>' + list(R.map(function(c){ return {id: c.id, right: c.score + ' / 100'}; }), R.filter(function(c){ return c.score >= 50; }).slice(0, 3).length) + '<div class="muted">Green chunks score 50 or more: they actually answer the question. The rest were only similar.</div>';
+      case 10: K = kept();
+        return '<h5>Packed into &lt;context&gt;, best first · ' + K.length + ' chunk' + (K.length === 1 ? '' : 's') + ' · about ' + (K.length * 45) + ' tokens</h5>' + K.map(function(id){ return chunkCard(id); }).join('') + (on('nolabel') ? '<div class="muted" style="color:#E5484D">No labels, so the chunks arrive without ids: the writer cannot cite anything.</div>' : '');
+      case 11: return '<h5>The first draft</h5>' + sentences(draft(), true) + '<div class="muted">Look at the last sentence: the writer added it from memory. No chunk says it. This happens; it is why stage 12 exists.</div>';
+      case 12: h = checked();
+        if (!h.checks) return '<h5>Skipped</h5><div class="muted"><b style="color:#E5484D">Switch is on:</b> the first draft goes straight to the person, invented sentence included.</div>';
+        return '<h5>The checker’s three questions</h5><div class="w5-pipe__checks">' + h.checks.map(function(c){ return '<span class="k' + (c.ok ? '' : ' is-fail') + '"><i>' + (c.ok ? '✓' : '!') + '</i><span>' + esc(c.t) + '</span></span>'; }).join('') + '</div>';
+    }
+    return '';
+  }
+  function renderDetail(){
+    var st = STAGES[S.stage - 1], box = $('w5-pipeDetail');
+    if (!st) { box.innerHTML = '<div class="w5-pipe__plain">Press <b>Run the question through</b> to watch all twelve stages, or click any stage to read what it does. Stages marked <span class="w5-tile__tag is-new" style="vertical-align:middle">new</span> are the ones you have not met yet this week.</div>'; return; }
+    var brk = BREAKS.filter(function(b){ return b.stage === st.n && on(b.id); })[0];
+    var kindChip = st.kind === 'think' ? '<span class="chip chip--think">a model thinks</span>' : st.kind === 'result' ? '<span class="chip chip--observe">result</span>' : '<span class="chip chip--act">a tool does it</span>';
+    box.innerHTML = '<div class="w5-pipe__dhead"><h4>' + st.n + '. ' + esc(st.name) + '</h4>' + kindChip + '<span class="w5-tile__tag' + (st.tag === 'new' ? ' is-new' : '') + '">' + (st.tag === 'new' ? 'new today' : /\+/.test(st.tag) ? st.tag : 'from ' + st.tag) + '</span>' + (brk ? '<span class="chip" style="background:rgba(229,72,77,.15);color:#E5484D">broken: ' + esc(brk.name) + '</span>' : '') + '</div>'
+      + '<p class="w5-pipe__plain">' + esc(st.plain) + '</p>'
+      + '<p class="w5-pipe__lib"><b>Like a librarian:</b> ' + esc(st.lib) + '</p>'
+      + '<div class="w5-pipe__data">' + dataFor(st.n) + '</div>'
+      + '<p class="w5-pipe__why"><b>Without it:</b> ' + esc(st.why) + '</p>';
+  }
+  function renderBoard(){
+    each(root.querySelectorAll('.w5-tile'), function(t){
+      var n = +t.getAttribute('data-n');
+      t.classList.toggle('is-on', n === S.stage); t.classList.toggle('is-done', n < S.stage);
+      var b = BREAKS.filter(function(x){ return x.stage === n && on(x.id); })[0];
+      t.classList.toggle('is-broken', !!b && (n === 3 || n === 4)); t.classList.toggle('is-skipped', !!b && (n === 9 || n === 12));
+    });
+    $('w5-pipeProg').style.width = (S.stage / 12 * 100) + '%';
+  }
+  function renderFinal(){
+    var h = checked(), q = cur(), n = stars(), box = $('w5-pipeFinal');
+    var verdict = n === 5 ? 'Right, sourced and checked. This is what the twelve stages are for.' : n >= 4 ? 'Mostly right, with a flaw a careful reader would catch.' : n >= 3 ? 'Shaky. A real user would trust this and be misled.' : 'Wrong or unverifiable, delivered with full confidence.';
+    box.innerHTML = '<div class="top"><h4>What the person receives · "' + esc(q.q) + '"</h4><span class="w5-pipe__stars">' + '★'.repeat(n) + '<span style="color:var(--line)">' + '★'.repeat(5 - n) + '</span><small>' + n + ' of 5 · ' + esc(verdict) + '</small></span></div>'
+      + (S.stage < 12 && !S.playing ? '<div class="muted" style="font-size:.86rem">Run the question through to the end to see the answer that reaches the person.</div>' : sentences(h.sent, false) + (h.held && h.held.length ? '<div class="muted" style="font-size:.84rem">Held back by the checker: "' + esc(h.held[0].t) + '"</div>' : ''));
+  }
+  function renderAll(){ renderBoard(); renderDetail(); renderFinal(); }
+
+  /* ---------- build the board, questions and switches ---------- */
+  STAGES.forEach(function(st){
+    var b = document.createElement('button'); b.type = 'button'; b.className = 'w5-tile'; b.setAttribute('data-n', st.n); b.setAttribute('data-kind', st.kind);
+    b.innerHTML = '<span class="w5-tile__n">' + st.n + '</span><span class="w5-tile__name">' + esc(st.name) + '</span><span class="w5-tile__tag' + (st.tag === 'new' ? ' is-new' : '') + '">' + (st.tag === 'new' ? 'new' : st.tag) + '</span>';
+    b.addEventListener('click', function(){ stop(); S.stage = st.n; renderAll(); });
+    root.querySelector('.w5-pipe__tiles[data-lane="' + st.lane + '"]').appendChild(b);
+  });
+  QS.forEach(function(q, i){
+    var b = document.createElement('button'); b.type = 'button'; b.setAttribute('role', 'tab'); b.textContent = q.q; b.className = i === 0 ? 'is-on' : '';
+    b.addEventListener('click', function(){ stop(); S.q = i; S.stage = 0; each($('w5-pipeQs').children, function(c){ c.classList.toggle('is-on', c === b); }); renderAll(); });
+    $('w5-pipeQs').appendChild(b);
+  });
+  BREAKS.forEach(function(br){
+    var b = document.createElement('button'); b.type = 'button'; b.className = 'w5-sw'; b.setAttribute('aria-pressed', 'false');
+    b.innerHTML = '<i></i><span>' + esc(br.name) + '<small>' + esc(br.small) + ' · stage ' + br.stage + '</small></span>';
+    b.addEventListener('click', function(){ S.breaks[br.id] = !S.breaks[br.id]; b.classList.toggle('is-on', S.breaks[br.id]); b.setAttribute('aria-pressed', S.breaks[br.id] ? 'true' : 'false'); if (!S.playing && S.stage === 0) S.stage = br.stage; renderAll(); });
+    $('w5-pipeSw').appendChild(b);
+  });
+
+  /* ---------- run, step, reset ---------- */
+  function stop(){ if (S.timer) clearTimeout(S.timer); S.timer = null; S.playing = false; $('w5-pipeRun').textContent = 'Run the question through'; }
+  function run(){
+    if (S.playing) { stop(); renderAll(); return; }
+    S.playing = true; S.stage = 0; $('w5-pipeRun').textContent = 'Pause';
+    (function tick(){
+      S.stage++; renderAll();
+      if (S.stage >= 12) { stop(); renderAll(); return; }
+      S.timer = setTimeout(tick, reduce ? 0 : (S.stage < 7 ? 900 : 1500));
+    })();
+  }
+  $('w5-pipeRun').addEventListener('click', run);
+  $('w5-pipeStep').addEventListener('click', function(){ stop(); S.stage = S.stage >= 12 ? 1 : S.stage + 1; renderAll(); });
+  $('w5-pipeReset').addEventListener('click', function(){ stop(); S.stage = 0; S.breaks = {}; each(root.querySelectorAll('.w5-sw'), function(b){ b.classList.remove('is-on'); b.setAttribute('aria-pressed', 'false'); }); renderAll(); });
+  renderAll();
+})();
 </script>
 </body></html>
