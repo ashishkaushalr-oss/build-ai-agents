@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Progress tracker options</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+  :root{--stage:#0B1020;--stage-2:#141D36;--fg:#EAF0FF;--muted:#8E9BBE;--line:#26325A;--think:#8F7BFF;--act:#FF7A58;--observe:#2CD2B2}
+  body{margin:0;background:var(--stage);color:var(--fg);font:15px/1.5 Figtree,system-ui,sans-serif}
+  .wrap{max-width:1100px;margin:0 auto;padding:24px 16px 48px}
+  h1{font-family:"Bricolage Grotesque",sans-serif;font-size:1.5rem;margin:0 0 4px}
+  .sub{color:var(--muted);margin:0 0 16px}
+  .bar{display:flex;flex-wrap:wrap;gap:14px 24px;align-items:center;padding:12px 14px;border:1px solid var(--line);border-radius:14px;background:var(--stage-2);margin-bottom:18px;font-size:.9rem}
+  .bar label{display:flex;align-items:center;gap:10px}
+  .bar input[type=range]{width:220px;accent-color:var(--think)}
+  .bar b{font-variant-numeric:tabular-nums;min-width:120px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(440px,1fr));gap:18px}
+  @media (max-width:500px){.grid{grid-template-columns:1fr}}
+  .card{border:1px solid var(--line);border-radius:18px;background:linear-gradient(180deg,#121A2E,#0E1528);padding:14px 14px 12px;display:grid;gap:10px}
+  .card header{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap}
+  .card h2{font-family:"Bricolage Grotesque",sans-serif;font-size:1.05rem;margin:0}
+  .card h2 small{font-family:"JetBrains Mono",monospace;font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-right:8px}
+  .tag{font-family:"JetBrains Mono",monospace;font-size:.66rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:3px 8px;border:1px solid var(--line);border-radius:999px}
+  canvas{width:100%;height:260px;display:block;border-radius:12px;background:var(--stage)}
+  .why{font-size:.86rem;color:var(--muted);margin:0}
+  .why b{color:var(--fg)}
+</style>
+<div class="wrap">
+  <h1>Progress tracker options</h1>
+  <p class="sub">Five ways to show the same fifty days. Each one animates on its own, quietly. Drag the slider to see how they behave as you move through the course.</p>
+  <div class="bar">
+    <label>Days done <input type="range" id="days" min="0" max="50" value="13"> <b id="daysLbl">13 of 50 · week 3</b></label>
+    <label><input type="checkbox" id="motion" checked> animation</label>
+  </div>
+  <div class="grid" id="grid"></div>
+</div>
+<script>
+(function(){
+  'use strict';
+  var D = 50, W = 10, PER = 5;
+  var THINK = '#8F7BFF', ACT = '#FF7A58', OBS = '#2CD2B2', FG = '#EAF0FF', MUTED = '#8E9BBE', LINE = '#26325A';
+  var MONO = 'JetBrains Mono, ui-monospace, monospace', DISP = '"Bricolage Grotesque", Figtree, sans-serif', SANS = 'Figtree, system-ui, sans-serif';
+  var WEEKS = ['Meet modern AI', 'Prompt craft', 'Claude Projects', 'Context', 'Embeddings & RAG', 'n8n workflows', 'First agent', 'Tool calling', 'Chat channels', 'Capstone'];
+  var DAYT = ['What AI is', 'Machines that learn', 'Tokens and the desk', 'Trust, tools, files', 'Design and the lab'];
+  var S = {done: 13, motion: true};
+  function rgba(hex, a){ var n = parseInt(hex.slice(1), 16); return 'rgba(' + (n >> 16) + ',' + ((n >> 8) & 255) + ',' + (n & 255) + ',' + a + ')'; }
+  function state(i){ return i < S.done ? 'done' : i === S.done ? 'now' : 'ahead'; }
+  function col(st, a){ return st === 'done' ? rgba(OBS, a == null ? 1 : a) : st === 'now' ? rgba(ACT, a == null ? 1 : a) : rgba(FG, a == null ? .16 : a * .16); }
+  function noise(i){ var x = Math.sin(i * 12.9898) * 43758.5453; return x - Math.floor(x); }
+  function glowDot(ctx, x, y, r, c, g){ ctx.save(); ctx.shadowColor = c; ctx.shadowBlur = g || 14; ctx.fillStyle = c; ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill(); ctx.restore(); }
+  function label(ctx, text, x, y, size, color, align, font){ ctx.font = (size || 11) + 'px ' + (font || MONO); ctx.fillStyle = color || MUTED; ctx.textAlign = align || 'left'; ctx.textBaseline = 'middle'; ctx.fillText(text, x, y); }
+
+  /* ---------- ten robots: week 1 is a little box with one eye, each week adds a part and a little size ---------- */
+  var EXTRA = ['antenna', 'eye2', 'arms', 'legs', 'screen', 'pads', 'tool', 'radar', 'crown'];
+  function robotParts(L){ var p = ['body', 'eyes']; for (var i = 0; i < L - 1; i++) p.push(EXTRA[i]); return p; }
+  function rr(ctx, x, y, w, h, r){ ctx.beginPath(); ctx.roundRect(x, y, w, h, r); }
+  /* styleOf(partIndex) -> 'lit' | 'now' | 'dim' | 'blue' */
+  function drawRobot(ctx, x, baseY, s, L, t, styleOf){
+    var parts = robotParts(L), has = function(p){ return parts.indexOf(p) >= 0; };
+    var bw = (26 + L * 2.2) * s, bh = (20 + L * 2.2) * s, legH = has('legs') ? 9 * s : 0, headSep = L >= 4;
+    var hw = (18 + L * 1.1) * s, hh = (12 + L * 0.9) * s;
+    var lit = styleOf(0) === 'lit', bob = lit ? Math.sin(t * 1.8 + L) * 1.4 * s : 0;
+    var by = baseY - legH - bh - bob, bx = x - bw / 2;
+    var hy = headSep ? by - 3 * s - hh : by, hx = x - hw / 2;
+    function paint(part, body){
+      var st = styleOf(parts.indexOf(part));
+      ctx.save(); ctx.setLineDash(st === 'blue' ? [3, 3] : []); ctx.lineWidth = Math.max(1, 1.2 * s);
+      ctx.fillStyle = st === 'lit' ? '#27345F' : st === 'now' ? '#30294F' : st === 'dim' ? 'rgba(234,240,255,.05)' : 'rgba(0,0,0,0)';
+      ctx.strokeStyle = st === 'lit' ? rgba(OBS, .85) : st === 'now' ? rgba(ACT, .9) : st === 'dim' ? rgba(FG, .16) : rgba(THINK, .8);
+      body(st); ctx.restore();
+    }
+    var eyeCol = function(st, a){ return st === 'lit' ? rgba(OBS, a) : st === 'now' ? rgba(ACT, a) : st === 'dim' ? rgba(FG, .12) : rgba(THINK, .6); };
+    paint('legs', function(){ if (!has('legs')) return; [x - bw / 4, x + bw / 4].forEach(function(lx){ rr(ctx, lx - 3 * s, baseY - legH - bob, 6 * s, legH, 2 * s); ctx.fill(); ctx.stroke(); }); });
+    paint('body', function(st){ rr(ctx, bx, by, bw, bh, 5 * s); ctx.fill(); ctx.stroke(); if (st === 'lit') { ctx.fillStyle = rgba(OBS, .08); rr(ctx, bx + 3 * s, by + 3 * s, bw - 6 * s, bh * .35, 3 * s); ctx.fill(); } });
+    paint('screen', function(st){ if (!has('screen')) return; var sw = bw * .5, sh = bh * .32, sx = x - sw / 2, sy = by + bh * .38; rr(ctx, sx, sy, sw, sh, 2 * s); ctx.fillStyle = st === 'lit' ? rgba(OBS, .18) : st === 'now' ? rgba(ACT, .15) : ctx.fillStyle; ctx.fill(); ctx.stroke(); if (st === 'lit' || st === 'now') { ctx.strokeStyle = eyeCol(st, .9); ctx.beginPath(); for (var i = 0; i <= 8; i++) { var px = sx + 2 * s + (sw - 4 * s) * i / 8, py = sy + sh / 2 + Math.sin(t * 4 + i * .9 + L) * sh * .25; ctx[i ? 'lineTo' : 'moveTo'](px, py); } ctx.stroke(); } });
+    paint('pads', function(){ if (!has('pads')) return; [bx - 4 * s, bx + bw - 4 * s].forEach(function(px){ rr(ctx, px, by - 2 * s, 8 * s, 6 * s, 2 * s); ctx.fill(); ctx.stroke(); }); });
+    paint('arms', function(st){ if (!has('arms')) return; var sw = lit ? Math.sin(t * 2.2 + L) * .25 : 0; [[-1, -sw], [1, sw]].forEach(function(d){ var ax = x + d[0] * bw / 2, ay = by + bh * .3, hx2 = ax + d[0] * (10 * s) + d[1] * 6 * s, hy2 = ay + 12 * s - Math.abs(d[1]) * 8 * s; ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(hx2, hy2); ctx.stroke(); ctx.beginPath(); ctx.arc(hx2, hy2, 3 * s, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); if (has('tool') && d[0] === 1) { paintTool(hx2, hy2); } }); });
+    function paintTool(hx2, hy2){ var st = styleOf(parts.indexOf('tool')); ctx.save(); ctx.setLineDash(st === 'blue' ? [3, 3] : []); ctx.strokeStyle = st === 'lit' ? rgba(FG, .8) : st === 'now' ? rgba(ACT, .9) : st === 'dim' ? rgba(FG, .16) : rgba(THINK, .8); ctx.lineWidth = Math.max(1, 1.4 * s); ctx.beginPath(); ctx.moveTo(hx2, hy2); ctx.lineTo(hx2 + 7 * s, hy2 - 9 * s); ctx.stroke(); ctx.beginPath(); ctx.arc(hx2 + 8 * s, hy2 - 10 * s, 3 * s, .5, 5.2); ctx.stroke(); ctx.restore(); }
+    if (headSep) paint('eye2', function(){ rr(ctx, hx, hy, hw, hh, 4 * s); ctx.fill(); ctx.stroke(); ctx.beginPath(); ctx.moveTo(x, hy + hh); ctx.lineTo(x, by); ctx.stroke(); });
+    paint('eyes', function(st){ var cy = headSep ? hy + hh / 2 : by + bh * .3, r = (2.4 + L * .15) * s, two = has('eye2'), blink = lit && Math.sin(t * .9 + L * 2) > .985; ctx.fillStyle = eyeCol(st, 1); ctx.shadowColor = eyeCol(st, 1); ctx.shadowBlur = st === 'lit' || st === 'now' ? 10 : 0; (two ? [x - (headSep ? hw : bw) / 4.5, x + (headSep ? hw : bw) / 4.5] : [x]).forEach(function(ex){ ctx.beginPath(); if (blink) ctx.rect(ex - r, cy - 1, r * 2, 2); else ctx.arc(ex, cy, r, 0, Math.PI * 2); ctx.fill(); }); });
+    paint('antenna', function(st){ if (!has('antenna')) return; var top = (headSep ? hy : by); ctx.beginPath(); ctx.moveTo(x, top); ctx.lineTo(x, top - 8 * s); ctx.stroke(); var on = st === 'lit' ? (Math.sin(t * 3 + L) > 0 ? 1 : .35) : 1; ctx.fillStyle = eyeCol(st, on); ctx.shadowColor = ctx.fillStyle; ctx.shadowBlur = st === 'lit' ? 8 : 0; ctx.beginPath(); ctx.arc(x, top - 10 * s, 2.2 * s, 0, Math.PI * 2); ctx.fill(); });
+    paint('radar', function(){ if (!has('radar')) return; var top = hy + 2 * s; ctx.beginPath(); ctx.arc(hx + hw + 4 * s, top + 2 * s, 5 * s, -2.2, .6); ctx.stroke(); ctx.beginPath(); ctx.moveTo(hx + hw, top + 4 * s); ctx.lineTo(hx + hw + 4 * s, top + 2 * s); ctx.stroke(); });
+    paint('crown', function(st){ if (!has('crown')) return; var top = hy; ctx.beginPath(); for (var i = -1; i <= 1; i++) { var cx2 = x + i * hw * .3; ctx.moveTo(cx2 - 3 * s, top); ctx.lineTo(cx2, top - 7 * s); ctx.lineTo(cx2 + 3 * s, top); } ctx.closePath(); ctx.fill(); ctx.stroke(); if (st === 'lit') { ctx.fillStyle = rgba(OBS, .06 + .04 * Math.sin(t * 1.5)); ctx.beginPath(); ctx.arc(x, by + bh / 2 - 10 * s, bw * 1.1, 0, Math.PI * 2); ctx.fill(); } });
+  }
+  function weekInfo(k){ var dn = Math.min(PER, Math.max(0, S.done - k * PER)); return {done: dn === PER, now: dn > 0 && dn < PER || (dn === 0 && S.done === k * PER && S.done < D), frac: dn / PER, days: dn}; }
+
+  var OPTIONS = [
+    {n: 'G', name: 'Robot lineup', tag: 'ten robots, powering on one by one', h: 300, why: '<b>Why it fits:</b> Week 1 is a little box with one eye; every week adds a part and a little size, up to the crowned Week 10. A finished week’s robot is lit and alive: eyes glowing, screen running, a slow bob and a wave. This week’s robot wakes up part by part as the days tick. The weeks ahead stand dark, waiting.',
+     draw: function(ctx, w, h, t){
+       var baseY = h - 48, gap = (w - 40) / W;
+       var fl = ctx.createLinearGradient(0, baseY, 0, baseY + 30); fl.addColorStop(0, rgba(OBS, .10)); fl.addColorStop(1, rgba(OBS, 0)); ctx.fillStyle = fl; ctx.fillRect(20, baseY, Math.max(0, Math.min(W, S.done / PER + .5)) * gap, 30);
+       ctx.strokeStyle = rgba(FG, .10); ctx.beginPath(); ctx.moveTo(20, baseY + .5); ctx.lineTo(w - 20, baseY + .5); ctx.stroke();
+       for (var k = 0; k < W; k++) { var L = k + 1, s = .55 + L * .085, x = 20 + gap * (k + .5), wi = weekInfo(k), n = robotParts(L).length, solid = Math.round(wi.frac * n);
+         var style = wi.done ? function(){ return 'lit'; } : wi.now ? (function(sol){ return function(i){ return i < sol ? 'now' : 'dim'; }; })(solid) : function(){ return 'dim'; };
+         if (wi.now) { var br = .5 + .5 * Math.sin(t * 2.2); ctx.fillStyle = rgba(ACT, .08 + br * .06); ctx.beginPath(); ctx.ellipse(x, baseY + 4, gap * .42, 7, 0, 0, Math.PI * 2); ctx.fill(); }
+         drawRobot(ctx, x, baseY, s, L, t, style);
+         label(ctx, 'W' + L, x, baseY + 16, 9.5, wi.done ? rgba(OBS, .9) : wi.now ? ACT : rgba(FG, .35), 'center');
+         if (wi.now) label(ctx, wi.days + ' / 5 days', x, baseY + 30, 8.5, rgba(ACT, .9), 'center');
+       }
+       var cw = Math.min(W - 1, Math.floor(S.done / PER));
+       label(ctx, S.done >= D ? 'all ten robots online' : (Math.floor(S.done / PER)) + ' of 10 robots online · building ' + WEEKS[cw], 14, 16, 11, MUTED);
+     }},
+    {n: 'H', name: 'Assembly line', tag: 'blueprints becoming robots, a part a day', h: 300, why: '<b>Why it fits:</b> the same ten robots on a conveyor, but the weeks ahead are violet blueprints, dashed outlines of what you will build. Each day of the current week bolts on one real part; the pod around it fills with an orange arc. Finished robots stand in lit pods. Progress reads as construction, which is what the course is.',
+     draw: function(ctx, w, h, t){
+       var gap = (w - 36) / W, floorY = h - 58;
+       if (S.motion) { ctx.setLineDash([8, 10]); ctx.lineDashOffset = -((t * 22) % 18); ctx.strokeStyle = rgba(FG, .12); ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(14, floorY + 6); ctx.lineTo(w - 14, floorY + 6); ctx.stroke(); ctx.setLineDash([]); ctx.lineDashOffset = 0; }
+       ctx.strokeStyle = rgba(FG, .14); ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(14, floorY + .5); ctx.lineTo(w - 14, floorY + .5); ctx.stroke();
+       for (var k = 0; k < W; k++) { var L = k + 1, s = .52 + L * .08, x = 18 + gap * (k + .5), wi = weekInfo(k), n = robotParts(L).length, solid = Math.round(wi.frac * n), podH = 70 + L * 8, podW = gap - 6, px = x - podW / 2, py = floorY - podH;
+         ctx.save(); if (wi.done) { ctx.shadowColor = OBS; ctx.shadowBlur = 16; }
+         ctx.fillStyle = wi.done ? rgba(OBS, .07) : wi.now ? rgba(ACT, .05) : rgba(THINK, .04); ctx.strokeStyle = wi.done ? rgba(OBS, .45) : wi.now ? rgba(ACT, .35) : rgba(THINK, .25); ctx.lineWidth = 1; rr(ctx, px, py, podW, podH, 10); ctx.fill(); ctx.stroke(); ctx.restore();
+         if (wi.now) { var a0 = -Math.PI / 2, a1 = a0 + Math.PI * 2 * (wi.frac || .04); ctx.strokeStyle = rgba(ACT, .9); ctx.lineWidth = 2.5; ctx.beginPath(); ctx.arc(x, py - 10, 7, a0, a1); ctx.stroke(); ctx.strokeStyle = rgba(FG, .12); ctx.beginPath(); ctx.arc(x, py - 10, 7, a1, a0 + Math.PI * 2); ctx.stroke(); if (S.motion) { for (var sp = 0; sp < 3; sp++) { var ph = (t * 1.6 + sp * .33) % 1; ctx.fillStyle = rgba(ACT, 1 - ph); ctx.beginPath(); ctx.arc(x + Math.cos(sp * 2.1 + t) * 10 * ph, floorY - 30 * s - ph * 22, 1.5, 0, Math.PI * 2); ctx.fill(); } } }
+         var style = wi.done ? function(){ return 'lit'; } : wi.now ? (function(sol){ return function(i){ return i < sol ? 'now' : 'blue'; }; })(solid) : function(){ return 'blue'; };
+         drawRobot(ctx, x, floorY - 2, s, L, t, style);
+         label(ctx, 'W' + L, x, floorY + 20, 9.5, wi.done ? rgba(OBS, .9) : wi.now ? ACT : rgba(THINK, .6), 'center');
+         label(ctx, wi.done ? 'online' : wi.now ? wi.days + ' of ' + n + ' parts' : 'blueprint', x, floorY + 33, 8, wi.done ? rgba(OBS, .7) : wi.now ? rgba(ACT, .8) : rgba(FG, .3), 'center');
+       }
+       label(ctx, 'assembly line · ' + Math.floor(S.done / PER) + ' built · ' + (S.done < D ? 'now building W' + (Math.floor(S.done / PER) + 1) : 'complete'), 14, 16, 11, MUTED);
+     }},
+    {n: 'A', name: 'Constellation', tag: 'a network that lights up', why: '<b>Why it fits:</b> fifty days as neurons in ten small clusters. Finished days glow and link up, a quiet signal travels along what you have learned, today breathes. Reads at a glance and looks like the thing the course is about.',
+     draw: function(ctx, w, h, t){
+       var cx = [], cy = [];
+       for (var k = 0; k < W; k++) { var u = (k + .5) / W; cx.push(30 + u * (w - 60)); cy.push(h * .52 + Math.sin(u * Math.PI * 1.3 + .6) * h * .24); }
+       var pts = [];
+       for (var i = 0; i < D; i++) { var wk = Math.floor(i / PER), d = i % PER, a = -Math.PI / 2 + d * Math.PI * 2 / PER; pts.push([cx[wk] + Math.cos(a) * 19, cy[wk] + Math.sin(a) * 16]); }
+       ctx.lineWidth = 1;
+       for (var k2 = 0; k2 < W - 1; k2++) { var s2 = state((k2 + 1) * PER - 1); ctx.strokeStyle = s2 === 'done' ? rgba(OBS, .45) : rgba(FG, .08); ctx.beginPath(); ctx.moveTo(cx[k2], cy[k2]); ctx.lineTo(cx[k2 + 1], cy[k2 + 1]); ctx.stroke(); }
+       for (var i2 = 0; i2 < D; i2++) { var j = (i2 % PER === PER - 1) ? i2 - PER + 1 : i2 + 1; var st = state(i2) === 'done' && state(j) !== 'ahead' ? 'done' : 'ahead'; ctx.strokeStyle = st === 'done' ? rgba(OBS, .35) : rgba(FG, .06); ctx.beginPath(); ctx.moveTo(pts[i2][0], pts[i2][1]); ctx.lineTo(pts[j][0], pts[j][1]); ctx.stroke(); }
+       for (var i3 = 0; i3 < D; i3++) { var s3 = state(i3); if (s3 === 'ahead') { ctx.fillStyle = rgba(FG, .14); ctx.beginPath(); ctx.arc(pts[i3][0], pts[i3][1], 2.2, 0, Math.PI * 2); ctx.fill(); } else if (s3 === 'done') { var tw = .75 + .25 * Math.sin(t * 1.3 + i3); glowDot(ctx, pts[i3][0], pts[i3][1], 3.2, rgba(OBS, tw), 10); } else { var p = .5 + .5 * Math.sin(t * 2.2); glowDot(ctx, pts[i3][0], pts[i3][1], 4 + p * 2, ACT, 22 + p * 10); } }
+       if (S.done > 1 && S.motion) { var segs = S.done - 1, pos = (t * .35) % 1 * segs, a1 = Math.floor(pos), f = pos - a1, b1 = Math.min(a1 + 1, S.done - 1); var x = pts[a1][0] + (pts[b1][0] - pts[a1][0]) * f, y = pts[a1][1] + (pts[b1][1] - pts[a1][1]) * f; glowDot(ctx, x, y, 2.4, FG, 16); }
+       for (var k3 = 0; k3 < W; k3++) { var dn = Math.min(PER, Math.max(0, S.done - k3 * PER)); label(ctx, 'W' + (k3 + 1), cx[k3], cy[k3] + 30, 10, dn === PER ? rgba(OBS, .9) : dn ? rgba(ACT, .9) : rgba(FG, .35), 'center'); }
+       label(ctx, S.done + ' of 50 days lit', 14, 16, 11, MUTED);
+     }},
+    {n: 'B', name: 'Token stream', tag: 'the course as a sentence being written', why: '<b>Why it fits:</b> every day is a token and every week a word. Done tokens are filled, today has the caret, and the next token flickers through its candidates before settling, exactly how a model predicts. Unmistakably about this course.',
+     draw: function(ctx, w, h, t){
+       var cellW = (w - 28 - (W - 1) * 10) / W, cw = (cellW - 4 * 3) / PER, y0 = 70, rowH = 30;
+       for (var k = 0; k < W; k++) { var x0 = 14 + k * (cellW + 10); label(ctx, 'W' + (k + 1), x0, y0 - 16, 9.5, k * PER < S.done ? rgba(OBS, .8) : rgba(FG, .4)); for (var d = 0; d < PER; d++) { var i = k * PER + d, st = state(i), x = x0 + d * (cw + 3); ctx.fillStyle = st === 'done' ? rgba(OBS, .85) : st === 'now' ? rgba(ACT, .55 + .45 * (.5 + .5 * Math.sin(t * 3))) : rgba(FG, .07); ctx.beginPath(); ctx.roundRect(x, y0, cw, rowH, 5); ctx.fill(); if (st !== 'done') { ctx.strokeStyle = st === 'now' ? ACT : rgba(FG, .14); ctx.lineWidth = 1; ctx.stroke(); } } }
+       var nowK = Math.floor(S.done / PER), nowD = S.done % PER, nx = 14 + nowK * (cellW + 10) + nowD * (cw + 3);
+       if (S.done < D && Math.sin(t * 6) > 0) { ctx.fillStyle = FG; ctx.fillRect(nx + cw + 1, y0 + 4, 2, rowH - 8); }
+       label(ctx, 'written so far', 14, 136, 10, MUTED);
+       var sent = ''; for (var k2 = 0; k2 < W; k2++) { var dn = Math.min(PER, Math.max(0, S.done - k2 * PER)); if (dn === PER) sent += WEEKS[k2] + ' · '; else if (dn) { sent += WEEKS[k2].slice(0, Math.max(2, Math.round(WEEKS[k2].length * dn / PER))); break; } else break; }
+       label(ctx, sent || '…', 14, 156, 13, FG, 'left', SANS);
+       if (S.done < D) { var cands = [DAYT[nowD], 'Rest day', 'Skip ahead'], pick = Math.floor(t * .8) % 5; label(ctx, 'next token', 14, 190, 10, MUTED); for (var c = 0; c < 3; c++) { var hot = (pick < 3 ? c === pick : c === 0), prob = c === 0 ? .72 : c === 1 ? .18 : .10; label(ctx, (c === 0 ? 'Day ' + (S.done + 1) + ' · ' : '') + cands[c], 14, 212 + c * 16, 11, hot ? ACT : rgba(FG, .4), 'left', SANS); ctx.fillStyle = hot ? rgba(ACT, .7) : rgba(FG, .12); ctx.fillRect(w - 134, 207 + c * 16, 120 * prob, 8); } }
+       else label(ctx, 'complete · 50 of 50 tokens', 14, 200, 12, OBS, 'left', SANS);
+     }},
+    {n: 'C', name: 'Attention ring', tag: 'one number, one breathing glow', why: '<b>Why it fits:</b> fifty segments in a ring, the number in the middle, and a soft glow that grows with your progress and breathes slowly. The calmest of the five: you read it in half a second and it never shouts.',
+     draw: function(ctx, w, h, t){
+       var cx = w * .36, cy = h * .5, R = 92, br = .5 + .5 * Math.sin(t * 1.1), prog = S.done / D;
+       var g = ctx.createRadialGradient(cx, cy, 10, cx, cy, R + 50); g.addColorStop(0, rgba(THINK, .10 + prog * .25 + br * .06)); g.addColorStop(1, rgba(THINK, 0)); ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
+       for (var i = 0; i < D; i++) { var a0 = -Math.PI / 2 + i / D * Math.PI * 2 + .012, a1 = -Math.PI / 2 + (i + 1) / D * Math.PI * 2 - .012, st = state(i); ctx.lineWidth = st === 'now' ? 12 + br * 3 : 10; ctx.strokeStyle = st === 'done' ? rgba(OBS, .9) : st === 'now' ? rgba(ACT, .7 + br * .3) : rgba(FG, .09); ctx.lineCap = 'butt'; ctx.beginPath(); ctx.arc(cx, cy, R, a0, a1); ctx.stroke(); }
+       if (S.motion) { var sa = (t * .5) % (Math.PI * 2); ctx.strokeStyle = rgba(FG, .35); ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(cx, cy, R + 16, sa, sa + .5); ctx.stroke(); }
+       ctx.strokeStyle = rgba(FG, .06); ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(cx, cy, R + 16, 0, Math.PI * 2); ctx.stroke();
+       ctx.font = '800 40px ' + DISP; ctx.fillStyle = FG; ctx.textAlign = 'center'; ctx.fillText(String(S.done), cx, cy - 8);
+       label(ctx, 'of 50 days · ' + Math.round(prog * 100) + '%', cx, cy + 22, 11, MUTED, 'center');
+       var wk = Math.min(W, Math.floor(S.done / PER) + 1), tx = w * .66;
+       label(ctx, 'week ' + wk + ' of 10', tx, cy - 40, 11, MUTED); label(ctx, WEEKS[wk - 1], tx, cy - 20, 15, FG, 'left', '600 15px ' + SANS);
+       if (S.done < D) { label(ctx, 'up next', tx, cy + 10, 11, MUTED); label(ctx, 'Day ' + (S.done + 1) + ' · ' + DAYT[S.done % PER], tx, cy + 30, 13, ACT, 'left', SANS); } else label(ctx, 'course complete', tx, cy + 20, 13, OBS, 'left', SANS);
+     }},
+    {n: 'D', name: 'Transformer layers', tag: 'a forward pass through what you know', why: '<b>Why it fits:</b> ten layers like a model’s blocks, five cells each. Finished layers glow and, every few seconds, a soft pulse runs up through them like a forward pass; it stops at the layer you are on. Intuitive as a filling stack, AI-like in shape.',
+     draw: function(ctx, w, h, t){
+       var lh = 17, gap = 4, x0 = 70, bw = Math.min(360, w - 150), y0 = h - 12, pulse = S.motion ? ((t * .6) % 3.2) / 3.2 * Math.max(1, Math.ceil(S.done / PER)) : -1;
+       for (var k = 0; k < W; k++) { var y = y0 - (k + 1) * (lh + gap), dn = Math.min(PER, Math.max(0, S.done - k * PER)), done = dn === PER, cur = dn > 0 && dn < PER, segW = (bw - 4 * 4) / PER;
+         ctx.fillStyle = done ? rgba(OBS, .14) : cur ? rgba(ACT, .10) : rgba(FG, .035); ctx.strokeStyle = done ? rgba(OBS, .55) : cur ? rgba(ACT, .6) : rgba(FG, .10); ctx.lineWidth = 1; ctx.beginPath(); ctx.roundRect(x0, y, bw, lh, 6); ctx.fill(); ctx.stroke();
+         for (var d = 0; d < PER; d++) { var st = state(k * PER + d), sx = x0 + 4 + d * (segW + 4); ctx.fillStyle = st === 'done' ? rgba(OBS, .9) : st === 'now' ? rgba(ACT, .6 + .4 * (.5 + .5 * Math.sin(t * 2.4))) : rgba(FG, .06); ctx.beginPath(); ctx.roundRect(sx, y + 4, segW - 4, lh - 8, 3); ctx.fill(); }
+         if (pulse >= k && pulse < k + 1 && (done || cur)) { var f = pulse - k; ctx.fillStyle = rgba(FG, .22 * Math.sin(f * Math.PI)); ctx.beginPath(); ctx.roundRect(x0, y, bw, lh, 6); ctx.fill(); }
+         label(ctx, 'W' + (k + 1), x0 - 10, y + lh / 2, 10, done ? rgba(OBS, .9) : cur ? ACT : rgba(FG, .35), 'right');
+         label(ctx, WEEKS[k], x0 + bw + 10, y + lh / 2, 10, done || cur ? rgba(FG, .75) : rgba(FG, .3), 'left', SANS);
+       }
+       label(ctx, Math.floor(S.done / PER) + ' layers trained · day ' + Math.min(D, S.done + 1), 14, 16, 11, MUTED);
+     }},
+    {n: 'E', name: 'Learning curve', tag: 'noise settling into signal', why: '<b>Why it fits:</b> the chart every AI team watches, turned on the learner. Each finished day pulls the line further from noisy to calm; today is the live point at the frontier, the rest a faint forecast. Subtle, and it tells a story: you are converging.',
+     draw: function(ctx, w, h, t){
+       var x0 = 40, x1 = w - 16, y0 = 36, y1 = h - 34, pts = [];
+       for (var i = 0; i <= D; i++) { var u = i / D, base = Math.exp(-u * 3.2), nz = (noise(i) - .5) * .5 * Math.exp(-u * 2.2) + (noise(i * 7) - .5) * .12; pts.push([x0 + u * (x1 - x0), y0 + (1 - Math.max(.02, base + nz) * .92 - .04) * (y1 - y0)]); }
+       ctx.strokeStyle = rgba(FG, .08); ctx.lineWidth = 1; for (var g = 0; g < 5; g++) { var gy = y0 + g * (y1 - y0) / 4; ctx.beginPath(); ctx.moveTo(x0, gy); ctx.lineTo(x1, gy); ctx.stroke(); }
+       for (var k = 0; k <= W; k++) { var gx = x0 + k / W * (x1 - x0); ctx.beginPath(); ctx.moveTo(gx, y0); ctx.lineTo(gx, y1); ctx.stroke(); if (k < W) label(ctx, 'W' + (k + 1), gx + (x1 - x0) / W / 2, y1 + 14, 9.5, k * PER < S.done ? rgba(OBS, .8) : rgba(FG, .3), 'center'); }
+       if (S.done < D) { ctx.setLineDash([3, 5]); ctx.strokeStyle = rgba(FG, .22); ctx.lineWidth = 1.2; ctx.beginPath(); for (var j = S.done; j <= D; j++) ctx[j === S.done ? 'moveTo' : 'lineTo'](pts[j][0], pts[j][1]); ctx.stroke(); ctx.setLineDash([]); }
+       if (S.done > 0) { var grd = ctx.createLinearGradient(0, y0, 0, y1); grd.addColorStop(0, rgba(OBS, .22)); grd.addColorStop(1, rgba(OBS, 0)); ctx.fillStyle = grd; ctx.beginPath(); ctx.moveTo(pts[0][0], y1); for (var m = 0; m <= S.done; m++) ctx.lineTo(pts[m][0], pts[m][1]); ctx.lineTo(pts[S.done][0], y1); ctx.closePath(); ctx.fill();
+         ctx.save(); ctx.shadowColor = OBS; ctx.shadowBlur = 12; ctx.strokeStyle = rgba(OBS, .95); ctx.lineWidth = 2.2; ctx.lineJoin = 'round'; ctx.beginPath(); for (var n = 0; n <= S.done; n++) ctx[n ? 'lineTo' : 'moveTo'](pts[n][0], pts[n][1]); ctx.stroke(); ctx.restore(); }
+       var p = pts[S.done], rip = (t * .9) % 1; ctx.strokeStyle = rgba(ACT, (1 - rip) * .6); ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(p[0], p[1], 6 + rip * 16, 0, Math.PI * 2); ctx.stroke(); glowDot(ctx, p[0], p[1], 4.5, ACT, 18);
+       label(ctx, 'uncertain', x0 - 6, y0 + 4, 9.5, rgba(FG, .4), 'right'); label(ctx, 'fluent', x0 - 6, y1 - 4, 9.5, rgba(FG, .4), 'right');
+       label(ctx, 'day ' + Math.min(D, S.done + 1) + (S.done < D ? ' · ' + DAYT[S.done % PER] : ' · complete'), x1, 16, 11, S.done < D ? ACT : OBS, 'right');
+     }}
+    ,{n: 'F', name: 'Journey path', tag: 'a winding road with milestones', why: '<b>Why it fits:</b> the whole course as one road that bends back on itself, fifty stops along it, a lab milestone at the end of every week. Finished road glows, a faint light travels the part you have walked, your marker breathes at today with its card. Instantly readable, and it tells the story of the trip.',
+     draw: function(ctx, w, h, t){
+       var rows = 3, r = 22, left = 44, right = w - 44, top = 44, rowGap = (h - top - 40) / (rows - 1), segLen = right - left, turn = Math.PI * r;
+       var total = rows * segLen + (rows - 1) * turn;
+       function at(s){ var row = 0; while (row < rows - 1 && s > segLen + turn) { s -= segLen + turn; row++; } var y = top + row * rowGap, dir = row % 2 === 0 ? 1 : -1; if (s <= segLen) return [dir === 1 ? left + s : right - s, y]; var a = (s - segLen) / turn * Math.PI, cx0 = dir === 1 ? right : left, cy0 = y + rowGap / 2; return [cx0 + dir * Math.sin(a) * r * (rowGap / (2 * r)), cy0 - Math.cos(a) * rowGap / 2]; }
+       function road(from, to, style, width, blur){ ctx.save(); if (blur) { ctx.shadowColor = style; ctx.shadowBlur = blur; } ctx.strokeStyle = style; ctx.lineWidth = width; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.beginPath(); for (var s = from; s <= to; s += 4) { var p = at(s); if (s === from) ctx.moveTo(p[0], p[1]); else ctx.lineTo(p[0], p[1]); } var e = at(to); ctx.lineTo(e[0], e[1]); ctx.stroke(); ctx.restore(); }
+       var sOf = function(i){ return (i + .5) / D * total; };
+       road(0, total, rgba(FG, .09), 6);
+       if (S.done > 0) road(0, sOf(S.done - 1), rgba(OBS, .75), 6, 10);
+       for (var i = 0; i < D; i++) { var p = at(sOf(i)), st = state(i), lab = i % PER === PER - 1; if (st === 'ahead') { ctx.fillStyle = rgba(FG, lab ? .3 : .16); ctx.beginPath(); ctx.arc(p[0], p[1], lab ? 5 : 2.6, 0, Math.PI * 2); ctx.fill(); } else if (st === 'done') glowDot(ctx, p[0], p[1], lab ? 5.5 : 3.2, rgba(OBS, 1), lab ? 14 : 6); if (i % PER === 0) label(ctx, 'W' + (i / PER + 1), p[0], p[1] - 14, 9.5, i < S.done ? rgba(OBS, .9) : i === S.done ? ACT : rgba(FG, .4), 'center'); if (lab) label(ctx, 'lab', p[0], p[1] + 14, 8.5, i < S.done ? rgba(OBS, .8) : rgba(FG, .3), 'center'); }
+       if (S.done > 1 && S.motion) { var sp = at(((t * .18) % 1) * sOf(S.done - 1)); glowDot(ctx, sp[0], sp[1], 2.4, FG, 14); }
+       var cur = at(sOf(Math.min(S.done, D - 1))), br = .5 + .5 * Math.sin(t * 2.2);
+       ctx.strokeStyle = rgba(ACT, .35 * (1 - br)); ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(cur[0], cur[1], 8 + br * 10, 0, Math.PI * 2); ctx.stroke();
+       glowDot(ctx, cur[0], cur[1], 6.5, S.done < D ? ACT : OBS, 20); ctx.fillStyle = '#0B1020'; ctx.beginPath(); ctx.arc(cur[0], cur[1], 2.4, 0, Math.PI * 2); ctx.fill();
+       var cardW = 168, cardH = 46, cxp = Math.min(w - cardW - 10, Math.max(10, cur[0] - cardW / 2)), cyp = cur[1] + 20 > h - cardH - 8 ? cur[1] - cardH - 22 : cur[1] + 22;
+       ctx.fillStyle = rgba('#141D36', .96); ctx.strokeStyle = rgba(ACT, .6); ctx.lineWidth = 1; ctx.beginPath(); ctx.roundRect(cxp, cyp, cardW, cardH, 9); ctx.fill(); ctx.stroke();
+       label(ctx, S.done < D ? 'you are here · day ' + (S.done + 1) : 'journey complete', cxp + 10, cyp + 15, 9.5, ACT);
+       label(ctx, S.done < D ? DAYT[S.done % PER] + ' · ' + WEEKS[Math.floor(S.done / PER)] : '50 of 50 days', cxp + 10, cyp + 32, 11.5, FG, 'left', SANS);
+     }}
+  ];
+
+  var grid = document.getElementById('grid'), cards = [];
+  OPTIONS.forEach(function(o){
+    var card = document.createElement('section'); card.className = 'card';
+    card.innerHTML = '<header><h2><small>Option ' + o.n + '</small>' + o.name + '</h2><span class="tag">' + o.tag + '</span></header><canvas aria-label="' + o.name + ' preview"></canvas><p class="why">' + o.why + '</p>';
+    if (o.h) card.querySelector('canvas').style.height = o.h + 'px';
+    grid.appendChild(card); cards.push({o: o, c: card.querySelector('canvas')});
+  });
+  function fit(){ cards.forEach(function(k){ var dpr = Math.min(2, window.devicePixelRatio || 1), r = k.c.getBoundingClientRect(); k.c.width = Math.round(r.width * dpr); k.c.height = Math.round(r.height * dpr); k.w = r.width; k.h = r.height; k.dpr = dpr; }); }
+  fit(); window.addEventListener('resize', fit);
+  var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches; if (reduce) { S.motion = false; document.getElementById('motion').checked = false; }
+  var t0 = performance.now(), frozen = 0;
+  function frame(now){ var t = Math.max(0, S.motion ? (now - t0) / 1000 : frozen); cards.forEach(function(k){ var ctx = k.c.getContext('2d'); ctx.setTransform(k.dpr, 0, 0, k.dpr, 0, 0); ctx.clearRect(0, 0, k.w, k.h); try { k.o.draw(ctx, k.w, k.h, t); } catch (e) { console.error(k.o.name, e); } }); requestAnimationFrame(frame); }
+  requestAnimationFrame(frame);
+  var slider = document.getElementById('days'), lbl = document.getElementById('daysLbl');
+  function setDays(v){ S.done = v; lbl.textContent = v + ' of 50 · week ' + Math.min(10, Math.floor(v / 5) + 1); }
+  slider.addEventListener('input', function(){ setDays(parseInt(slider.value, 10)); });
+  document.getElementById('motion').addEventListener('change', function(){ frozen = (performance.now() - t0) / 1000; S.motion = this.checked; });
+  setDays(13);
+})();
+</script>
+</html>

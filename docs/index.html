@@ -318,7 +318,7 @@ footer.site{padding-block:32px 48px;color:var(--muted);font-size:.9rem;display:g
 .install{display:flex;align-items:center;gap:14px;margin:0 0 18px;padding:14px 16px;border:1px solid var(--line);border-radius:16px;background:var(--surface);box-shadow:0 1px 2px rgba(14,22,38,.04)}
 .install img{width:44px;height:44px;border-radius:10px;flex:none}
 .install__text{flex:1;min-width:0;font-size:.92rem;line-height:1.45}
-.install__text b{display:block;margin-bottom:2px}
+.install__text>b{display:block;margin-bottom:2px}
 .install .btn{flex:none}
 .install__x{flex:none;appearance:none;border:0;background:transparent;color:inherit;opacity:.6;font-size:22px;line-height:1;cursor:pointer;padding:4px 8px;border-radius:8px}
 .install__x:hover{opacity:1;background:var(--surface-2)}
@@ -326,19 +326,48 @@ footer.site{padding-block:32px 48px;color:var(--muted);font-size:.9rem;display:g
 
 </style>
 <style>
-/* Hub: the course map and the tracker. */
-.hero .wrap{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
-.stage--map{aspect-ratio:1/1;cursor:grab}
-.stage--map:active{cursor:grabbing}
+/* Hub: the editorial light banner, then the tracker. The banner stays light in both themes; that is the point of it. */
+.hero.hero--paper{background:linear-gradient(180deg,#FFFFFF,#F4F6FB);color:#0E1626;border-bottom:1px solid #D6DEEC}
+.hero.hero--paper::after{inset:-220px -160px auto auto;width:560px;height:560px;border-radius:50%;background:radial-gradient(circle,rgba(106,82,245,.3),rgba(14,159,134,.14) 50%,transparent 70%)}
+.hero--paper .wrap{grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:36px;padding-block:48px}
+.hero--paper .hero__text{gap:18px}
+.hero--paper .hero__text .eyebrow{color:#5B6882}
+.hero--paper h1{font-size:clamp(2.5rem,5vw,4.1rem);line-height:1;letter-spacing:-.025em}
+.hero--paper h1 em{font-style:normal;background:linear-gradient(90deg,#6A52F5,#F2552E);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero--paper .hero__text .lede{color:#3F4A63;font-size:1.08rem;max-width:48ch}
+.hero--paper .btn{background:#FFFFFF;color:#0E1626;border-color:#D6DEEC}
+.hero--paper .btn:hover{border-color:#9AA8C9}
+.hero--paper .btn--go{background:#F2552E;border-color:#F2552E;color:#fff;box-shadow:0 10px 24px rgba(242,85,46,.25)}
+.hero--paper .btn--go:hover{filter:brightness(1.05);border-color:#F2552E}
 .ringwrap{display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:center}
-.ring{width:132px;height:132px}
-.ring .track{fill:none;stroke:rgba(255,255,255,.12);stroke-width:10}
-.ring .fill{fill:none;stroke:#2CD2B2;stroke-width:10;stroke-linecap:round;transform:rotate(-90deg);transform-origin:center;transition:stroke-dasharray .6s cubic-bezier(.2,.8,.2,1)}
-.ring text{font-family:var(--font-display);font-weight:800;fill:#EAF0FF}
-.upnext{background:rgba(7,11,22,.6);border:1px solid #26325A;border-radius:14px;padding:12px 14px;display:grid;gap:4px}
-.upnext .eyebrow{color:#8E9BBE}
+.ring{width:118px;height:118px}
+.ring .track{fill:none;stroke:#E9EEF7;stroke-width:10}
+.ring .fill{fill:none;stroke:#0E9F86;stroke-width:10;stroke-linecap:round;transform:rotate(-90deg);transform-origin:center;transition:stroke-dasharray .6s cubic-bezier(.2,.8,.2,1)}
+.ring text{font-family:var(--font-display);font-weight:800;fill:#0E1626}
+.upnext{background:#FFFFFF;border:1px solid #D6DEEC;border-radius:16px;padding:12px 16px;display:grid;gap:4px;box-shadow:0 12px 30px rgba(14,22,38,.06)}
+.upnext .eyebrow{color:#5B6882}
 .upnext b{font-family:var(--font-display);font-size:1.1rem}
-.upnext a{color:#EAF0FF}
+.upnext span{color:#3F4A63}
+.upnext a{color:#0E1626}
+.hero--paper .chip{background:#E9EEF7;color:#3F4A63}
+.hero--paper .chip--ok{background:#DDF5EF;color:#0E9F86}
+.hero--paper .chip--warn{background:#FFF0D6;color:#A86A00}
+/* the ten weeks as a fan of cards: finished weeks edged teal, the current week lifted and orange */
+.fan{position:relative;height:340px;min-width:0;--step:7deg}
+.fan__card{position:absolute;left:50%;top:50%;width:152px;height:204px;margin:-102px 0 0 -76px;border-radius:16px;background:#FFFFFF;border:1px solid #D6DEEC;box-shadow:0 18px 40px rgba(14,22,38,.12);padding:14px;transform-origin:50% 140%;--lift:0px;transform:rotate(calc(var(--i,0) * var(--step))) translateY(var(--lift));transition:transform .7s cubic-bezier(.2,.8,.2,1),opacity .5s,box-shadow .3s,border-color .3s;display:grid;align-content:space-between;text-decoration:none;color:#0E1626}
+.fan:not(.is-open) .fan__card{transform:rotate(0deg) translateY(30px);opacity:0}
+.fan.is-open .fan__card{transition-delay:calc((var(--i,0) + 4.5) * 40ms)}
+.fan__card:hover,.fan__card:focus-visible{--lift:-14px;z-index:30!important;box-shadow:0 22px 46px rgba(14,22,38,.18);transition-delay:0s}
+.fan__n{font-family:var(--font-mono);font-size:.66rem;letter-spacing:.12em;text-transform:uppercase;color:#5B6882}
+.fan__t{font-family:var(--font-display);font-weight:700;font-size:1rem;line-height:1.15}
+.fan__s{display:block;height:6px;border-radius:999px;background:#E9EEF7;overflow:hidden}
+.fan__s i{display:block;height:100%;width:0;background:#0E9F86;transition:width .6s}
+.fan__card.is-done{border-color:#0E9F86}
+.fan__card.is-done .fan__n{color:#0E9F86}
+.fan__card.is-now{--lift:-26px;border-color:#F2552E;box-shadow:0 18px 44px rgba(242,85,46,.25)}
+.fan__card.is-now:hover,.fan__card.is-now:focus-visible{--lift:-36px}
+.fan__card.is-now .fan__s i{background:#F2552E}
+.fan__card.is-now .fan__n{color:#F2552E}
 .sync{font-size:.8rem}
 .tracker{display:grid;gap:10px}
 .wk{border:1px solid var(--line);border-radius:var(--r-l);background:var(--surface);overflow:hidden}
@@ -398,7 +427,7 @@ footer.site{padding-block:32px 48px;color:var(--muted);font-size:.9rem;display:g
 .mod--live p{color:var(--stage-muted)}
 .setup{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
 .danger{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-@media (max-width:820px){.hero .wrap{grid-template-columns:1fr}.ringwrap{grid-template-columns:1fr}}
+@media (max-width:820px){.hero--paper .wrap{grid-template-columns:1fr;gap:22px;padding-block:28px}.hero.hero--paper::after{inset:-200px -180px auto auto;width:420px;height:420px}.ringwrap{grid-template-columns:1fr}.fan{height:250px;--step:6.2deg}.fan__card{width:118px;height:160px;margin:-80px 0 0 -59px;padding:11px;border-radius:13px}.fan__t{font-size:.86rem}}
 </style>
 
 <header class="rail">
@@ -418,23 +447,20 @@ footer.site{padding-block:32px 48px;color:var(--muted);font-size:.9rem;display:g
   </div>
 </header>
 
-<section class="hero">
+<section class="hero hero--paper">
   <div class="wrap">
     <div class="hero__text">
-      <span class="eyebrow">10 weeks · 57 hours · 100 concepts · 10 labs</span>
-      <h1>Build Your Own AI Agents</h1>
+      <span class="eyebrow">A ten-week course · no code · 57 hours · 100 concepts · 10 labs</span>
+      <h1>Build your own <em>AI agents</em></h1>
       <p class="lede">Ten weeks from "what is a token" to a deployed assistant that reads documents, does the maths, answers on a website and sends alerts. This hub tracks what you have covered and what is still ahead.</p>
+      <div class="hero__actions"><a class="btn btn--go" id="goNext" data-href="w1" data-hash="#day1">Start · Week 1 · Day 1</a><a class="btn" href="#tracker">See the ten weeks</a></div>
       <div class="ringwrap">
-        <svg class="ring" viewBox="0 0 120 120" role="img" aria-label="Overall progress"><circle class="track" cx="60" cy="60" r="50"></circle><circle class="fill" id="ringFill" cx="60" cy="60" r="50" stroke-dasharray="0 314"></circle><text x="60" y="56" text-anchor="middle" font-size="26" id="ringPct">0%</text><text x="60" y="76" text-anchor="middle" font-size="10" fill="#8E9BBE" id="ringSub">0 of 10 weeks</text></svg>
+        <svg class="ring" viewBox="0 0 120 120" role="img" aria-label="Overall progress"><circle class="track" cx="60" cy="60" r="50"></circle><circle class="fill" id="ringFill" cx="60" cy="60" r="50" stroke-dasharray="0 314"></circle><text x="60" y="56" text-anchor="middle" font-size="26" id="ringPct">0%</text><text x="60" y="76" text-anchor="middle" font-size="10" fill="#5B6882" id="ringSub">0 of 10 weeks</text></svg>
         <div class="upnext" id="upnext"><span class="eyebrow">Up next</span><b>Loading your progress…</b><span class="muted">The tracker fills in below.</span></div>
       </div>
       <div class="row"><span class="chip sync" id="syncChip">saving on this device</span><span class="chip sync" id="whoChip" hidden></span></div>
     </div>
-    <div class="stage stage--map" id="mapStage" aria-label="3D map of the ten weeks as a climbing path; finished weeks glow teal, the current week orange">
-      <canvas id="mapCanvas"></canvas>
-      <span class="stage__label">3D · the ten-week path · drag to orbit · click a week</span>
-      <div class="stage__hud"><span class="chip" style="background:rgba(7,11,22,.75);color:#2CD2B2">● done</span><span class="chip" style="background:rgba(7,11,22,.75);color:#FF7A58">● in progress</span><span class="chip" style="background:rgba(7,11,22,.75);color:#8E9BBE">● ahead</span></div>
-    </div>
+    <nav class="fan" id="fan" aria-label="The ten weeks as a fan of cards. Finished weeks are edged teal, the current week is lifted and orange. Open a card to go to that week."></nav>
   </div>
 </section>
 
@@ -507,7 +533,6 @@ footer.site{padding-block:32px 48px;color:var(--muted);font-size:.9rem;display:g
   </section>
 </main>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>window.COURSE_SITE={"page": "hub"};</script>
 <script>window.COURSE_URLS={"hub": "index.html", "doc": "https://github.com/ashishkaushalr-oss/build-ai-agents/blob/main/COURSE.md", "playground": "playground.html", "explainer": "transformer.html", "weeks": ["w1.html", "w2.html", "w3.html", "w4.html", "w5.html", "w6.html", "w7.html", "w8.html", "w9.html", "w10.html"]};</script>
 <script>
@@ -1250,6 +1275,8 @@ Course.init({week: 0, title: 'Course Hub'});
     var up = $('#upnext'); up.innerHTML = '';
     if (!firstOpen) { up.appendChild(el('span', {class: 'eyebrow', text: 'Course complete'})); up.appendChild(el('b', {text: 'All ten weeks done. Publish the capstone.'})); }
     else { var s = state.weeks['w' + firstOpen.n]; var nextIdx = DAY_KEYS.map(function(k, i){ return s[k] ? -1 : i; }).filter(function(i){ return i >= 0; })[0]; var nextDay = nextIdx === undefined ? null : dayInfo(firstOpen, nextIdx); var nextConcept = firstOpen.concepts.filter(function(_, i){ return !s.concepts[i]; })[0]; up.appendChild(el('span', {class: 'eyebrow', text: 'Up next · Week ' + firstOpen.n + (nextDay ? ' · Day ' + nextDay.num : '')})); up.appendChild(el('b', {text: firstOpen.title + ' · ' + (nextDay ? nextDay.title : 'finish up')})); up.appendChild(el('span', {html: (nextConcept ? 'Next concept: ' + Course.esc(nextConcept) + ' · ' : '') + '<a data-href="w' + firstOpen.n + '"' + (nextDay ? ' data-hash="#day' + (nextIdx + 1) + '"' : '') + '>Open ' + (nextDay ? 'Day ' + nextDay.num : 'the module') + '</a>'})); }
+    var go = $('#goNext');
+    if (go) { if (!firstOpen) { go.textContent = 'Open the capstone'; go.setAttribute('data-href', 'w10'); go.removeAttribute('data-hash'); } else { go.textContent = (days ? 'Continue' : 'Start') + ' · Week ' + firstOpen.n + (nextDay ? ' · Day ' + nextDay.num : ''); go.setAttribute('data-href', 'w' + firstOpen.n); if (nextDay) go.setAttribute('data-hash', '#day' + (nextIdx + 1)); else go.removeAttribute('data-hash'); } }
     // still to cover: first 6 uncovered concepts
     var todo = $('#todo'); todo.innerHTML = ''; var count = 0;
     WEEKS.forEach(function(w){ w.concepts.forEach(function(c, i){ if (count < 6 && !state.weeks['w' + w.n].concepts[i]) { count++; todo.appendChild(el('div', {}, [el('span', {text: c}), el('b', {text: 'Week ' + w.n})])); } }); });
@@ -1274,62 +1301,28 @@ Course.init({week: 0, title: 'Course Hub'});
     var gl = $('#generalLog'); gl.value = state.log || ''; var t; gl.addEventListener('input', function(){ state.log = gl.value; clearTimeout(t); t = setTimeout(function(){ changed(null); }, 500); });
   }
 
-  function paintAll(){ paintTracker(); WEEKS.forEach(function(w){ var m = $('#mod-w' + w.n); if (m) m.classList.toggle('is-done', weekDone(w)); }); if (window.__paintMap) window.__paintMap(); }
+  function paintAll(){ paintTracker(); WEEKS.forEach(function(w){ var m = $('#mod-w' + w.n); if (m) m.classList.toggle('is-done', weekDone(w)); }); paintFan(); }
 
   /* ---------- reset ---------- */
   $('#resetBtn').addEventListener('click', function(){ $('#resetConfirm').hidden = false; });
   $('#resetNo').addEventListener('click', function(){ $('#resetConfirm').hidden = true; });
   $('#resetYes').addEventListener('click', function(){ state = blank(); Course.store.set('hubstate', state); buildTracker(); buildSetup(); changed(null); $('#resetConfirm').hidden = true; Course.toast('Progress cleared.'); });
 
-  /* ---------- 3D map ---------- */
-  function setupMap(){
-    var stage = $('#mapStage'), canvas = $('#mapCanvas');
-    var pos = WEEKS.map(function(w, i){ var a = -1.2 + i*0.62; return [Math.cos(a)*2.6, -2.4 + i*0.52, Math.sin(a)*2.6]; });
-    var yaw = 0.4, pitch = 0.25, dragging = false, lx = 0, ly = 0, auto = 0;
-    var AHEAD = 0x2B3657;
-    function colorFor(w){ return weekDone(w) ? 0x2CD2B2 : (weekStarted(w) || w === WEEKS.filter(function(x){ return !weekDone(x); })[0]) ? 0xFF7A58 : AHEAD; }
-    if (typeof THREE !== 'undefined') {
-      var renderer; try { renderer = new THREE.WebGLRenderer({canvas: canvas, antialias: true, alpha: true}); } catch (e) { renderer = null; }
-      if (renderer) {
-        renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
-        var scene = new THREE.Scene(); scene.fog = new THREE.Fog(0x0b1020, 8, 18);
-        var camera = new THREE.PerspectiveCamera(42, 1, 0.1, 100); camera.position.set(0, 1.6, 9.2); camera.lookAt(0, 0.2, 0);
-        var group = new THREE.Group(); scene.add(group);
-        scene.add(new THREE.AmbientLight(0xffffff, 0.55)); var dl = new THREE.DirectionalLight(0xffffff, 0.9); dl.position.set(4, 8, 6); scene.add(dl);
-        var pl = new THREE.PointLight(0x8F7BFF, 0.45, 12); pl.position.set(0, 3, 2); scene.add(pl);
-        var curve = new THREE.CatmullRomCurve3(pos.map(function(p){ return new THREE.Vector3(p[0], p[1], p[2]); }));
-        group.add(new THREE.Mesh(new THREE.TubeGeometry(curve, 120, 0.05, 8, false), new THREE.MeshStandardMaterial({color: 0x3A4770, roughness: 0.7})));
-        var spheres = WEEKS.map(function(w, i){ var m = new THREE.Mesh(new THREE.SphereGeometry(0.34, 28, 28), new THREE.MeshStandardMaterial({color: 0x3A4770, emissive: 0x3A4770, emissiveIntensity: 0.4, roughness: 0.4, metalness: 0.1})); m.position.set(pos[i][0], pos[i][1], pos[i][2]); m.userData.i = i; group.add(m);
-          var c = document.createElement('canvas'); c.width = 256; c.height = 128; var cx = c.getContext('2d'); cx.font = '800 56px "Bricolage Grotesque", Figtree, sans-serif'; cx.textAlign = 'center'; cx.fillStyle = '#EAF0FF'; cx.shadowColor = 'rgba(0,0,0,.8)'; cx.shadowBlur = 8; cx.fillText('W' + w.n, 128, 86);
-          var sp = new THREE.Sprite(new THREE.SpriteMaterial({map: new THREE.CanvasTexture(c), transparent: true, depthTest: false})); sp.scale.set(1.1, 0.55, 1); sp.position.set(pos[i][0], pos[i][1] + 0.72, pos[i][2]); group.add(sp); return m; });
-        var grid = new THREE.GridHelper(14, 14, 0x26325A, 0x1a2440); grid.position.y = -3.1; group.add(grid);
-        function resize(){ var r = stage.getBoundingClientRect(); renderer.setSize(Math.max(1, r.width), Math.max(1, r.height), false); camera.aspect = r.width/Math.max(1, r.height); camera.updateProjectionMatrix(); }
-        new ResizeObserver(resize).observe(stage); resize();
-        var last = performance.now(), visible = true, t = 0;
-        new IntersectionObserver(function(es){ visible = es[0].isIntersecting; if (visible) requestAnimationFrame(frame); }).observe(stage);
-        function frame(now){ var dt = Math.min(0.05, (now - last)/1000); last = now; t += dt; if (!dragging && Course.motionOK) { auto += dt; yaw = 0.4 + Math.sin(auto*0.18)*0.5; } group.rotation.y = yaw; group.rotation.x = pitch*0.6; var cur = WEEKS.filter(function(x){ return !weekDone(x); })[0]; spheres.forEach(function(m, i){ var on = WEEKS[i] === cur; var s = on ? 1 + 0.1*Math.sin(t*4) : 1; m.scale.set(s, s, s); }); renderer.render(scene, camera); if (visible && !document.hidden && (Course.motionOK || dragging)) requestAnimationFrame(frame); }
-        window.__paintMap = function(){ spheres.forEach(function(m, i){ var c = colorFor(WEEKS[i]); m.material.color.setHex(c); m.material.emissive.setHex(c); m.material.emissiveIntensity = c === AHEAD ? 0.1 : 0.75; m.material.roughness = c === AHEAD ? 0.8 : 0.4; }); last = performance.now(); requestAnimationFrame(frame); };
-        var ray = new THREE.Raycaster(), mouse = new THREE.Vector2(), moved = false;
-        stage.addEventListener('pointerdown', function(e){ dragging = true; moved = false; lx = e.clientX; ly = e.clientY; stage.setPointerCapture(e.pointerId); requestAnimationFrame(frame); });
-        stage.addEventListener('pointermove', function(e){ if (!dragging) return; var dx = e.clientX - lx, dy = e.clientY - ly; if (Math.abs(dx) + Math.abs(dy) > 3) moved = true; yaw += dx*0.007; pitch = Course.clamp(pitch + dy*0.005, -0.6, 0.9); lx = e.clientX; ly = e.clientY; });
-        stage.addEventListener('pointerup', function(e){ dragging = false; if (!moved) { var r = stage.getBoundingClientRect(); mouse.x = ((e.clientX - r.left)/r.width)*2 - 1; mouse.y = -((e.clientY - r.top)/r.height)*2 + 1; ray.setFromCamera(mouse, camera); var hits = ray.intersectObjects(spheres); if (hits.length) { var d = $('#w' + WEEKS[hits[0].object.userData.i].n); d.open = true; d.scrollIntoView({behavior: Course.motionOK ? 'smooth' : 'auto', block: 'center'}); } } requestAnimationFrame(frame); });
-        stage.addEventListener('pointerleave', function(){ dragging = false; });
-        window.__paintMap(); return;
-      }
-    }
-    // 2D fallback
-    var api = Course.canvas(canvas, function(ctx, w, h, t, dt){
-      if (!dragging && Course.motionOK) { auto += dt; yaw = 0.4 + Math.sin(auto*0.18)*0.5; }
-      ctx.clearRect(0,0,w,h);
-      function proj(p){ var cy = Math.cos(yaw), sy = Math.sin(yaw); var x = p[0]*cy + p[2]*sy, z = -p[0]*sy + p[2]*cy; var y = p[1]*Math.cos(pitch) - z*Math.sin(pitch); var s = Math.min(w,h)*0.11*(8/(8+z)); return {x: w/2 + x*s, y: h/2 - y*s, s: s/(Math.min(w,h)*0.11)}; }
-      ctx.strokeStyle = '#3A4770'; ctx.lineWidth = 3; ctx.beginPath(); pos.forEach(function(p, i){ var q = proj(p); if (i) ctx.lineTo(q.x, q.y); else ctx.moveTo(q.x, q.y); }); ctx.stroke();
-      WEEKS.forEach(function(wk, i){ var q = proj(pos[i]); var c = '#' + colorFor(wk).toString(16).padStart(6, '0'); ctx.beginPath(); ctx.arc(q.x, q.y, 14*q.s, 0, Math.PI*2); ctx.fillStyle = c; ctx.fill(); ctx.font = '800 12px "Bricolage Grotesque", sans-serif'; ctx.textAlign = 'center'; ctx.fillStyle = '#EAF0FF'; ctx.fillText('W' + wk.n, q.x, q.y - 18*q.s); });
-      ctx.font = '600 11px "JetBrains Mono", monospace'; ctx.textAlign = 'left'; ctx.fillStyle = '#8E9BBE'; ctx.fillText('2D view (WebGL unavailable)', 12, h - 12);
-    }, {force: true});
-    window.__paintMap = function(){ api.once(); };
-    stage.addEventListener('pointerdown', function(e){ dragging = true; lx = e.clientX; ly = e.clientY; });
-    stage.addEventListener('pointermove', function(e){ if (!dragging) return; yaw += (e.clientX - lx)*0.007; pitch = Course.clamp(pitch + (e.clientY - ly)*0.005, -0.6, 0.9); lx = e.clientX; ly = e.clientY; api.once(); });
-    stage.addEventListener('pointerup', function(){ dragging = false; });
+  /* ---------- the fan of ten week cards ---------- */
+  function buildFan(){
+    var fan = $('#fan'); if (!fan) return; fan.innerHTML = ''; fan.classList.remove('is-open');
+    WEEKS.forEach(function(w, k){
+      var c = el('a', {class: 'fan__card', 'data-href': 'w' + w.n, id: 'fan-w' + w.n, title: 'Open the Week ' + w.n + ' module'}, [el('span', {class: 'fan__n', text: 'Week ' + w.n}), el('span', {class: 'fan__t', text: w.title}), el('span', {class: 'fan__s', 'aria-hidden': 'true'}, [el('i')])]);
+      c.style.setProperty('--i', String(k - 4.5)); c.style.zIndex = String(k);
+      fan.appendChild(c);
+    });
+    // the cards start stacked and fan out once the page has painted
+    function open(){ fan.classList.add('is-open'); }
+    if (Course.motionOK) { requestAnimationFrame(function(){ requestAnimationFrame(open); }); setTimeout(open, 600); } else open();
+  }
+  function paintFan(){
+    var cur = WEEKS.filter(function(x){ return !weekDone(x); })[0];
+    WEEKS.forEach(function(w, k){ var c = $('#fan-w' + w.n); if (!c) return; var done = weekDone(w), now = w === cur; c.classList.toggle('is-done', done); c.classList.toggle('is-now', now); c.style.zIndex = String(now ? 20 : k); c.querySelector('.fan__s i').style.width = Math.round(100 * (done ? 1 : weekPct(w))) + '%'; c.setAttribute('aria-label', 'Week ' + w.n + ' · ' + w.title + (done ? ' · done' : now ? ' · in progress' : ' · ahead')); });
   }
 
   /* ---------- remote sync (db + user) ---------- */
@@ -1365,7 +1358,7 @@ Course.init({week: 0, title: 'Course Hub'});
   // when shared/sync.js pulls newer progress from the learner's account, redraw instead of reloading the page
   Course.syncHandled = true;
   Course.on(function(evt){ if (evt === 'sync') { state = migrate(Course.store.get('hubstate', null) || blank()); buildTracker(); buildSetup(); paintAll(); } });
-  buildTracker(); buildMods(); buildSetup(); paintAll(); setupMap(); connect();
+  buildTracker(); buildMods(); buildSetup(); buildFan(); paintAll(); connect();
   // open the week named in the hash (hub#w3)
   var m = /^#w(\d+)$/.exec(location.hash || ''); if (m) { var d = $('#w' + m[1]); if (d) { d.open = true; setTimeout(function(){ d.scrollIntoView({block: 'center'}); }, 150); } }
 })();
