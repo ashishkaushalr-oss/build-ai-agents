@@ -367,22 +367,27 @@ footer.site{padding-block:32px 48px;color:var(--muted);font-size:.9rem;display:g
 .upnext b{font-family:var(--font-display);font-size:1.1rem}
 .upnext span{color:#3F4A63}
 .upnext a{color:#0E1626}
-/* the ten weeks as a fan of cards: finished weeks edged teal, the current week lifted and orange */
-.fan{position:relative;height:340px;min-width:0;--step:7deg}
-.fan__card{position:absolute;left:50%;top:50%;width:152px;height:204px;margin:-102px 0 0 -76px;border-radius:16px;background:#FFFFFF;border:1px solid #D6DEEC;box-shadow:0 18px 40px rgba(14,22,38,.12);padding:14px;transform-origin:50% 140%;--lift:0px;transform:rotate(calc(var(--i,0) * var(--step))) translateY(var(--lift));transition:transform .7s cubic-bezier(.2,.8,.2,1),opacity .5s,box-shadow .3s,border-color .3s;display:grid;align-content:space-between;text-decoration:none;color:#0E1626}
-.fan:not(.is-open) .fan__card{transform:rotate(0deg) translateY(30px);opacity:0}
-.fan.is-open .fan__card{transition-delay:calc((var(--i,0) + 4.5) * 40ms)}
-.fan__card:hover,.fan__card:focus-visible{--lift:-14px;z-index:30!important;box-shadow:0 22px 46px rgba(14,22,38,.18);transition-delay:0s}
+/* the ten weeks as a fan of cards. The highlighted card (this week, until you pick another) is lifted and uncovered,
+   the next three weeks spread out so their names can be read, and the rest stack at the edges. Positions come from layoutFan(). */
+.fan{position:relative;height:340px;min-width:0}
+.fan__card{position:absolute;left:0;bottom:40px;width:var(--cw,132px);height:var(--chh,178px);border-radius:16px;background:#FFFFFF;border:1px solid #D6DEEC;box-shadow:0 14px 32px rgba(14,22,38,.10);padding:13px;transform-origin:50% 100%;--x:0px;--y:0px;--r:0deg;--hover:0px;transform:translate(var(--x),calc(var(--y) + var(--hover))) rotate(var(--r));transition:transform .6s cubic-bezier(.2,.8,.2,1),opacity .5s,box-shadow .3s,border-color .3s;display:grid;align-content:space-between;text-decoration:none;color:#0E1626;cursor:pointer}
+.fan:not(.is-open) .fan__card{transform:translate(var(--x),calc(var(--y) + 30px)) rotate(0deg);opacity:0}
+.fan.is-open:not(.is-ready) .fan__card{transition-delay:calc(var(--k,0) * 40ms)}
+.fan__card:hover,.fan__card:focus-visible{--hover:-10px;box-shadow:0 20px 40px rgba(14,22,38,.16)}
 .fan__n{font-family:var(--font-mono);font-size:.66rem;letter-spacing:.12em;text-transform:uppercase;color:#5B6882}
-.fan__t{font-family:var(--font-display);font-weight:700;font-size:1rem;line-height:1.15}
+.fan__t{font-family:var(--font-display);font-weight:700;font-size:var(--tfs,1rem);line-height:1.15;max-width:var(--tw,none)}
+.fan__go{display:none;font-size:.72rem;font-weight:700;color:#F2552E;white-space:nowrap}
 .fan__s{display:block;height:6px;border-radius:999px;background:#E9EEF7;overflow:hidden}
 .fan__s i{display:block;height:100%;width:0;background:#0E9F86;transition:width .6s}
 .fan__card.is-done{border-color:#0E9F86}
 .fan__card.is-done .fan__n{color:#0E9F86}
-.fan__card.is-now{--lift:-26px;border-color:#F2552E;box-shadow:0 18px 44px rgba(242,85,46,.25)}
-.fan__card.is-now:hover,.fan__card.is-now:focus-visible{--lift:-36px}
 .fan__card.is-now .fan__s i{background:#F2552E}
 .fan__card.is-now .fan__n{color:#F2552E}
+.fan__card.is-sel{border-color:#F2552E;box-shadow:0 18px 44px rgba(242,85,46,.25)}
+.fan__card.is-sel .fan__n{color:#F2552E}
+.fan__card.is-sel .fan__go{display:block}
+.fan__card.is-right{justify-items:end;text-align:right}
+.fan__card.is-right .fan__s{justify-self:stretch;width:100%}
 .sync{font-size:.8rem}
 .tracker{display:grid;gap:10px}
 .wk{border:1px solid var(--line);border-radius:var(--r-l);background:var(--surface);overflow:hidden}
@@ -442,7 +447,7 @@ footer.site{padding-block:32px 48px;color:var(--muted);font-size:.9rem;display:g
 .mod--live p{color:var(--stage-muted)}
 .setup{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
 .danger{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-@media (max-width:820px){.hero--paper .wrap{grid-template-columns:1fr;gap:22px;padding-block:28px}.ringwrap{grid-template-columns:1fr}.fan{height:250px;--step:6.2deg}.fan__card{width:118px;height:160px;margin:-80px 0 0 -59px;padding:11px;border-radius:13px}.fan__t{font-size:.86rem}}
+@media (max-width:820px){.hero--paper .wrap{grid-template-columns:1fr;gap:22px;padding-block:28px}.ringwrap{grid-template-columns:1fr}.fan{height:250px}.fan__card{padding:11px;border-radius:13px;bottom:30px}.fan__t{font-size:var(--tfs,.86rem)}}
 </style>
 
 <header class="rail">
@@ -475,7 +480,7 @@ footer.site{padding-block:32px 48px;color:var(--muted);font-size:.9rem;display:g
       </div>
       <div class="row"><span class="chip sync" id="syncChip">saving on this device</span><span class="chip sync" id="whoChip" hidden></span></div>
     </div>
-    <nav class="fan" id="fan" aria-label="The ten weeks as a fan of cards. Finished weeks are edged teal, the current week is lifted and orange. Open a card to go to that week."></nav>
+    <nav class="fan" id="fan" aria-label="The ten weeks as a fan of cards. The highlighted card is lifted; pick another card to bring it forward, then pick it again to open that week. Finished weeks are edged teal."></nav>
   </div>
 </section>
 
@@ -1349,20 +1354,79 @@ Course.init({week: 0, title: 'Course Hub'});
   $('#resetYes').addEventListener('click', function(){ state = blank(); Course.store.set('hubstate', state); buildTracker(); buildSetup(); changed(null); $('#resetConfirm').hidden = true; Course.toast('Progress cleared.'); });
 
   /* ---------- the fan of ten week cards ---------- */
+  var fanSel = -1;   /* the highlighted card: this week, until someone picks another */
   function buildFan(){
-    var fan = $('#fan'); if (!fan) return; fan.innerHTML = ''; fan.classList.remove('is-open');
+    var fan = $('#fan'); if (!fan) return; fan.innerHTML = ''; fan.classList.remove('is-open', 'is-ready');
     WEEKS.forEach(function(w, k){
-      var c = el('a', {class: 'fan__card', 'data-href': 'w' + w.n, id: 'fan-w' + w.n, title: 'Open the Week ' + w.n + ' module'}, [el('span', {class: 'fan__n', text: 'Week ' + w.n}), el('span', {class: 'fan__t', text: w.title}), el('span', {class: 'fan__s', 'aria-hidden': 'true'}, [el('i')])]);
-      c.style.setProperty('--i', String(k - 4.5)); c.style.zIndex = String(k);
+      var c = el('a', {class: 'fan__card', 'data-href': 'w' + w.n, id: 'fan-w' + w.n}, [el('span', {class: 'fan__n', text: 'Week ' + w.n}), el('span', {class: 'fan__t', text: w.title}), el('span', {class: 'fan__go', text: 'Open week ' + w.n + '\u00a0\u2192'}), el('span', {class: 'fan__s', 'aria-hidden': 'true'}, [el('i')])]);
+      c.style.setProperty('--k', String(k));
+      /* the first click brings a card forward; a click on the highlighted card opens that week */
+      c.addEventListener('click', function(ev){ if (k !== fanSel) { ev.preventDefault(); fanSel = k; layoutFan(); } });
       fan.appendChild(c);
     });
+    if (!fan.__ro) { fan.__ro = true; if (window.ResizeObserver) new ResizeObserver(function(){ layoutFan(); }).observe(fan); else window.addEventListener('resize', layoutFan); }
     // the cards start stacked and fan out once the page has painted
-    function open(){ fan.classList.add('is-open'); }
-    if (Course.motionOK) { requestAnimationFrame(function(){ requestAnimationFrame(open); }); setTimeout(open, 600); } else open();
+    function open(){ if (fan.classList.contains('is-open')) return; fan.classList.add('is-open'); setTimeout(function(){ fan.classList.add('is-ready'); }, 1100); }
+    if (Course.motionOK) { requestAnimationFrame(function(){ requestAnimationFrame(open); }); setTimeout(open, 600); } else { open(); fan.classList.add('is-ready'); }
   }
   function paintFan(){
-    var cur = WEEKS.filter(function(x){ return !weekDone(x); })[0];
-    WEEKS.forEach(function(w, k){ var c = $('#fan-w' + w.n); if (!c) return; var done = weekDone(w), now = w === cur; c.classList.toggle('is-done', done); c.classList.toggle('is-now', now); c.style.zIndex = String(now ? 20 : k); c.querySelector('.fan__s i').style.width = Math.round(100 * (done ? 1 : weekPct(w))) + '%'; c.setAttribute('aria-label', 'Week ' + w.n + ' · ' + w.title + (done ? ' · done' : now ? ' · in progress' : ' · ahead')); });
+    var cur = WEEKS.filter(function(x){ return !weekDone(x); })[0], curIdx = cur ? WEEKS.indexOf(cur) : WEEKS.length - 1;
+    if (fanSel < 0) fanSel = curIdx;
+    WEEKS.forEach(function(w, k){ var c = $('#fan-w' + w.n); if (!c) return; var done = weekDone(w), now = w === cur; c.classList.toggle('is-done', done); c.classList.toggle('is-now', now); c.querySelector('.fan__s i').style.width = Math.round(100 * (done ? 1 : weekPct(w))) + '%'; c.setAttribute('data-state', done ? 'done' : now ? 'in progress' : 'ahead'); });
+    layoutFan();
+  }
+  /* A held deck: the highlighted card is on top. On each side the nearest week is in front and every further week sits one step
+     further behind and further out, so each card shows a strip past the card in front of it. The nearest weeks get strips wide
+     enough to read (three a side when there is room, fewer on narrow screens), the rest stack tightly. Cards on the right show
+     their right-hand edge, so their text is right-aligned there. The cards sit on a gentle arc. */
+  var fanMeasure = null;
+  function fanWordW(word, px){ if (!fanMeasure) fanMeasure = document.createElement('canvas').getContext('2d'); fanMeasure.font = '700 ' + px + 'px ' + (getComputedStyle(document.documentElement).getPropertyValue('--font-display') || 'sans-serif'); return fanMeasure.measureText(word).width; }
+  function layoutFan(){
+    var fan = $('#fan'); if (!fan) return; var W = fan.clientWidth; if (!W) return;
+    var n = WEEKS.length, s = Course.clamp(fanSel < 0 ? 0 : fanSel, 0, n - 1), small = W < 420, cw = small ? 104 : 132, ch = Math.round(cw * 1.35);
+    var avail = W - 16, tight = 6, ideal = [0, cw * 0.75, cw * 0.6, cw * 0.6], minRead = small ? 60 : 74;
+    var nrL = Math.min(3, s), nrR = Math.min(3, n - 1 - s), strips = [], f = 1;
+    function readable(k){ var a = Math.abs(k - s); return k !== s && a <= (k < s ? nrL : nrR); }
+    function plan(){
+      var read = 0, fixed = cw; strips = [];
+      for (var k = 0; k < n; k++) { var v = k === s ? 0 : readable(k) ? ideal[Math.abs(k - s)] : tight; strips.push(v); if (readable(k)) read += v; else fixed += v; }
+      f = read ? Math.min(1, (avail - fixed) / read) : 1;
+    }
+    plan();
+    /* too tight to read: give up the furthest readable strip, on the left first, until every readable strip is wide enough */
+    for (var guard = 0; guard < 6; guard++) {
+      var narrowest = Infinity; for (var k0 = 0; k0 < n; k0++) if (readable(k0)) narrowest = Math.min(narrowest, strips[k0] * f);
+      if (narrowest >= minRead || (nrL <= 1 && nrR <= 1)) break;
+      if (nrL > 1 && (nrL >= nrR || nrR <= 1)) nrL--; else nrR--;
+      plan();
+    }
+    for (var k1 = 0; k1 < n; k1++) if (readable(k1)) strips[k1] *= f;
+    /* left edges: the highlighted card, then outward on each side by each card's strip */
+    var xs = new Array(n), leftW = 0, rightW = 0;
+    for (var kl = 0; kl < s; kl++) leftW += strips[kl];
+    for (var kr = s + 1; kr < n; kr++) rightW += strips[kr];
+    xs[s] = leftW;
+    for (var k2 = s - 1; k2 >= 0; k2--) xs[k2] = xs[k2 + 1] - strips[k2];
+    for (var k3 = s + 1; k3 < n; k3++) xs[k3] = xs[k3 - 1] + strips[k3];
+    var span = leftW + cw + rightW, off = (W - span) / 2, R = W * 1.2, basePx = small ? 13.8 : 16;
+    WEEKS.forEach(function(w, k){
+      var c = $('#fan-w' + w.n); if (!c) return;
+      var d = k - s, dx = off + xs[k] + cw / 2 - W / 2, dip = (R - Math.sqrt(Math.max(0, R * R - dx * dx))) * 0.5;
+      var tw = Math.max(30, (readable(k) ? strips[k] : cw) - 22), px = basePx;
+      var longest = w.title.split(/\s+/).reduce(function(a, wd){ return Math.max(a, fanWordW(wd, basePx)); }, 0);
+      if (longest > tw) px = Math.max(11, basePx * tw / longest);
+      c.style.setProperty('--tw', tw.toFixed(0) + 'px'); c.style.setProperty('--tfs', px.toFixed(1) + 'px');
+      c.style.setProperty('--cw', cw + 'px'); c.style.setProperty('--chh', ch + 'px');
+      c.style.setProperty('--x', (off + xs[k]).toFixed(1) + 'px');
+      c.style.setProperty('--y', (dip + (d === 0 ? -24 : 0)).toFixed(1) + 'px');
+      c.style.setProperty('--r', (dx / R * 34).toFixed(2) + 'deg');
+      c.style.zIndex = String(100 - Math.abs(d));
+      c.classList.toggle('is-sel', d === 0);
+      c.classList.toggle('is-right', d > 0);
+      var st = c.getAttribute('data-state') || 'ahead';
+      c.setAttribute('aria-label', 'Week ' + w.n + ' · ' + w.title + ' · ' + st + (d === 0 ? ' · highlighted, select again to open' : ''));
+      c.setAttribute('title', d === 0 ? 'Open the Week ' + w.n + ' module' : 'Bring Week ' + w.n + ' forward');
+    });
   }
 
   /* ---------- remote sync (db + user) ---------- */
