@@ -61,13 +61,12 @@ This is the programme the 10-week course is built from. Each week of ours covers
 - A modern laptop running Windows, macOS or ChromeOS with Chrome, Edge or Brave; unrestricted HTTPS access to api.anthropic.com, claude.ai, *.n8n.cloud and the WhatsApp endpoints.
 - Model names: the syllabus was written for Claude 3.5 Sonnet. Use current names (the Claude 5 family: `claude-sonnet-5-5` for everyday agents, `claude-haiku-5-5` for cheap high-volume steps, `claude-opus-5-5` where quality matters most) and say that model names change.
 
-## The MIT xPRO material (Designing and Building AI Products and Services) and where it belongs
-Extracted texts are in `course/source/mit/` (one `.txt` per PDF or Word file; `Week_N__M<N>_Transcript.txt` are the lecture transcripts).
-- Module 1, the four-stage AI design process (intelligence: metrics and scope; business process: strategic role and operational targets; technology: IP and data strategy; tinkering: software plan and "AI cancers"): Week 1 (stages 1 and 2) and Week 10 (stages 3 and 4, the GPT-3 integration cost estimate exercise, the design log as capstone brief).
-- Module 2, machine-learning taxonomy (supervised, unsupervised, semi-supervised, reinforcement; parametric and non-parametric; training versus test sets; linear classifiers): Week 1 (done) and Week 5 (clustering, similarity, why embeddings place similar things together).
-- Module 3, neural networks (neurons, multi-layer perceptrons, CNNs, RNNs): Week 5 (embeddings come from these networks, one paragraph).
-- Module 5, human-computer interaction and intelligent interfaces (the wireframe exercise): Week 9 (chat interfaces, state, loops, where the human stays in control).
-- Module 6, Superminds ("from humans in the loop to computers in the group"; specialised versus general intelligence): Week 7 (what an agent is good for and what stays with people) and Week 10.
-- Module 7, GANs, deepfakes, the moral-machine exercise: Week 10 (risk section) and a line in Week 9 (deepfake-aware customer channels).
-- Module 8, business applications (basic requirements are people and data; explanation; boundary setting, value formation, decision tracing, bias remediation; the resume-screening bias exercise): Week 8 (decision tracing = execution monitoring) and Week 10 (capstone requirements, the bias guardrail).
-- The design log: a habit from the MIT course. Every week's Day 5 adds "Design-log entry N": three short answers that connect the week to the product the learner chose in Week 1. By Week 10 the log is the capstone brief.
+## Framing borrowed from the design-process tradition, and where it belongs
+- The four-stage AI design process (intelligence: metrics and scope; business process: strategic role and operational targets; technology: IP and data strategy; tinkering: software plan and "AI cancers"): Week 1 (stages 1 and 2) and Week 10 (stages 3 and 4, the GPT-3 integration cost estimate exercise, the design log as capstone brief).
+- Machine-learning taxonomy (supervised, unsupervised, semi-supervised, reinforcement; parametric and non-parametric; training versus test sets; linear classifiers): Week 1 (done) and Week 5 (clustering, similarity, why embeddings place similar things together).
+- Neural networks (neurons, multi-layer perceptrons, CNNs, RNNs): Week 5 (embeddings come from these networks, one paragraph).
+- Human-computer interaction and intelligent interfaces (the wireframe exercise): Week 9 (chat interfaces, state, loops, where the human stays in control).
+- Superminds ("from humans in the loop to computers in the group"; specialised versus general intelligence): Week 7 (what an agent is good for and what stays with people) and Week 10.
+- GANs, deepfakes, the moral-machine exercise: Week 10 (risk section) and a line in Week 9 (deepfake-aware customer channels).
+- Business applications (basic requirements are people and data; explanation; boundary setting, value formation, decision tracing, bias remediation; the resume-screening bias exercise): Week 8 (decision tracing = execution monitoring) and Week 10 (capstone requirements, the bias guardrail).
+- The design log: a weekly habit. Every week's Day 5 adds "Design-log entry N": three short answers that connect the week to the product the learner chose in Week 1. By Week 10 the log is the capstone brief.

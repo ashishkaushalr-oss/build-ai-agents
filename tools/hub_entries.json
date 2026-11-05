@@ -163,7 +163,7 @@
   "hours": 8,
   "lab": "Capstone · enterprise assistant",
   "make": "A production-style assistant on two channels, a five-minute demo video and a one-page write-up",
-  "viz": "Five day tabs: 3D architecture model, MIT eight-choices board, cost sheet with the 2.5x rule, dispatch rule tester, 20-test eval suite",
+  "viz": "Five day tabs: 3D architecture model, eight-choices design board, cost sheet with the 2.5x rule, dispatch rule tester, 20-test eval suite",
   "concepts": [
    "The architecture",
    "The brief",

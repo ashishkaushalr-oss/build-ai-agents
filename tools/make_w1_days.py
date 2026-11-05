@@ -59,7 +59,7 @@ DAYS = [
          intro='Today you learn to tell a grounded answer from an invented one, to pick the right kind of tool for a task, and to hand Claude files, photos and spreadsheets. By the end you will have turned a photo into a table and built your first Artifact.',
          concepts=[7, 8, 9]),
     dict(n=5, tab='Design and the lab', mins=100, title='Design it, then try to break it',
-         intro='The longest day. You write your first intelligence target the way the MIT design process asks, spend an hour making Claude fail on purpose and naming the patterns, start your design log, fill your toolkit map, and take the quiz.',
+         intro='The longest day. You write your first intelligence target the way the design process asks, spend an hour making Claude fail on purpose and naming the patterns, start your design log, fill your toolkit map, and take the quiz.',
          concepts=[10]),
 ]
 

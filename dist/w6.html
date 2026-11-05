@@ -578,7 +578,7 @@ Reminder: invoice <span class="k">&#123;&#123; $json.invoice &#125;&#125;</span>
         <p>Your CRM goes down for maintenance at two in the morning, and at 02:07 a customer submits a ticket. The form posts, the fields are extracted, and the lookup fails. What happens next is not up to luck. It is a setting on the node, and you choose it before anything breaks. Press "Make the CRM fail" on the left and run the three options.</p>
         <p>Stop Workflow is the default: the run halts, the execution is marked red in the Executions list, and nothing else happens. Simple, and silent; the customer gets no reply and nobody is told until someone looks. Continue passes the failed node's output along as if nothing happened, so the Reply node runs with blank fields and sends "Dear , your order  ". That is worse than stopping. The third option, Continue using error output, gives the node a second, red output that carries the error, and whatever you connect there handles it: a message to you, a row in a "needs a human" sheet, a polite holding reply to the customer.</p>
         <p>Two more settings live in the same panel. Retry On Fail tries the node again, up to a number of times with a pause, which quietly fixes most "the API was busy for a second" failures. And at the workflow level, Settings has an Error Workflow: a separate workflow that starts with an Error Trigger and runs whenever any production execution fails, receiving the workflow name, the error message and a link to the failed run. Point it at a Slack or email node once, and every workflow you ever activate reports its failures to you.</p>
-        <div class="aside"><b>From the MIT course: the tinkering iceberg.</b> In Module 1 of MIT xPRO's Designing and Building AI Products and Services, the fourth stage of the design process is called tinkering, and the instructors warn about a second iceberg. People see the glamorous steps, the specification and the architecture; the time spent finding and fixing bugs and making the thing work in production is an order of magnitude more, roughly ten times. That is why I teach pinning and error handling before the AI Agent node. Next week's agent is the visible tip. Today is the ice underneath.</div>
+        <div class="aside"><b>The tinkering iceberg.</b> The fourth stage of the design process is tinkering, and it is where the iceberg hides. People see the glamorous steps, the specification and the architecture; the time spent finding and fixing bugs and making the thing work in production is an order of magnitude more, roughly ten times. That is why I teach pinning and error handling before the AI Agent node. Next week's agent is the visible tip. Today is the ice underneath.</div>
         <div class="key"><p>Decide failure before it happens. Default to an error output or an Error Workflow that tells a person; never let Continue send blanks to a customer.</p></div>
       </div>
     </article>
@@ -859,7 +859,7 @@ curl -X POST "https://YOUR-N8N/webhook-test/new-ticket" \
 
       <div class="card dlog" style="margin-top:18px">
         <h3>Design-log entry 6</h3>
-        <p class="muted">Three short answers that connect this week to the product you chose in Week 1. The MIT course would call this the first sketch of your software plan: what starts it, what it does first, and what happens when it breaks.</p>
+        <p class="muted">Three short answers that connect this week to the product you chose in Week 1. Call this the first sketch of your software plan: what starts it, what it does first, and what happens when it breaks.</p>
         <label class="field"><span>The trigger: what event starts your product's workflow, and is it a webhook, a schedule or a chat message?</span><textarea data-note="dlog6-trigger" id="dlog6Trigger" placeholder="e.g. A webhook from the expense tool whenever a receipt is uploaded; instant, because the employee is waiting."></textarea></label>
         <label class="field"><span>Its first three nodes, in order, each doing one job</span><textarea data-note="dlog6-nodes" id="dlog6Nodes" placeholder="e.g. 1. Webhook (receipt uploaded) · 2. Edit Fields: amount, vendor, employee, date · 3. IF: amount above the manager's limit?"></textarea></label>
         <label class="field"><span>The one failure you would catch with error handling, and what the workflow should do when it happens</span><textarea data-note="dlog6-failure" id="dlog6Failure" placeholder="e.g. The finance system is down. Error output posts to #finance-ops with the receipt id and tells the employee it is queued; nothing is marked as filed."></textarea></label>
@@ -926,7 +926,7 @@ curl -X POST "https://YOUR-N8N/webhook-test/new-ticket" \
         <div class="weeks" data-weeks aria-label="All weeks"></div>
         <div class="row"><a data-href="hub">Course hub</a> · <a data-href="playground">Agent playground</a> · <a data-href="doc">Course doc</a></div>
       </div>
-      <p>Build Your Own AI Agents · a 10-week course. Use made-up data in every lab. Week 6 draws on MIT xPRO's Designing and Building AI Products and Services, Module 1, the tinkering stage.</p>
+      <p>Build Your Own AI Agents · a 10-week course. Use made-up data in every lab.</p>
     </footer>
   </section>
 </main>

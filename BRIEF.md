@@ -12,7 +12,7 @@ Week 1 is finished and approved. It is the reference for everything below: struc
 5. `course/content/<name>.md` (the OLD text for your week): the facts and lab steps to keep. Its voice is wrong (clipped, slogan headlines); rewrite everything.
 6. `course/src/<name>.html` (the OLD page for your week): working visuals you may keep and improve. Its structure and prose are wrong; the visuals' code is often good.
 7. `course/shared/course.css` and `course/shared/course.js`: the design system and the runtime API (summarised below).
-8. `course/source/mit/`: the MIT xPRO texts. The syllabus file says which MIT module feeds your week; read that transcript's relevant parts and use its ideas, naming the MIT course when you do.
+8. `course/source/`: the third-party source texts. The syllabus file says which source module feeds your week; read that transcript's relevant parts and use its ideas, but never name the source texts or their institution in course text.
 9. `course/urls.json`: the published links (your week's link is `weeks[N-1]`; the hub, the doc and the Agent Playground).
 
 ## Who reads this page
@@ -24,7 +24,7 @@ New professionals and product managers with basic tech skills, learning alone, o
 - Vary sentence length. Short sentences for emphasis, longer ones with commas to explain. A page of clipped declaratives reads as machine-written. Headings are plain questions or statements ("How does a webhook know a form was submitted?", "It reads in chunks, not letters").
 - Explain the why, give one worked example, and say where an analogy breaks. Three to five paragraphs per concept, not two sentences. An `.aside` box for an honest caveat where one exists.
 - Examples come from the workplace only: emails, invoices, policies, support tickets, a CRM, spreadsheets, contracts, meetings, hiring, procurement. No homework, no recipes, no teenagers, no cats.
-- Name the MIT course when a concept comes from it. Name the syllabus's lab numbers (Lab 1.1, 2.2, ...).
+- Never name the source texts or their institution in course text. Name the syllabus's lab numbers (Lab 1.1, 2.2, ...).
 - Banned: "Let's dive in", "powerful", "seamless", "unlock", "leverage", "delve", "robust", "journey", "game-changer", "supercharge", "landscape" (say toolkit), em-dashes, emoji, wry one-line closers on every paragraph, "In this section we will", "Key takeaways".
 - Use current model names (`claude-sonnet-5-5`, `claude-haiku-5-5`, `claude-opus-5-5`) and say that names change; the syllabus's "Claude 3.5 Sonnet" is out of date.
 
@@ -68,7 +68,7 @@ A week is five day tabs; one day is visible at a time (`Course.days()` in the ru
 - Design tokens: violet `--think` = model thinking, orange `--act` = actions and tools, teal `--observe` = results and observations.
 
 ## The doc text: `course/content/<name>.md`
-Rewrite it in the new voice with the shape of `content/w1.md`: `## Week N: <plain title>`, the `**Interactive module:**` line with the week's link from `urls.json` and one sentence on the day split, two intro paragraphs (what the week gives you; which syllabus modules it covers and which MIT module it borrows from), `**Learn**` with one italic-led paragraph per concept, `**Try it**` as a numbered list of the week's exercises, `**Lab X.Y: ...**` with steps and any table, the design-log entry, `**Deliverables**`, `**Check yourself**`. Prose only, no HTML. About 1,200 to 1,800 words.
+Rewrite it in the new voice with the shape of `content/w1.md`: `## Week N: <plain title>`, the `**Interactive module:**` line with the week's link from `urls.json` and one sentence on the day split, two intro paragraphs (what the week gives you; which syllabus modules it covers and the ideas it teaches, without naming the source texts), `**Learn**` with one italic-led paragraph per concept, `**Try it**` as a numbered list of the week's exercises, `**Lab X.Y: ...**` with steps and any table, the design-log entry, `**Deliverables**`, `**Check yourself**`. Prose only, no HTML. About 1,200 to 1,800 words.
 
 ## Output and self-checks
 - Write the page in parts of at most 250 lines each into `course/src/<name>parts/p1.html`, `p2.html`, ... (head and hero; one part per day; wrap-up; two or three script parts), then concatenate in order with `cat` into `course/src/<name>.html`. One huge write stalls; parts do not.
@@ -109,3 +109,7 @@ Week 1, Day 2, concept 5 ("Inside the guess") is an animated one-pass transforme
 ## Production RAG pipeline card (added 4 Nov 2026)
 
 Week 5, Day 3, concept 8 ("The real pipeline has twelve stages, not seven") answers the user's question about where a twelve-step production RAG slide belongs. It is a board of twelve stage tiles in three lanes (A get the documents ready, B build the memory, C answer a question), each tagged with the day it was first taught or `new`; four are new: rewrite the question (HyDE), search two ways and merge (RRF shown as race points, 1st = 10), re-read and re-order (a 0-100 reranker), and check the answer before it goes out. Pick one of three Day 3 questions, Run or Step through the stages (each shows a plain-words line, a "like a librarian" line, what happened to this question, and what breaks without it), and flip four "break it" switches (chunks cut for speed, labels skipped, volume not relevance, no check) to see tiles turn red or skipped and the final answer lose stars. The checker catches the invented sentence but passes the badly cut chunk on purpose. All data is hand-written on the Day 3 chunks; nothing calls a model. Day 3 is now 85 min with a fourth Do-today step; the lab has step 8b (rewrite-then-rerank) and a fourth scorecard column; the hub lists 11 Week 5 concepts, 100 overall, hours still 57 (3,435 min). Language level: a 15-year-old, by request.
+
+## Source attributions removed (5 Nov 2026)
+
+At the user's request every mention of the third-party source course and its institution was removed from the learner-facing course: all ten module pages (Week 1 via its flat source), the hub and its entries file, content/*.md, the syllabus notes, COURSE.md, the Claude doc, the README credit line, source/README.md and the .gitignore comment (the ignored folder is now `source/third-party/`). The ideas stay and are presented in the instructor's own voice (the four-stage design process, the tinkering iceberg, superminds, the response-time ladder, the usability heuristics, the 2.5x rule, the four practices of explanation, the AI cancers); named individuals from that course were dropped with it. The only "MIT" left anywhere is the Polo Club explainer's MIT License note, which is a software licence. Rule going forward: never name the source texts or their institution in course text.

@@ -58,6 +58,6 @@ Week 1 is generated: edit `src/_w1-flat.html` and run `python -I tools/make_w1_d
 
 ## Sources and credit
 
-The course follows a five-day, fifteen-module professional syllabus (summarised in `content/syllabus.md`) and borrows framing from MIT xPRO's *Designing and Building AI Products and Services*: the four-stage design process, the taxonomy of machine learning, the "AI cancers", Superminds, and the practices of explanation. The MIT material itself is not part of this repository; the text names the module wherever it draws on one. Model names are current as of late 2026 (`claude-sonnet-5-5` and relatives) and the pages say so where it matters.
+The course follows a five-day, fifteen-module professional syllabus (summarised in `content/syllabus.md`). Model names are current as of late 2026 (`claude-sonnet-5-5` and relatives) and the pages say so where it matters.
 
 Every lab uses made-up companies and data. Never put a real API key, customer record or colleague's details into any exercise.

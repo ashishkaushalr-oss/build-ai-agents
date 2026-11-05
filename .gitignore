@@ -1,5 +1,5 @@
-# Third-party course material (MIT xPRO transcripts and workbooks), not redistributable
-source/mit/
+# Third-party source material, not redistributable
+source/third-party/
 
 # Local tooling and scratch
 .claude/
