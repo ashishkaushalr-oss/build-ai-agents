@@ -696,6 +696,9 @@ function wrapText(ctx, text, x, y, maxW, lh, maxLines){
 }
 
 /* ---------- HERO: the agent loop handling an outage report ---------- */
+/* The banner chart is dark ink on white paper in both themes; these never change with the theme. */
+var HERO_INK = {bg: cv('--chart-bg', '#FFFFFF'), panel: cv('--chart-panel', '#F4F6FB'), fg: cv('--chart-fg', '#0E1626'), muted: cv('--chart-muted', '#5B6882'), line: cv('--chart-line', '#D6DEEC'), think: cv('--chart-think', '#6A52F5'), act: cv('--chart-act', '#F2552E'), observe: cv('--chart-observe', '#0E9F86')};
+function heroStationColor(k){ return k === 'think' ? HERO_INK.think : k === 'act' ? HERO_INK.act : HERO_INK.observe; }
 var HT = [
   {kind: 'goal', dur: 1.4, text: 'Goal: "This is Priya Nair. The site is down. Help."'},
   {kind: 'think', dur: 1.3, text: 'Look up the customer first.'},
@@ -728,36 +731,36 @@ function heroDraw(ctx, w, h, t){
   if (pass !== heroPassShown) { heroPassShown = pass; $('#heroPass').textContent = 'pass ' + pass; }
   ctx.clearRect(0, 0, w, h);
   var small = w < 440, cx = w * 0.5, cy = h * 0.4, R = Math.min(w, h) * 0.26;
-  ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI * 2); ctx.strokeStyle = 'rgba(142,155,190,.35)'; ctx.lineWidth = 2; ctx.stroke();
+  ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI * 2); ctx.strokeStyle = HERO_INK.line; ctx.lineWidth = 2; ctx.stroke();
   var activeK = null, pulseA = ANG.think;
   if (cur.kind === 'think' || cur.kind === 'act' || cur.kind === 'observe') { activeK = cur.kind; pulseA = ANG[cur.kind]; }
   else if (cur.kind === 'move') pulseA = lerpAngle(ANG[cur.from], ANG[cur.to], Course.ease(prog));
   else if (cur.kind === 'final') activeK = 'think';
-  if (cur.kind === 'move') { ctx.beginPath(); ctx.arc(cx, cy, R, ANG[cur.from], pulseA); ctx.strokeStyle = stationColor(cur.to); ctx.lineWidth = 4; ctx.lineCap = 'round'; ctx.stroke(); }
+  if (cur.kind === 'move') { ctx.beginPath(); ctx.arc(cx, cy, R, ANG[cur.from], pulseA); ctx.strokeStyle = heroStationColor(cur.to); ctx.lineWidth = 4; ctx.lineCap = 'round'; ctx.stroke(); }
   ['think', 'act', 'observe'].forEach(function(k){
-    var a = ANG[k], x = cx + Math.cos(a) * R, y = cy + Math.sin(a) * R, col = stationColor(k), on = activeK === k;
+    var a = ANG[k], x = cx + Math.cos(a) * R, y = cy + Math.sin(a) * R, col = heroStationColor(k), on = activeK === k;
     var r = Math.min(w, h) * 0.085 * (on && Course.motionOK ? 1 + 0.08 * Math.sin(t * 6) : 1);
-    if (on) { var g = ctx.createRadialGradient(x, y, r * 0.6, x, y, r * 2.2); g.addColorStop(0, col + 'aa'); g.addColorStop(1, col + '00'); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, r * 2.2, 0, Math.PI * 2); ctx.fill(); }
-    ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fillStyle = on ? col : '#141D36'; ctx.fill(); ctx.strokeStyle = col; ctx.lineWidth = on ? 3 : 2; ctx.stroke();
+    if (on) { var g = ctx.createRadialGradient(x, y, r * 0.6, x, y, r * 2.2); g.addColorStop(0, col + '33'); g.addColorStop(1, col + '00'); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, r * 2.2, 0, Math.PI * 2); ctx.fill(); }
+    ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fillStyle = on ? col : HERO_INK.panel; ctx.fill(); ctx.strokeStyle = col; ctx.lineWidth = on ? 3 : 2; ctx.stroke();
     ctx.fillStyle = on ? '#fff' : col; ctx.font = '800 ' + Math.round(r * 0.5) + 'px ' + DISPLAY; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     ctx.fillText(k === 'think' ? 'Think' : k === 'act' ? 'Act' : 'Observe', x, y);
   });
-  if (cur.kind === 'move') { var px = cx + Math.cos(pulseA) * R, py = cy + Math.sin(pulseA) * R; ctx.beginPath(); ctx.arc(px, py, 7, 0, Math.PI * 2); ctx.fillStyle = '#fff'; ctx.fill(); }
-  ctx.fillStyle = STAGE_MUTED; ctx.font = '600 12px ' + SANS; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('pass', cx, cy - R * 0.22);
-  ctx.fillStyle = STAGE_FG; ctx.font = '800 ' + Math.round(R * 0.5) + 'px ' + DISPLAY; ctx.fillText(String(pass), cx, cy + R * 0.12);
+  if (cur.kind === 'move') { var px = cx + Math.cos(pulseA) * R, py = cy + Math.sin(pulseA) * R; ctx.beginPath(); ctx.arc(px, py, 7, 0, Math.PI * 2); ctx.fillStyle = HERO_INK.fg; ctx.fill(); ctx.strokeStyle = HERO_INK.bg; ctx.lineWidth = 2; ctx.stroke(); }
+  ctx.fillStyle = HERO_INK.muted; ctx.font = '600 12px ' + SANS; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('pass', cx, cy - R * 0.22);
+  ctx.fillStyle = HERO_INK.fg; ctx.font = '800 ' + Math.round(R * 0.5) + 'px ' + DISPLAY; ctx.fillText(String(pass), cx, cy + R * 0.12);
   /* the card: what is happening right now */
   var pad = small ? 10 : 14, cardH = Math.min(h * 0.27, 100), cardY = h - cardH - pad, cardX = pad, cardW = w - pad * 2;
-  var col2 = cur.kind === 'think' || cur.kind === 'final' ? stationColor('think') : cur.kind === 'act' ? stationColor('act') : cur.kind === 'observe' ? stationColor('observe') : cur.kind === 'move' ? stationColor(cur.to) : STAGE_FG;
+  var col2 = cur.kind === 'think' || cur.kind === 'final' ? heroStationColor('think') : cur.kind === 'act' ? heroStationColor('act') : cur.kind === 'observe' ? heroStationColor('observe') : cur.kind === 'move' ? heroStationColor(cur.to) : HERO_INK.fg;
   ctx.globalAlpha = cur.kind === 'pause' ? 0.4 : 1;
-  Course.roundRect(ctx, cardX, cardY, cardW, cardH, 12); ctx.fillStyle = 'rgba(7,11,22,.85)'; ctx.fill(); ctx.strokeStyle = col2; ctx.lineWidth = 1.5; ctx.stroke();
+  Course.roundRect(ctx, cardX, cardY, cardW, cardH, 12); ctx.fillStyle = HERO_INK.panel; ctx.fill(); ctx.strokeStyle = col2; ctx.lineWidth = 1.5; ctx.stroke();
   ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
   var label = cur.kind === 'goal' ? 'GOAL' : cur.kind === 'think' ? 'THINK' : cur.kind === 'act' ? 'ACT · tool call' : cur.kind === 'observe' ? 'OBSERVE · result' : cur.kind === 'final' ? 'FINAL ANSWER' : cur.kind === 'move' ? (cur.to === 'act' ? 'ACT · tool call' : cur.to === 'observe' ? 'OBSERVE · result' : 'THINK') : 'LOOP ENDS · replaying';
   ctx.fillStyle = col2; ctx.font = '700 11px ' + MONO; ctx.fillText(label, cardX + 14, cardY + 20);
   var txt = cur.kind === 'move' || cur.kind === 'pause' ? '' : (cur.text || '');
   var shown = cur.kind === 'final' ? txt.slice(0, Math.floor(txt.length * Math.min(1, prog * 1.6))) : txt;
-  ctx.fillStyle = STAGE_FG; ctx.font = '600 13px ' + SANS;
+  ctx.fillStyle = HERO_INK.fg; ctx.font = '600 13px ' + SANS;
   if (shown) wrapText(ctx, shown, cardX + 14, cardY + 40, cardW - 28, 16, 2);
-  if (cur.json) { ctx.fillStyle = '#9AA8C9'; ctx.font = '12px ' + MONO; cur.json.split('\n').forEach(function(line, k){ var ly = cardY + 58 + k * 15; if (ly < cardY + cardH - 4) ctx.fillText(line, cardX + 14, ly); }); }
+  if (cur.json) { ctx.fillStyle = HERO_INK.muted; ctx.font = '12px ' + MONO; cur.json.split('\n').forEach(function(line, k){ var ly = cardY + 58 + k * 15; if (ly < cardY + cardH - 4) ctx.fillText(line, cardX + 14, ly); }); }
   ctx.globalAlpha = 1;
 }
 var hero = Course.canvas(document.getElementById('heroCanvas'), heroDraw, {auto: true});

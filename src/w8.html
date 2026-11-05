@@ -20,8 +20,8 @@
 .w8-stat b{font-family:var(--font-display);font-size:1.15rem;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
 /* hero: the stage plus the JSON of the current message under it */
 .w8-herocol{display:grid;gap:10px;min-width:0}
-pre.code.w8-herojson{font-size:11.5px;line-height:1.5;max-height:176px;overflow:auto;border:1px solid var(--stage-line);background:var(--stage-2);white-space:pre-wrap;overflow-wrap:anywhere}
-.w8-herojson .c{color:var(--stage-muted)}
+pre.code.w8-herojson{font-size:11.5px;line-height:1.5;max-height:176px;overflow:auto;border:1px solid var(--chart-line);background:var(--chart-panel);color:var(--chart-fg);white-space:pre-wrap;overflow-wrap:anywhere}
+.w8-herojson .c{color:var(--chart-muted)}
 @media (max-width:480px){#heroStep{display:none}}
 /* day 1: the Console desk */
 .w8-console{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px}
@@ -766,6 +766,8 @@ function fitText(ctx, s, maxW){ if (ctx.measureText(s).width <= maxW) return s; 
 /* ---------- HERO: one tool call, four messages ---------- */
 (function(){
   var canvas = $('#heroCanvas'), jsonEl = $('#heroJson'), stepEl = $('#heroStep'), autoBtn = $('#heroAuto');
+  /* The banner chart is dark ink on white paper in both themes; these never change with the theme. */
+  var HERO_INK = {bg: Course.cssVar('--chart-bg') || '#FFFFFF', panel: Course.cssVar('--chart-panel') || '#F4F6FB', fg: Course.cssVar('--chart-fg') || '#0E1626', muted: Course.cssVar('--chart-muted') || '#5B6882', line: Course.cssVar('--chart-line') || '#D6DEEC', think: Course.cssVar('--chart-think') || '#6A52F5', act: Course.cssVar('--chart-act') || '#F2552E', observe: Course.cssVar('--chart-observe') || '#0E9F86'};
   var STEP = 3.2, HOLD = 1.8, N = 4;
   var STEPS = [
     {label: 'request with the tools list', json: '// 1. your workflow -> Claude: POST /v1/messages\n{ "model": "claude-sonnet-5-5", "max_tokens": 1024,\n  "tools": [ { "name": "calculate_kpi",\n      "description": "Compute one business KPI from numbers you have been given. Use for gross margin, growth rate, average or total. Do not use for questions that need no calculation.",\n      "input_schema": { "type": "object",\n        "properties": {\n          "kpi_type": { "type": "string", "enum": ["margin", "growth_rate", "average", "total"] },\n          "values": { "type": "array", "items": { "type": "number" }, "description": "For margin: [revenue, cost_of_goods]" } },\n        "required": ["kpi_type", "values"] } } ],\n  "messages": [ { "role": "user", "content": "Revenue was 184,250 and cost of goods 108,700. What is our gross margin?" } ] }'},
@@ -783,7 +785,7 @@ function fitText(ctx, s, maxW){ if (ctx.measureText(s).width <= maxW) return s; 
     ctx.beginPath(); ctx.moveTo(x1, y); ctx.lineTo(xe, y); ctx.strokeStyle = col; ctx.lineWidth = 2; ctx.stroke();
     ctx.beginPath(); ctx.moveTo(xe, y); ctx.lineTo(xe - dir * 9, y - 5); ctx.lineTo(xe - dir * 9, y + 5); ctx.closePath(); ctx.fillStyle = col; ctx.fill();
     if (prog < 1) pill(ctx, xe - dir * 22, y, label, col, fs - 1, w);
-    else if (done !== '') { ctx.font = '600 ' + fs + 'px ' + MONO; var s = fitText(ctx, done || label, w * 0.6), tw = ctx.measureText(s).width, cx = Course.clamp((x1 + x2) / 2, tw / 2 + 8, w - tw / 2 - 8); ctx.fillStyle = 'rgba(20,29,54,.85)'; ctx.fillRect(cx - tw / 2 - 4, y - 7 - fs, tw + 8, fs + 4); ctx.fillStyle = col; ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic'; ctx.fillText(s, cx, y - 7); }
+    else if (done !== '') { ctx.font = '600 ' + fs + 'px ' + MONO; var s = fitText(ctx, done || label, w * 0.6), tw = ctx.measureText(s).width, cx = Course.clamp((x1 + x2) / 2, tw / 2 + 8, w - tw / 2 - 8); ctx.fillStyle = HERO_INK.bg; ctx.fillRect(cx - tw / 2 - 4, y - 7 - fs, tw + 8, fs + 4); ctx.fillStyle = col; ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic'; ctx.fillText(s, cx, y - 7); }
     ctx.restore();
   }
   var api = Course.canvas(canvas, function(ctx, w, h, t, dt){
@@ -796,20 +798,20 @@ function fitText(ctx, s, maxW){ if (ctx.measureText(s).width <= maxW) return s; 
     if (clock >= N * STEP) { k = N - 1; phase = 1; }
     if (!Course.motionOK) phase = 1;
     if (k !== lastShown) { lastShown = k; jsonEl.textContent = STEPS[k].json; stepEl.textContent = 'step ' + (k + 1) + ' of 4'; stepEl.setAttribute('title', STEPS[k].label); }
-    var think = Course.cssVar('--think'), act = Course.cssVar('--act'), observe = Course.cssVar('--observe'), fg = STAGE_FG, muted = STAGE_MUTED;
+    var think = HERO_INK.think, act = HERO_INK.act, observe = HERO_INK.observe, fg = HERO_INK.fg, muted = HERO_INK.muted;
     var fs = Course.clamp(Math.round(w / 38), 10, 13), xs = [w * 0.18, w * 0.5, w * 0.82], cols = [observe, think, act], names = ['Your workflow', 'Claude', 'The tool'], subs = ['sends and forwards', 'decides · never runs code', 'runs the calculation'];
     ctx.clearRect(0, 0, w, h);
     var hy = Math.max(h * 0.1, 44), bw = Math.min(w * 0.28, 150), bh = fs * 2.2, compact = h < 300;
     for (var i = 0; i < 3; i++) {
       var on = phase < 1 && i === (k === 2 ? 2 : k === 0 ? 0 : 1);
-      ctx.setLineDash([4, 6]); ctx.beginPath(); ctx.moveTo(xs[i], hy + bh / 2); ctx.lineTo(xs[i], h - 52); ctx.strokeStyle = 'rgba(142,155,190,.35)'; ctx.lineWidth = 1.5; ctx.stroke(); ctx.setLineDash([]);
-      Course.roundRect(ctx, xs[i] - bw / 2, hy - bh / 2, bw, bh, 10); ctx.fillStyle = on ? cols[i] : STAGE_BOX; ctx.fill(); ctx.strokeStyle = cols[i]; ctx.lineWidth = 2; ctx.stroke();
+      ctx.setLineDash([4, 6]); ctx.beginPath(); ctx.moveTo(xs[i], hy + bh / 2); ctx.lineTo(xs[i], h - 52); ctx.strokeStyle = HERO_INK.line; ctx.lineWidth = 1.5; ctx.stroke(); ctx.setLineDash([]);
+      Course.roundRect(ctx, xs[i] - bw / 2, hy - bh / 2, bw, bh, 10); ctx.fillStyle = on ? cols[i] : HERO_INK.panel; ctx.fill(); ctx.strokeStyle = cols[i]; ctx.lineWidth = 2; ctx.stroke();
       ctx.fillStyle = on ? '#fff' : cols[i]; ctx.font = '800 ' + (fs + 2) + 'px ' + DISPLAY; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(fitText(ctx, names[i], bw - 10), xs[i], hy);
       if (!compact) { ctx.fillStyle = muted; ctx.font = '600 ' + (fs - 2) + 'px ' + SANS; ctx.textBaseline = 'alphabetic'; ctx.fillText(fitText(ctx, subs[i], bw + 30), xs[i], hy + bh / 2 + fs); }
     }
     var top = hy + bh / 2 + (compact ? 10 : fs + 16), bottom = h - hudH - 22, ys = [0.04, 0.26, 0.47, 0.73, 0.98].map(function(f){ return top + (bottom - top) * f; });
     ctx.font = '700 ' + (fs - 1) + 'px ' + MONO; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
-    [0, 1, 2, 4].forEach(function(yi, n){ ctx.fillStyle = n === k ? fg : 'rgba(142,155,190,.6)'; ctx.fillText(String(n + 1), 10, ys[yi]); });
+    [0, 1, 2, 4].forEach(function(yi, n){ ctx.fillStyle = n === k ? fg : 'rgba(91,104,130,.6)'; ctx.fillText(String(n + 1), 10, ys[yi]); });
     for (var s = 0; s <= k; s++) {
       var p = s < k ? 1 : phase, a = s < k ? 0.5 : 1;
       if (s === 0) arrow(ctx, w, xs[0], xs[1], ys[0], p, observe, '"What is our gross margin?" + tools list', fs, a);
@@ -819,8 +821,8 @@ function fitText(ctx, s, maxW){ if (ctx.measureText(s).width <= maxW) return s; 
         if (p >= 0.3) {
           var rp = Course.clamp((p - 0.3) / 0.3, 0, 1), rw = Math.min(w * 0.36, 200), ry = ys[3] - (ys[3] - ys[2]) * 0.5, rh = fs * (compact ? 2.8 : 3.2);
           ctx.save(); ctx.globalAlpha = a;
-          var glow = ctx.createRadialGradient(xs[2], ry, 4, xs[2], ry, rw * 0.9); glow.addColorStop(0, act + (rp < 1 && Course.motionOK ? '66' : '33')); glow.addColorStop(1, act + '00'); ctx.fillStyle = glow; ctx.fillRect(xs[2] - rw, ry - rw, rw * 2, rw * 2);
-          Course.roundRect(ctx, xs[2] - rw / 2, ry - rh / 2, rw, rh, 10); ctx.fillStyle = STAGE_BOX; ctx.fill(); ctx.strokeStyle = act; ctx.lineWidth = 2; ctx.stroke();
+          var glow = ctx.createRadialGradient(xs[2], ry, 4, xs[2], ry, rw * 0.9); glow.addColorStop(0, act + (rp < 1 && Course.motionOK ? '2e' : '14')); glow.addColorStop(1, act + '00'); ctx.fillStyle = glow; ctx.fillRect(xs[2] - rw, ry - rw, rw * 2, rw * 2);
+          Course.roundRect(ctx, xs[2] - rw / 2, ry - rh / 2, rw, rh, 10); ctx.fillStyle = HERO_INK.bg; ctx.fill(); ctx.strokeStyle = act; ctx.lineWidth = 2; ctx.stroke();
           ctx.fillStyle = fg; ctx.font = '600 ' + (fs - 1) + 'px ' + MONO; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
           ctx.fillText(rp < 1 ? 'running in your workflow…' : 'done in 3 ms', xs[2], ry - fs * 0.65);
           ctx.fillStyle = act; ctx.font = '600 ' + (fs - 2) + 'px ' + MONO; ctx.fillText(fitText(ctx, rp < 1 ? '(184250 - 108700) / 184250' : 'margin = 41.00%', rw - 16), xs[2], ry + fs * 0.75);

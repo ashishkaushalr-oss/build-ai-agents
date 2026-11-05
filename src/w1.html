@@ -882,6 +882,8 @@ function wrapText(ctx, text, x, y, maxW, lh){
 }
 
 /* ---------- HERO: finishing a customer reply, one token at a time ---------- */
+/* The banner stage is white paper, so the hero draws in the --chart-* ink. STAGE_FG, STAGE_MUTED and think() keep their meaning for the concept canvases further down. */
+var HERO_INK = {fg: Course.cssVar('--chart-fg') || '#0E1626', muted: Course.cssVar('--chart-muted') || '#5B6882', think: Course.cssVar('--chart-think') || '#6A52F5'};
 var HERO_PROMPT = ['Thanks', ' for', ' flagging', ' the', ' duplicate', ' invoice', '.', ' I', ' have'];
 var HERO_STEPS = [
   [[' refunded', 46], [' checked', 24], [' raised', 14], [' asked', 9], [' forwarded', 7]],
@@ -908,14 +910,14 @@ function heroDraw(ctx, w, h, t){
   else if (inStep < T_GROW + T_FLASH + T_SLIDE) { phase = 'slide'; ph = (inStep - T_GROW - T_FLASH) / T_SLIDE; }
   else { phase = 'hold'; ph = 1; }
   var appended = phase === 'slide' || phase === 'hold' || phase === 'pause';
-  var violet = think(), small = w < 440, pad = small ? 14 : 22, fontPx = small ? 13 : 15;
+  var ink = HERO_INK, violet = ink.think, small = w < 440, pad = small ? 14 : 22, fontPx = small ? 13 : 15;
   ctx.clearRect(0, 0, w, h);
 
   var tokens = HERO_PROMPT.map(function(s){ return {s: s, gen: false, a: 1}; });
   for (var i = 0; i < step; i++) tokens.push({s: HERO_STEPS[i][0][0], gen: true, a: 1});
   if (appended) tokens.push({s: HERO_STEPS[step][0][0], gen: true, a: phase === 'slide' ? Course.ease(ph) : 1});
   ctx.textBaseline = 'alphabetic'; ctx.textAlign = 'left';
-  ctx.fillStyle = STAGE_MUTED; ctx.font = '11px ' + MONO;
+  ctx.fillStyle = ink.muted; ctx.font = '11px ' + MONO;
   ctx.fillText('REPLY SO FAR  ·  grey = your text, violet = predicted', pad, 40);
   ctx.font = '600 ' + fontPx + 'px ' + MONO;
   var x = pad, y = 66, lineH = fontPx + 16, maxW = w - pad * 2;
@@ -923,10 +925,10 @@ function heroDraw(ctx, w, h, t){
     var tw = ctx.measureText(tk.s).width;
     if (x + tw > pad + maxW && x > pad) { x = pad; y += lineH; }
     if (tk.gen) {
-      ctx.globalAlpha = tk.a * 0.3; ctx.fillStyle = violet;
+      ctx.globalAlpha = tk.a * 0.18; ctx.fillStyle = violet;
       Course.roundRect(ctx, x + 2, y - fontPx - 3, Math.max(4, tw - 2), fontPx + 9, 5); ctx.fill();
     }
-    ctx.globalAlpha = tk.a; ctx.fillStyle = tk.gen ? STAGE_FG : STAGE_MUTED;
+    ctx.globalAlpha = tk.a; ctx.fillStyle = tk.gen ? ink.fg : ink.muted;
     ctx.fillText(tk.s, x, y);
     x += tw;
   });
@@ -934,7 +936,7 @@ function heroDraw(ctx, w, h, t){
   if (phase !== 'pause' && Math.floor(t * 2) % 2 === 0) { ctx.fillStyle = violet; ctx.fillRect(x + 4, y - fontPx, 2, fontPx + 4); }
 
   var top = y + 34, cands = HERO_STEPS[step];
-  ctx.fillStyle = STAGE_MUTED; ctx.font = '11px ' + MONO;
+  ctx.fillStyle = ink.muted; ctx.font = '11px ' + MONO;
   ctx.fillText(phase === 'pause' ? 'DONE  ·  REPLAYING' : 'WHAT COMES NEXT?   guess ' + (step + 1) + ' of ' + n, pad, top);
   var labelW = small ? 86 : 110, pctW = 54, barX = pad + labelW, barW = w - pad - pctW - barX;
   var rowH = Math.min(30, Math.max(20, (h - top - 48) / cands.length));
@@ -942,11 +944,11 @@ function heroDraw(ctx, w, h, t){
   cands.forEach(function(c, i){
     var ry = top + 12 + i * rowH, isTop = i === 0;
     var flash = phase === 'flash' ? (Math.sin(ph * Math.PI * 4) > 0 ? 1 : 0.45) : 1;
-    ctx.fillStyle = isTop ? violet : STAGE_MUTED;
+    ctx.fillStyle = isTop ? violet : ink.muted;
     ctx.globalAlpha = isTop ? flash : (phase === 'grow' ? 0.9 : 0.45);
     Course.roundRect(ctx, barX, ry, Math.max(3, barW * Math.max(0.012, c[1] / 100) * e), rowH - 9, 4); ctx.fill();
     ctx.globalAlpha = 1;
-    ctx.fillStyle = isTop && phase !== 'grow' ? STAGE_FG : STAGE_MUTED;
+    ctx.fillStyle = isTop && phase !== 'grow' ? ink.fg : ink.muted;
     ctx.font = (isTop ? '600 ' : '') + '12px ' + MONO;
     ctx.fillText('"' + c[0].trim() + '"', pad, ry + rowH - 14);
     ctx.textAlign = 'right';
@@ -955,10 +957,10 @@ function heroDraw(ctx, w, h, t){
   });
 
   var count = HERO_PROMPT.length + step + (appended ? 1 : 0);
-  ctx.fillStyle = STAGE_FG; ctx.font = '600 13px ' + SANS;
+  ctx.fillStyle = ink.fg; ctx.font = '600 13px ' + SANS;
   ctx.fillText('tokens so far: ', pad, h - 14);
   ctx.font = '600 14px ' + MONO; ctx.fillText(String(count), pad + 108, h - 14);
-  ctx.fillStyle = STAGE_MUTED; ctx.font = '11px ' + MONO;
+  ctx.fillStyle = ink.muted; ctx.font = '11px ' + MONO;
   if (!small) ctx.fillText('(' + HERO_PROMPT.length + ' given + ' + (count - HERO_PROMPT.length) + ' predicted)', pad + 130, h - 14);
 }
 var hero = Course.canvas(document.getElementById('heroCanvas'), heroDraw, {auto: true});

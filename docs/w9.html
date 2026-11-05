@@ -16,6 +16,9 @@
   --font-mono:"JetBrains Mono",ui-monospace,"Cascadia Code",Consolas,monospace;
   --r-s:10px; --r-m:14px; --r-l:20px;
   --wrap:1120px;
+  /* banner chart ink: the chart box is white paper in both themes, so these never change with the theme */
+  --chart-bg:#FFFFFF; --chart-panel:#F4F6FB; --chart-panel-2:#E9EEF7; --chart-fg:#0E1626; --chart-muted:#5B6882; --chart-line:#D6DEEC;
+  --chart-think:#6A52F5; --chart-act:#F2552E; --chart-observe:#0E9F86; --chart-warn:#C27A00; --chart-ok:#1E9E5A; --chart-bad:#D63B3B;
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
@@ -103,10 +106,10 @@ pre.code .k{color:#8F7BFF}pre.code .s{color:#2CD2B2}pre.code .c{color:#8E9BBE}pr
 .hero .muted{color:#5B6882}
 .hero__text a:not(.btn){color:inherit}
 .hero__actions{display:flex;gap:10px;flex-wrap:wrap}
-.stage{position:relative;width:100%;max-width:100%;aspect-ratio:4/3;background:var(--stage-2);border:1px solid var(--stage-line);border-radius:var(--r-l);overflow:hidden;box-shadow:0 30px 60px rgba(0,0,0,.35)}
+.stage{position:relative;width:100%;max-width:100%;aspect-ratio:4/3;background:var(--chart-bg);border:1px solid var(--chart-line);border-radius:var(--r-l);overflow:hidden;box-shadow:0 24px 50px rgba(14,22,38,.10);color:var(--chart-fg)}
 .stage canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 .stage svg{position:absolute;inset:0;width:100%;height:100%;display:block}
-.stage__label{position:absolute;left:14px;top:12px;font-family:var(--font-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--stage-muted)}
+.stage__label{position:absolute;left:14px;top:12px;font-family:var(--font-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--chart-muted)}
 .stage__hud{position:absolute;right:12px;bottom:12px;left:12px;display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;align-items:center}
 .stage--wide{aspect-ratio:16/9}
 @media (max-width:820px){.hero .wrap{grid-template-columns:1fr;padding-block:28px}.hero::after{inset:-200px -180px auto auto;width:420px;height:420px}.stage{aspect-ratio:16/11}}
@@ -132,10 +135,13 @@ pre.code .k{color:#8F7BFF}pre.code .s{color:#2CD2B2}pre.code .c{color:#8E9BBE}pr
 .hero .chip--act{background:#FFE9E2;color:#F2552E}
 .hero .chip--observe,.hero .chip--ok{background:#DDF5EF;color:#0E9F86}
 .hero .chip--warn{background:#FFF0D6;color:#A86A00}
-/* controls that sit on the dark stage keep their dark styling */
-.stage .btn{background:rgba(7,11,22,.6);color:var(--stage-fg);border-color:var(--stage-line);box-shadow:none}
-.stage .btn--primary{background:var(--accent);border-color:var(--accent);color:#fff}
-.stage .chip{background:rgba(7,11,22,.75);color:var(--stage-fg)}
+/* controls on the chart box: white pills with a hairline, the orange one stays orange */
+.stage .btn{background:#FFFFFF;color:#0E1626;border-color:#D6DEEC;box-shadow:0 1px 2px rgba(14,22,38,.06)}
+.stage .btn--primary{background:#F2552E;border-color:#F2552E;color:#fff}
+.stage .seg{background:#FFFFFF;border-color:#D6DEEC}
+.stage .seg button{color:#5B6882}
+.stage .seg button.is-on{background:#0E1626;color:#FFFFFF}
+.stage input[type=text],.stage select{background:#FFFFFF;color:#0E1626;border-color:#D6DEEC}
 .chip{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;font-size:.8rem;font-weight:700;letter-spacing:.02em;background:var(--surface-2);color:var(--fg)}
 .chip--think{background:var(--think-soft);color:var(--think)}
 .chip--act{background:var(--act-soft);color:var(--act)}
@@ -1799,6 +1805,8 @@ function tween(dur, fn){
 function say(box, cls, text, label){ var b = el('div', {class: 'b ' + cls}, [label ? el('small', {text: label}) : null, el('span', {text: text})]); box.appendChild(b); box.scrollTop = box.scrollHeight; return b; }
 
 /* ---------- HERO: one agent, three front doors ---------- */
+/* The banner chart is dark ink on white paper in both themes; these never change with the theme. */
+var HERO_INK = {bg: Course.cssVar('--chart-bg') || '#FFFFFF', panel: Course.cssVar('--chart-panel') || '#F4F6FB', fg: Course.cssVar('--chart-fg') || '#0E1626', muted: Course.cssVar('--chart-muted') || '#5B6882', line: Course.cssVar('--chart-line') || '#D6DEEC', think: Course.cssVar('--chart-think') || '#6A52F5', act: Course.cssVar('--chart-act') || '#F2552E', observe: Course.cssVar('--chart-observe') || '#0E9F86'};
 var HERO_CH = [
   {name: 'Website · chat bubble', sess: 'a81f', q: 'Where is consignment MR-48812?', a: 'Out for delivery. Expected by 4 pm; the driver will call ahead.', stream: true, tool: 'looking up shipments…'},
   {name: 'Customer portal · iframe', sess: 'cust-1187', q: 'Which of our invoices are overdue?', a: 'Two: INV-2026-00871, 14 days, and INV-2026-00902, 3 days.', stream: true, tool: 'looking up invoices…'},
@@ -1811,38 +1819,38 @@ function heroDraw(ctx, w, h, t){
   var tc = t % H_CYCLE, finished = tc >= HERO_CH.length * H_STEP, cur = finished ? -1 : Math.floor(tc / H_STEP), inStep = finished ? 0 : tc - cur * H_STEP;
   var phase = finished ? 'pause' : inStep < H_SEND ? 'send' : inStep < H_SEND + H_THINK ? 'think' : inStep < H_SEND + H_THINK + H_REPLY ? 'reply' : 'hold';
   var ph = phase === 'send' ? inStep / H_SEND : phase === 'think' ? (inStep - H_SEND) / H_THINK : phase === 'reply' ? (inStep - H_SEND - H_THINK) / H_REPLY : 1;
-  var small = w < 440, pad = small ? 10 : 14, fs = small ? 10 : 11, lh = fs + 3, gap = 8, violet = think(), act = Course.cssVar('--act') || '#FF7A58', observe = Course.cssVar('--observe') || '#2CD2B2';
+  var small = w < 440, pad = small ? 10 : 14, fs = small ? 10 : 11, lh = fs + 3, gap = 8, violet = HERO_INK.think, act = HERO_INK.act, observe = HERO_INK.observe;
   ctx.clearRect(0, 0, w, h);
   ctx.textBaseline = 'alphabetic'; ctx.textAlign = 'left';
-  ctx.fillStyle = STAGE_MUTED; ctx.font = '11px ' + MONO;
+  ctx.fillStyle = HERO_INK.muted; ctx.font = '11px ' + MONO;
   var leftW = Math.round(w * 0.5), top = pad + 22, chH = (h - top - pad - gap * 2) / 3;
   var ax = leftW + (small ? 14 : 22), aw = w - ax - pad, ah = Math.round((h - top - pad - gap) * 0.5), ay = top, my = ay + ah + gap, mh = h - pad - my;
   /* agent box */
-  var pulse = phase === 'think' ? 0.14 + 0.16 * (0.5 + 0.5 * Math.sin(t * 12)) : phase === 'reply' ? 0.16 : 0.08;
+  var pulse = phase === 'think' ? 0.10 + 0.08 * (0.5 + 0.5 * Math.sin(t * 12)) : phase === 'reply' ? 0.14 : 0.07;
   ctx.fillStyle = violet; ctx.globalAlpha = pulse; Course.roundRect(ctx, ax, ay, aw, ah, 12); ctx.fill(); ctx.globalAlpha = 1;
   ctx.strokeStyle = violet; ctx.lineWidth = 2; ctx.stroke();
-  ctx.fillStyle = STAGE_FG; ctx.font = '700 ' + (fs + 2) + 'px ' + DISP; ctx.fillText('n8n · AI Agent node', ax + 10, ay + 18);
-  ctx.fillStyle = STAGE_MUTED; ctx.font = fs + 'px ' + MONO; ctx.fillText('claude-sonnet-5-5', ax + 10, ay + 18 + lh);
+  ctx.fillStyle = HERO_INK.fg; ctx.font = '700 ' + (fs + 2) + 'px ' + DISP; ctx.fillText('n8n · AI Agent node', ax + 10, ay + 18);
+  ctx.fillStyle = HERO_INK.muted; ctx.font = fs + 'px ' + MONO; ctx.fillText('claude-sonnet-5-5', ax + 10, ay + 18 + lh);
   var status = phase === 'send' ? 'reading the message…' : phase === 'think' ? HERO_CH[cur].tool : phase === 'reply' ? (HERO_CH[cur].stream ? 'streaming the reply…' : 'sending one whole message…') : phase === 'hold' ? 'done · waiting' : 'idle · all three answered';
-  ctx.fillStyle = phase === 'pause' || phase === 'hold' ? STAGE_MUTED : observe; ctx.font = '600 ' + fs + 'px ' + SANS;
+  ctx.fillStyle = phase === 'pause' || phase === 'hold' ? HERO_INK.muted : observe; ctx.font = '600 ' + fs + 'px ' + SANS;
   wrapLines(ctx, status, aw - 20).forEach(function(l, i){ ctx.fillText(l, ax + 10, ay + 18 + lh * (2.2 + i)); });
-  ctx.fillStyle = STAGE_MUTED; ctx.font = (fs - 1) + 'px ' + MONO; ctx.fillText('tools: shipments · invoices · pickups', ax + 10, ay + ah - 10);
+  ctx.fillStyle = HERO_INK.muted; ctx.font = (fs - 1) + 'px ' + MONO; ctx.fillText('tools: shipments · invoices · pickups', ax + 10, ay + ah - 10);
   /* memory box */
-  ctx.fillStyle = STAGE_2; Course.roundRect(ctx, ax, my, aw, mh, 12); ctx.fill(); ctx.strokeStyle = STAGE_LINE; ctx.lineWidth = 1; ctx.stroke();
-  ctx.fillStyle = STAGE_FG; ctx.font = '700 ' + (fs + 1) + 'px ' + DISP; ctx.fillText('Memory · one row per session id', ax + 10, my + 17);
+  ctx.fillStyle = HERO_INK.panel; Course.roundRect(ctx, ax, my, aw, mh, 12); ctx.fill(); ctx.strokeStyle = HERO_INK.line; ctx.lineWidth = 1; ctx.stroke();
+  ctx.fillStyle = HERO_INK.fg; ctx.font = '700 ' + (fs + 1) + 'px ' + DISP; ctx.fillText('Memory · one row per session id', ax + 10, my + 17);
   HERO_CH.forEach(function(c, i){
     var turns = (finished || i < cur) ? 2 : i === cur ? (phase === 'send' ? (ph > 0.9 ? 1 : 0) : phase === 'think' ? 1 : 2) : 0;
     var ry = my + 17 + lh * (i + 1.4), on = i === cur && !finished;
-    ctx.fillStyle = on ? observe : turns ? STAGE_FG : STAGE_MUTED; ctx.font = (on ? '600 ' : '') + (fs - 1) + 'px ' + MONO;
+    ctx.fillStyle = on ? observe : turns ? HERO_INK.fg : HERO_INK.muted; ctx.font = (on ? '600 ' : '') + (fs - 1) + 'px ' + MONO;
     ctx.fillText(c.sess, ax + 10, ry);
     ctx.textAlign = 'right'; ctx.fillText(turns ? turns + ' turns' : 'empty', ax + aw - 10, ry); ctx.textAlign = 'left';
   });
   /* channel cards */
   HERO_CH.forEach(function(c, i){
     var cy = top + i * (chH + gap), lx = pad, cw = leftW - pad, done = finished || i < cur, on = i === cur && !finished;
-    ctx.fillStyle = STAGE_2; Course.roundRect(ctx, lx, cy, cw, chH, 12); ctx.fill(); ctx.strokeStyle = on ? act : STAGE_LINE; ctx.lineWidth = on ? 2 : 1; ctx.stroke();
+    ctx.fillStyle = HERO_INK.panel; Course.roundRect(ctx, lx, cy, cw, chH, 12); ctx.fill(); ctx.strokeStyle = on ? act : HERO_INK.line; ctx.lineWidth = on ? 2 : 1; ctx.stroke();
     ctx.save(); ctx.beginPath(); ctx.rect(lx, cy, cw, chH); ctx.clip();
-    ctx.fillStyle = on ? STAGE_FG : STAGE_MUTED; ctx.font = '600 ' + (fs - 1) + 'px ' + MONO; ctx.fillText(c.name, lx + 9, cy + 13);
+    ctx.fillStyle = on ? HERO_INK.fg : HERO_INK.muted; ctx.font = '600 ' + (fs - 1) + 'px ' + MONO; ctx.fillText(c.name, lx + 9, cy + 13);
     var bw = cw - 18 - (small ? 8 : 22);
     ctx.font = fs + 'px ' + SANS;
     var showQ = done || on, qLines = wrapLines(ctx, c.q, bw - 14), qh = qLines.length * lh + 8, qw = Math.min(bw, Math.max.apply(null, qLines.map(function(l){ return ctx.measureText(l).width; })) + 14);
@@ -1852,20 +1860,20 @@ function heroDraw(ctx, w, h, t){
     if (done) shown = N; else if (on && phase === 'reply') shown = c.stream ? Math.floor(Course.clamp((ph - 0.15) / 0.8, 0, 1) * N) : (ph > 0.82 ? N : 0); else if (on && phase === 'hold') shown = N;
     if (shown > 0) {
       var rLines = wrapLines(ctx, c.a.split(' ').slice(0, shown).join(' '), bw - 14), rh = rLines.length * lh + 8;
-      ctx.fillStyle = '#1C2748'; Course.roundRect(ctx, lx + 9, ry, bw, rh, 8); ctx.fill();
-      ctx.fillStyle = STAGE_FG; rLines.forEach(function(l, k){ ctx.fillText(l, lx + 16, ry + 6 + lh * (k + 0.75)); });
+      ctx.fillStyle = HERO_INK.bg; Course.roundRect(ctx, lx + 9, ry, bw, rh, 8); ctx.fill(); ctx.strokeStyle = HERO_INK.line; ctx.lineWidth = 1; ctx.stroke();
+      ctx.fillStyle = HERO_INK.fg; rLines.forEach(function(l, k){ ctx.fillText(l, lx + 16, ry + 6 + lh * (k + 0.75)); });
       if (on && shown < N) { ctx.fillStyle = observe; ctx.fillRect(lx + 16 + ctx.measureText(rLines[rLines.length - 1]).width + 2, ry + 6 + lh * (rLines.length - 1) + 1, 2, lh - 3); }
     } else if (on && (phase === 'think' || phase === 'reply')) {
-      ctx.fillStyle = '#1C2748'; Course.roundRect(ctx, lx + 9, ry, 44, lh + 8, 8); ctx.fill();
-      for (var d = 0; d < 3; d++) { var bob = (Math.sin(t * 5 + d * 0.9) + 1) / 2; ctx.fillStyle = STAGE_MUTED; ctx.beginPath(); ctx.arc(lx + 20 + d * 11, ry + lh / 2 + 5 - bob * 3, 2.5, 0, Math.PI * 2); ctx.fill(); }
-      if (!c.stream) { ctx.fillStyle = STAGE_MUTED; ctx.font = (fs - 1) + 'px ' + MONO; ctx.fillText('no streaming on WhatsApp', lx + 60, ry + lh / 2 + 8); }
+      ctx.fillStyle = HERO_INK.bg; Course.roundRect(ctx, lx + 9, ry, 44, lh + 8, 8); ctx.fill(); ctx.strokeStyle = HERO_INK.line; ctx.lineWidth = 1; ctx.stroke();
+      for (var d = 0; d < 3; d++) { var bob = (Math.sin(t * 5 + d * 0.9) + 1) / 2; ctx.fillStyle = HERO_INK.muted; ctx.beginPath(); ctx.arc(lx + 20 + d * 11, ry + lh / 2 + 5 - bob * 3, 2.5, 0, Math.PI * 2); ctx.fill(); }
+      if (!c.stream) { ctx.fillStyle = HERO_INK.muted; ctx.font = (fs - 1) + 'px ' + MONO; ctx.fillText('no streaming on WhatsApp', lx + 60, ry + lh / 2 + 8); }
     }
     ctx.restore();
     /* the travelling message */
     if (on && (phase === 'send' || (phase === 'reply' && ph < 0.15))) {
       var sx = lx + cw, sy = cy + chH / 2, ex = ax, ey = ay + ah / 2, p = phase === 'send' ? Course.ease(ph) : 1 - Course.ease(ph / 0.15);
       var mx = (sx + ex) / 2, px = Course.lerp(sx, ex, p), py = (1 - p) * (1 - p) * sy + 2 * (1 - p) * p * ((sy + ey) / 2) + p * p * ey;
-      ctx.strokeStyle = STAGE_LINE; ctx.lineWidth = 1; ctx.setLineDash([3, 4]); ctx.beginPath(); ctx.moveTo(sx, sy); ctx.quadraticCurveTo(mx, (sy + ey) / 2, ex, ey); ctx.stroke(); ctx.setLineDash([]);
+      ctx.strokeStyle = HERO_INK.line; ctx.lineWidth = 1; ctx.setLineDash([3, 4]); ctx.beginPath(); ctx.moveTo(sx, sy); ctx.quadraticCurveTo(mx, (sy + ey) / 2, ex, ey); ctx.stroke(); ctx.setLineDash([]);
       ctx.fillStyle = phase === 'send' ? act : observe; ctx.beginPath(); ctx.arc(px, py, 6, 0, Math.PI * 2); ctx.fill();
     }
   });

@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Banner chart options</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="/shared/course.css">
+<style>
+body{padding-bottom:40vh}
+.top{max-width:1120px;margin:0 auto;padding:22px 16px 6px;display:flex;flex-wrap:wrap;gap:12px 24px;align-items:center;justify-content:space-between}
+.top h1{font-size:1.3rem}
+.opt{max-width:1120px;margin:30px auto 0;padding:0 16px;display:grid;gap:10px}
+.lbl{display:flex;align-items:baseline;gap:12px;font-family:var(--font-mono);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.lbl b{font-family:var(--font-display);font-size:1.05rem;letter-spacing:0;text-transform:none;color:var(--fg)}
+.why{color:var(--muted);font-size:.9rem;max-width:84ch;margin:0}
+.why b{color:var(--fg)}
+/* the banner mock: the real shared hero styles, in a rounded frame */
+.hero{border-radius:22px;border:1px solid #D6DEEC}
+.hero .wrap{padding-block:40px}
+.hero h1{font-size:clamp(1.8rem,3.4vw,2.6rem)}
+/* every option keeps the chart box's shape; only its skin changes */
+.stage{aspect-ratio:4/3;box-shadow:none;border-radius:20px}
+.stage__label{color:#5B6882}
+.stage .btn{background:#FFFFFF;color:#0E1626;border-color:#D6DEEC;box-shadow:none}
+.st-a{background:#FFFFFF;border:1px solid #D6DEEC;box-shadow:0 24px 50px rgba(14,22,38,.10)}
+.st-b{background:linear-gradient(160deg,#F3F0FF,#EAF7F4);border:1px solid rgba(106,82,245,.22);box-shadow:0 24px 50px rgba(106,82,245,.10)}
+.st-b::before{content:"";position:absolute;inset:0;background-image:radial-gradient(rgba(14,22,38,.09) 1px,transparent 1px);background-size:16px 16px;pointer-events:none}
+.st-c{background:rgba(255,255,255,.5);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border:1px solid rgba(255,255,255,.95);box-shadow:0 24px 50px rgba(14,22,38,.12),inset 0 1px 0 rgba(255,255,255,.9)}
+.hero--c::after{inset:-120px -80px auto auto;width:620px;height:620px;background:radial-gradient(circle,rgba(106,82,245,.45),rgba(242,85,46,.22) 45%,rgba(14,159,134,.18) 65%,transparent 75%)}
+.st-c .stage__label{color:#3F4A63}
+.st-d{background:#E9EEF7;border:1px solid #D6DEEC;box-shadow:inset 0 1px 0 #fff}
+.st-d .btn{background:#0E1626;color:#fff;border-color:#0E1626}
+</style>
+</head>
+<body>
+<div class="top"><h1>The banner chart · four light skins on the real Week 1 chart</h1><span class="muted" style="font-size:.9rem">Each one is live; the same change would go to all ten weeks.</span></div>
+
+<section class="opt" id="optA"><p class="lbl">Option A <b>Paper card</b> · a white card with a hairline border and a soft shadow</p>
+<section class="hero"><div class="wrap"><div class="hero__text"><span class="eyebrow">Week 1 · Modules 1 to 3 · five days · about 5 hours in total</span><h1>You already work with AI. <em>Let's meet it properly.</em></h1><p class="lede">Spam filters, autocomplete, the meeting transcript that lands in your inbox: all of that is AI doing a job. This week I will show you what is going on inside.</p><div class="hero__actions"><a class="btn btn--primary" href="#">Start Day 1</a><a class="btn" href="#">Go to Day 5, the lab</a></div></div>
+<div class="stage st-a"><canvas data-skin="a"></canvas><span class="stage__label">live · finishing a customer reply</span><div class="stage__hud"><button class="btn btn--small" type="button" data-replay>Replay</button></div></div></div></section>
+<p class="why"><b>The idea:</b> the chart sits on plain white like a sheet of paper on the desk. Dark ink, grey for your words, violet for the model's. The quietest option and the easiest to read.</p></section>
+
+<section class="opt" id="optB"><p class="lbl">Option B <b>Tinted panel</b> · a pale violet-to-mint wash with a dot grid</p>
+<section class="hero"><div class="wrap"><div class="hero__text"><span class="eyebrow">Week 1 · Modules 1 to 3 · five days · about 5 hours in total</span><h1>You already work with AI. <em>Let's meet it properly.</em></h1><p class="lede">Spam filters, autocomplete, the meeting transcript that lands in your inbox: all of that is AI doing a job. This week I will show you what is going on inside.</p><div class="hero__actions"><a class="btn btn--primary" href="#">Start Day 1</a><a class="btn" href="#">Go to Day 5, the lab</a></div></div>
+<div class="stage st-b"><canvas data-skin="b"></canvas><span class="stage__label">live · finishing a customer reply</span><div class="stage__hud"><button class="btn btn--small" type="button" data-replay>Replay</button></div></div></div></section>
+<p class="why"><b>The idea:</b> the chart box picks up the banner's own colours as a faint wash, with a dot grid so it still reads as an instrument rather than a blank card. Dark ink on top. More designed than A, still calm.</p></section>
+
+<section class="opt" id="optC"><p class="lbl">Option C <b>Frosted glass</b> · the chart floats on blurred glass over the banner's colour</p>
+<section class="hero hero--c"><div class="wrap"><div class="hero__text"><span class="eyebrow">Week 1 · Modules 1 to 3 · five days · about 5 hours in total</span><h1>You already work with AI. <em>Let's meet it properly.</em></h1><p class="lede">Spam filters, autocomplete, the meeting transcript that lands in your inbox: all of that is AI doing a job. This week I will show you what is going on inside.</p><div class="hero__actions"><a class="btn btn--primary" href="#">Start Day 1</a><a class="btn" href="#">Go to Day 5, the lab</a></div></div>
+<div class="stage st-c"><canvas data-skin="c"></canvas><span class="stage__label">live · finishing a customer reply</span><div class="stage__hud"><button class="btn btn--small" type="button" data-replay>Replay</button></div></div></div></section>
+<p class="why"><b>The idea:</b> the banner's orb gets stronger and sits behind the chart, and the chart box is frosted glass, so the violet, orange and teal glow through it softly. The most "current" of the four. The glow varies a little from page to page, since every week's chart has a different shape.</p></section>
+
+<section class="opt" id="optD"><p class="lbl">Option D <b>Dashboard tile</b> · a light slate tile with the chart's parts on white panels</p>
+<section class="hero"><div class="wrap"><div class="hero__text"><span class="eyebrow">Week 1 · Modules 1 to 3 · five days · about 5 hours in total</span><h1>You already work with AI. <em>Let's meet it properly.</em></h1><p class="lede">Spam filters, autocomplete, the meeting transcript that lands in your inbox: all of that is AI doing a job. This week I will show you what is going on inside.</p><div class="hero__actions"><a class="btn btn--primary" href="#">Start Day 1</a><a class="btn" href="#">Go to Day 5, the lab</a></div></div>
+<div class="stage st-d"><canvas data-skin="d"></canvas><span class="stage__label">live · finishing a customer reply</span><div class="stage__hud"><button class="btn btn--small" type="button" data-replay>Replay</button></div></div></div></section>
+<p class="why"><b>The idea:</b> the box is the light slate grey of the course's own cards, and each part of the chart (the reply, the five guesses) sits on its own white panel, the way tiles do on a dashboard. The most structured, and it gives every week's chart a shared grammar.</p></section>
+
+<script>
+(function(){
+  'use strict';
+  var MONO = '"JetBrains Mono", monospace', SANS = 'Figtree, sans-serif';
+  var SKINS = {
+    a: {fg: '#0E1626', muted: '#5B6882', think: '#6A52F5', panel: null},
+    b: {fg: '#0E1626', muted: '#5B6882', think: '#6A52F5', panel: null},
+    c: {fg: '#0E1626', muted: '#3F4A63', think: '#6A52F5', panel: null},
+    d: {fg: '#0E1626', muted: '#5B6882', think: '#6A52F5', panel: '#FFFFFF'}
+  };
+  function ease(x){ x = Math.max(0, Math.min(1, x)); return 1 - Math.pow(1 - x, 3); }
+  function rr(ctx, x, y, w, h, r){ ctx.beginPath(); ctx.roundRect(x, y, w, h, r); }
+  /* the real Week 1 banner chart, with its colours taken from a skin */
+  var HERO_PROMPT = ['Thanks', ' for', ' flagging', ' the', ' duplicate', ' invoice', '.', ' I', ' have'];
+  var HERO_STEPS = [[[' refunded', 46], [' checked', 24], [' raised', 14], [' asked', 9], [' forwarded', 7]], [[' the', 83], [' it', 9], [' your', 5], [' both', 2], [' INV', 1]], [[' second', 38], [' duplicate', 31], [' extra', 17], [' full', 8], [' first', 6]], [[' charge', 64], [' payment', 21], [' invoice', 12], [' amount', 2], [' entry', 1]], [['.', 52], [' and', 23], [' to', 12], [',', 9], [' of', 4]]];
+  var T_GROW = 1.3, T_FLASH = 0.5, T_SLIDE = 0.45, T_HOLD = 0.35, STEP_LEN = T_GROW + T_FLASH + T_SLIDE + T_HOLD, HERO_PAUSE = 2.6, HERO_CYCLE = HERO_STEPS.length * STEP_LEN + HERO_PAUSE;
+  function heroDraw(ctx, w, h, t, P){
+    if (w < 60 || h < 60) return;
+    var tc = t % HERO_CYCLE, n = HERO_STEPS.length, finished = tc >= n * STEP_LEN;
+    var step = finished ? n - 1 : Math.max(0, Math.min(n - 1, Math.floor(tc / STEP_LEN))), inStep = finished ? STEP_LEN : tc - step * STEP_LEN, phase, ph;
+    if (finished) { phase = 'pause'; ph = 1; } else if (inStep < T_GROW) { phase = 'grow'; ph = inStep / T_GROW; } else if (inStep < T_GROW + T_FLASH) { phase = 'flash'; ph = (inStep - T_GROW) / T_FLASH; } else if (inStep < T_GROW + T_FLASH + T_SLIDE) { phase = 'slide'; ph = (inStep - T_GROW - T_FLASH) / T_SLIDE; } else { phase = 'hold'; ph = 1; }
+    var appended = phase === 'slide' || phase === 'hold' || phase === 'pause';
+    var violet = P.think, small = w < 440, pad = small ? 14 : 22, fontPx = small ? 13 : 15;
+    ctx.clearRect(0, 0, w, h);
+    var tokens = HERO_PROMPT.map(function(s){ return {s: s, gen: false, a: 1}; });
+    for (var i = 0; i < step; i++) tokens.push({s: HERO_STEPS[i][0][0], gen: true, a: 1});
+    if (appended) tokens.push({s: HERO_STEPS[step][0][0], gen: true, a: phase === 'slide' ? ease(ph) : 1});
+    ctx.font = '600 ' + fontPx + 'px ' + MONO;
+    var lines = 1, lx = pad, maxW = w - pad * 2; tokens.forEach(function(tk){ var tw = ctx.measureText(tk.s).width; if (lx + tw > pad + maxW && lx > pad) { lx = pad; lines++; } lx += tw; });
+    var lineH = fontPx + 16, y0 = 66, replyBottom = y0 + (lines - 1) * lineH + 12, top = replyBottom + 22, cands = HERO_STEPS[step];
+    var rowH = Math.min(30, Math.max(20, (h - top - 48) / cands.length));
+    if (P.panel) { ctx.fillStyle = P.panel; rr(ctx, pad - 10, 28, w - pad * 2 + 20, replyBottom - 20, 12); ctx.fill(); rr(ctx, pad - 10, top - 16, w - pad * 2 + 20, 12 + rowH * cands.length + 16, 12); ctx.fill(); }
+    ctx.textBaseline = 'alphabetic'; ctx.textAlign = 'left';
+    ctx.fillStyle = P.muted; ctx.font = '11px ' + MONO;
+    ctx.fillText('REPLY SO FAR  ·  grey = your text, violet = predicted', pad, 40);
+    ctx.font = '600 ' + fontPx + 'px ' + MONO;
+    var x = pad, y = y0;
+    tokens.forEach(function(tk){
+      var tw = ctx.measureText(tk.s).width;
+      if (x + tw > pad + maxW && x > pad) { x = pad; y += lineH; }
+      if (tk.gen) { ctx.globalAlpha = tk.a * 0.22; ctx.fillStyle = violet; rr(ctx, x + 2, y - fontPx - 3, Math.max(4, tw - 2), fontPx + 9, 5); ctx.fill(); }
+      ctx.globalAlpha = tk.a; ctx.fillStyle = tk.gen ? P.fg : P.muted; ctx.fillText(tk.s, x, y); x += tw;
+    });
+    ctx.globalAlpha = 1;
+    if (phase !== 'pause' && Math.floor(t * 2) % 2 === 0) { ctx.fillStyle = violet; ctx.fillRect(x + 4, y - fontPx, 2, fontPx + 4); }
+    ctx.fillStyle = P.muted; ctx.font = '11px ' + MONO;
+    ctx.fillText(phase === 'pause' ? 'DONE  ·  REPLAYING' : 'WHAT COMES NEXT?   guess ' + (step + 1) + ' of ' + n, pad, top);
+    var labelW = small ? 86 : 110, pctW = 54, barX = pad + labelW, barW = w - pad - pctW - barX, e = phase === 'grow' ? ease(ph) : 1;
+    cands.forEach(function(c, i){
+      var ry = top + 12 + i * rowH, isTop = i === 0, flash = phase === 'flash' ? (Math.sin(ph * Math.PI * 4) > 0 ? 1 : 0.45) : 1;
+      ctx.fillStyle = '#E9EEF7'; rr(ctx, barX, ry, barW, rowH - 9, 4); ctx.fill();
+      ctx.fillStyle = isTop ? violet : P.muted; ctx.globalAlpha = isTop ? flash : (phase === 'grow' ? 0.7 : 0.4);
+      rr(ctx, barX, ry, Math.max(3, barW * Math.max(0.012, c[1] / 100) * e), rowH - 9, 4); ctx.fill(); ctx.globalAlpha = 1;
+      ctx.fillStyle = isTop && phase !== 'grow' ? P.fg : P.muted; ctx.font = (isTop ? '600 ' : '') + '12px ' + MONO;
+      ctx.fillText('"' + c[0].trim() + '"', pad, ry + rowH - 14); ctx.textAlign = 'right'; ctx.fillText((c[1] * e).toFixed(c[1] < 1 ? 1 : 0) + '%', w - pad, ry + rowH - 14); ctx.textAlign = 'left';
+    });
+    var count = HERO_PROMPT.length + step + (appended ? 1 : 0);
+    ctx.fillStyle = P.fg; ctx.font = '600 13px ' + SANS; ctx.fillText('tokens so far: ', pad, h - 14);
+    ctx.font = '600 14px ' + MONO; ctx.fillText(String(count), pad + 108, h - 14);
+    ctx.fillStyle = P.muted; ctx.font = '11px ' + MONO;
+    if (!small) ctx.fillText('(' + HERO_PROMPT.length + ' given + ' + (count - HERO_PROMPT.length) + ' predicted)', pad + 130, h - 14);
+  }
+  var canvases = [].slice.call(document.querySelectorAll('canvas[data-skin]'));
+  canvases.forEach(function(c){ c._t0 = performance.now(); var btn = c.parentNode.querySelector('[data-replay]'); if (btn) btn.addEventListener('click', function(){ c._t0 = performance.now(); }); });
+  function fit(){ canvases.forEach(function(c){ var dpr = Math.min(2, window.devicePixelRatio || 1), r = c.getBoundingClientRect(); c.width = Math.round(r.width * dpr); c.height = Math.round(r.height * dpr); c._w = r.width; c._h = r.height; c._dpr = dpr; }); }
+  fit(); window.addEventListener('resize', fit);
+  function frame(now){ canvases.forEach(function(c){ var ctx = c.getContext('2d'); ctx.setTransform(c._dpr, 0, 0, c._dpr, 0, 0); try { heroDraw(ctx, c._w, c._h, Math.max(0, (now - c._t0) / 1000), SKINS[c.getAttribute('data-skin')]); } catch (e) { console.error(e); } }); requestAnimationFrame(frame); }
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

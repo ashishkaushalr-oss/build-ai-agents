@@ -708,25 +708,27 @@ var HERO = {
   per: 4.0, hold: 2.2
 };
 HERO.cycle = HERO.per * HERO.chats.length + HERO.hold;
+/* hero-local ink: the banner box is white paper in both themes, so the hero never uses the dark palette the concept canvases share */
+var HERO_INK = {fg: Course.cssVar('--chart-fg') || '#0E1626', muted: Course.cssVar('--chart-muted') || '#5B6882', line: Course.cssVar('--chart-line') || '#D6DEEC', panel: Course.cssVar('--chart-panel') || '#F4F6FB', panel2: Course.cssVar('--chart-panel-2') || '#E9EEF7', think: Course.cssVar('--chart-think') || '#6A52F5', act: Course.cssVar('--chart-act') || '#F2552E', observe: Course.cssVar('--chart-observe') || '#0E9F86'};
 var heroChip = $('#heroChat'), heroChipIdx = -1;
 function drawHero(ctx, w, h, t){
   if (w < 60 || h < 60) return;
-  var think = cv('--think'), obs = cv('--observe'), act = cv('--act'), fg = STAGE_FG, mut = STAGE_MUTED, line = STAGE_LINE;
+  var think = HERO_INK.think, obs = HERO_INK.observe, act = HERO_INK.act, fg = HERO_INK.fg, mut = HERO_INK.muted, line = HERO_INK.line;
   var tt = Course.motionOK ? (t % HERO.cycle) : HERO.cycle - HERO.hold;
   ctx.clearRect(0, 0, w, h);
   var small = w < 440, f = small ? 0.84 : 1;
   ctx.setLineDash([5, 5]); ctx.strokeStyle = line; ctx.lineWidth = 1.5; Course.roundRect(ctx, 10, 32, w - 20, h - 44, 16); ctx.stroke(); ctx.setLineDash([]);
   txt(ctx, 'PROJECT · Company policy helper', 22, 52, '10px ' + MONO, mut);
   var lx = 20, lw = Math.round(clamp(w * 0.31, 118, 190)), by = small ? 58 : 64, bh = Math.round(24 + 3 * 26 * f + 6);
-  ctx.fillStyle = rgba(think, 0.10); ctx.strokeStyle = rgba(think, 0.9); ctx.lineWidth = 1.5; Course.roundRect(ctx, lx, by, lw, bh, 12); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = rgba(think, 0.12); ctx.strokeStyle = rgba(think, 0.9); ctx.lineWidth = 1.5; Course.roundRect(ctx, lx, by, lw, bh, 12); ctx.fill(); ctx.stroke();
   txt(ctx, 'Knowledge · 3 files', lx + 10, by + 16, '600 ' + Math.round(11 * f) + 'px ' + SANS, fg);
   HERO.files.forEach(function(name, i){
     var fy = by + 24 + i * 26 * f;
-    ctx.fillStyle = rgba(think, 0.22); ctx.strokeStyle = think; ctx.lineWidth = 1; Course.roundRect(ctx, lx + 10, fy, lw - 20, 20 * f, 5); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = rgba(think, 0.16); ctx.strokeStyle = think; ctx.lineWidth = 1; Course.roundRect(ctx, lx + 10, fy, lw - 20, 20 * f, 5); ctx.fill(); ctx.stroke();
     ctx.font = Math.round(10 * f) + 'px ' + MONO; txt(ctx, clipText(ctx, name, lw - 34), lx + 17, fy + 14 * f, ctx.font, fg);
   });
   var ry = by + bh + 14, rh = Math.round(22 + 3 * 15 * f + 8);
-  ctx.fillStyle = rgba(obs, 0.10); ctx.strokeStyle = rgba(obs, 0.9); ctx.lineWidth = 1.5; Course.roundRect(ctx, lx, ry, lw, rh, 12); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = rgba(obs, 0.12); ctx.strokeStyle = rgba(obs, 0.9); ctx.lineWidth = 1.5; Course.roundRect(ctx, lx, ry, lw, rh, 12); ctx.fill(); ctx.stroke();
   txt(ctx, 'Project instructions', lx + 10, ry + 16, '600 ' + Math.round(11 * f) + 'px ' + SANS, fg);
   HERO.rules.forEach(function(r, i){ ctx.font = Math.round(9.5 * f) + 'px ' + SANS; txt(ctx, clipText(ctx, r, lw - 20), lx + 10, ry + 31 + i * 15 * f, ctx.font, mut); });
   var binderOut = [lx + lw, by + bh / 2], rulesOut = [lx + lw, ry + rh / 2];
@@ -736,8 +738,8 @@ function drawHero(ctx, w, h, t){
     var p = tt - i * HERO.per; if (p < 0) return;
     var y = top + i * (ch + gap), pop = easeOut(p / 0.35);
     ctx.save(); ctx.globalAlpha = pop; ctx.translate(cx + cw / 2, y + ch / 2); ctx.scale(lerp(0.9, 1, pop), lerp(0.9, 1, pop)); ctx.translate(-(cx + cw / 2), -(y + ch / 2));
-    ctx.fillStyle = rgba(fg, 0.06); ctx.strokeStyle = line; ctx.lineWidth = 1; Course.roundRect(ctx, cx, y, cw, ch, 10); ctx.fill(); ctx.stroke();
-    ctx.fillStyle = rgba(fg, 0.05); Course.roundRect(ctx, cx, y, cw, 18 * g + 4, 10); ctx.fill(); ctx.fillRect(cx, y + 10, cw, 8 * g + 4);
+    ctx.fillStyle = HERO_INK.panel; ctx.strokeStyle = line; ctx.lineWidth = 1; Course.roundRect(ctx, cx, y, cw, ch, 10); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = HERO_INK.panel2; Course.roundRect(ctx, cx, y, cw, 18 * g + 4, 10); ctx.fill(); ctx.fillRect(cx, y + 10, cw, 8 * g + 4);
     txt(ctx, 'chat ' + (i + 1), cx + 10, y + 13 * g + 2, fS + 'px ' + MONO, mut);
     var slotY = y + 5, slotX = cx + cw - 12;
     for (var k = 0; k < 4; k++) {

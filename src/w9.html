@@ -816,6 +816,8 @@ function tween(dur, fn){
 function say(box, cls, text, label){ var b = el('div', {class: 'b ' + cls}, [label ? el('small', {text: label}) : null, el('span', {text: text})]); box.appendChild(b); box.scrollTop = box.scrollHeight; return b; }
 
 /* ---------- HERO: one agent, three front doors ---------- */
+/* The banner chart is dark ink on white paper in both themes; these never change with the theme. */
+var HERO_INK = {bg: Course.cssVar('--chart-bg') || '#FFFFFF', panel: Course.cssVar('--chart-panel') || '#F4F6FB', fg: Course.cssVar('--chart-fg') || '#0E1626', muted: Course.cssVar('--chart-muted') || '#5B6882', line: Course.cssVar('--chart-line') || '#D6DEEC', think: Course.cssVar('--chart-think') || '#6A52F5', act: Course.cssVar('--chart-act') || '#F2552E', observe: Course.cssVar('--chart-observe') || '#0E9F86'};
 var HERO_CH = [
   {name: 'Website · chat bubble', sess: 'a81f', q: 'Where is consignment MR-48812?', a: 'Out for delivery. Expected by 4 pm; the driver will call ahead.', stream: true, tool: 'looking up shipments…'},
   {name: 'Customer portal · iframe', sess: 'cust-1187', q: 'Which of our invoices are overdue?', a: 'Two: INV-2026-00871, 14 days, and INV-2026-00902, 3 days.', stream: true, tool: 'looking up invoices…'},
@@ -828,38 +830,38 @@ function heroDraw(ctx, w, h, t){
   var tc = t % H_CYCLE, finished = tc >= HERO_CH.length * H_STEP, cur = finished ? -1 : Math.floor(tc / H_STEP), inStep = finished ? 0 : tc - cur * H_STEP;
   var phase = finished ? 'pause' : inStep < H_SEND ? 'send' : inStep < H_SEND + H_THINK ? 'think' : inStep < H_SEND + H_THINK + H_REPLY ? 'reply' : 'hold';
   var ph = phase === 'send' ? inStep / H_SEND : phase === 'think' ? (inStep - H_SEND) / H_THINK : phase === 'reply' ? (inStep - H_SEND - H_THINK) / H_REPLY : 1;
-  var small = w < 440, pad = small ? 10 : 14, fs = small ? 10 : 11, lh = fs + 3, gap = 8, violet = think(), act = Course.cssVar('--act') || '#FF7A58', observe = Course.cssVar('--observe') || '#2CD2B2';
+  var small = w < 440, pad = small ? 10 : 14, fs = small ? 10 : 11, lh = fs + 3, gap = 8, violet = HERO_INK.think, act = HERO_INK.act, observe = HERO_INK.observe;
   ctx.clearRect(0, 0, w, h);
   ctx.textBaseline = 'alphabetic'; ctx.textAlign = 'left';
-  ctx.fillStyle = STAGE_MUTED; ctx.font = '11px ' + MONO;
+  ctx.fillStyle = HERO_INK.muted; ctx.font = '11px ' + MONO;
   var leftW = Math.round(w * 0.5), top = pad + 22, chH = (h - top - pad - gap * 2) / 3;
   var ax = leftW + (small ? 14 : 22), aw = w - ax - pad, ah = Math.round((h - top - pad - gap) * 0.5), ay = top, my = ay + ah + gap, mh = h - pad - my;
   /* agent box */
-  var pulse = phase === 'think' ? 0.14 + 0.16 * (0.5 + 0.5 * Math.sin(t * 12)) : phase === 'reply' ? 0.16 : 0.08;
+  var pulse = phase === 'think' ? 0.10 + 0.08 * (0.5 + 0.5 * Math.sin(t * 12)) : phase === 'reply' ? 0.14 : 0.07;
   ctx.fillStyle = violet; ctx.globalAlpha = pulse; Course.roundRect(ctx, ax, ay, aw, ah, 12); ctx.fill(); ctx.globalAlpha = 1;
   ctx.strokeStyle = violet; ctx.lineWidth = 2; ctx.stroke();
-  ctx.fillStyle = STAGE_FG; ctx.font = '700 ' + (fs + 2) + 'px ' + DISP; ctx.fillText('n8n · AI Agent node', ax + 10, ay + 18);
-  ctx.fillStyle = STAGE_MUTED; ctx.font = fs + 'px ' + MONO; ctx.fillText('claude-sonnet-5-5', ax + 10, ay + 18 + lh);
+  ctx.fillStyle = HERO_INK.fg; ctx.font = '700 ' + (fs + 2) + 'px ' + DISP; ctx.fillText('n8n · AI Agent node', ax + 10, ay + 18);
+  ctx.fillStyle = HERO_INK.muted; ctx.font = fs + 'px ' + MONO; ctx.fillText('claude-sonnet-5-5', ax + 10, ay + 18 + lh);
   var status = phase === 'send' ? 'reading the message…' : phase === 'think' ? HERO_CH[cur].tool : phase === 'reply' ? (HERO_CH[cur].stream ? 'streaming the reply…' : 'sending one whole message…') : phase === 'hold' ? 'done · waiting' : 'idle · all three answered';
-  ctx.fillStyle = phase === 'pause' || phase === 'hold' ? STAGE_MUTED : observe; ctx.font = '600 ' + fs + 'px ' + SANS;
+  ctx.fillStyle = phase === 'pause' || phase === 'hold' ? HERO_INK.muted : observe; ctx.font = '600 ' + fs + 'px ' + SANS;
   wrapLines(ctx, status, aw - 20).forEach(function(l, i){ ctx.fillText(l, ax + 10, ay + 18 + lh * (2.2 + i)); });
-  ctx.fillStyle = STAGE_MUTED; ctx.font = (fs - 1) + 'px ' + MONO; ctx.fillText('tools: shipments · invoices · pickups', ax + 10, ay + ah - 10);
+  ctx.fillStyle = HERO_INK.muted; ctx.font = (fs - 1) + 'px ' + MONO; ctx.fillText('tools: shipments · invoices · pickups', ax + 10, ay + ah - 10);
   /* memory box */
-  ctx.fillStyle = STAGE_2; Course.roundRect(ctx, ax, my, aw, mh, 12); ctx.fill(); ctx.strokeStyle = STAGE_LINE; ctx.lineWidth = 1; ctx.stroke();
-  ctx.fillStyle = STAGE_FG; ctx.font = '700 ' + (fs + 1) + 'px ' + DISP; ctx.fillText('Memory · one row per session id', ax + 10, my + 17);
+  ctx.fillStyle = HERO_INK.panel; Course.roundRect(ctx, ax, my, aw, mh, 12); ctx.fill(); ctx.strokeStyle = HERO_INK.line; ctx.lineWidth = 1; ctx.stroke();
+  ctx.fillStyle = HERO_INK.fg; ctx.font = '700 ' + (fs + 1) + 'px ' + DISP; ctx.fillText('Memory · one row per session id', ax + 10, my + 17);
   HERO_CH.forEach(function(c, i){
     var turns = (finished || i < cur) ? 2 : i === cur ? (phase === 'send' ? (ph > 0.9 ? 1 : 0) : phase === 'think' ? 1 : 2) : 0;
     var ry = my + 17 + lh * (i + 1.4), on = i === cur && !finished;
-    ctx.fillStyle = on ? observe : turns ? STAGE_FG : STAGE_MUTED; ctx.font = (on ? '600 ' : '') + (fs - 1) + 'px ' + MONO;
+    ctx.fillStyle = on ? observe : turns ? HERO_INK.fg : HERO_INK.muted; ctx.font = (on ? '600 ' : '') + (fs - 1) + 'px ' + MONO;
     ctx.fillText(c.sess, ax + 10, ry);
     ctx.textAlign = 'right'; ctx.fillText(turns ? turns + ' turns' : 'empty', ax + aw - 10, ry); ctx.textAlign = 'left';
   });
   /* channel cards */
   HERO_CH.forEach(function(c, i){
     var cy = top + i * (chH + gap), lx = pad, cw = leftW - pad, done = finished || i < cur, on = i === cur && !finished;
-    ctx.fillStyle = STAGE_2; Course.roundRect(ctx, lx, cy, cw, chH, 12); ctx.fill(); ctx.strokeStyle = on ? act : STAGE_LINE; ctx.lineWidth = on ? 2 : 1; ctx.stroke();
+    ctx.fillStyle = HERO_INK.panel; Course.roundRect(ctx, lx, cy, cw, chH, 12); ctx.fill(); ctx.strokeStyle = on ? act : HERO_INK.line; ctx.lineWidth = on ? 2 : 1; ctx.stroke();
     ctx.save(); ctx.beginPath(); ctx.rect(lx, cy, cw, chH); ctx.clip();
-    ctx.fillStyle = on ? STAGE_FG : STAGE_MUTED; ctx.font = '600 ' + (fs - 1) + 'px ' + MONO; ctx.fillText(c.name, lx + 9, cy + 13);
+    ctx.fillStyle = on ? HERO_INK.fg : HERO_INK.muted; ctx.font = '600 ' + (fs - 1) + 'px ' + MONO; ctx.fillText(c.name, lx + 9, cy + 13);
     var bw = cw - 18 - (small ? 8 : 22);
     ctx.font = fs + 'px ' + SANS;
     var showQ = done || on, qLines = wrapLines(ctx, c.q, bw - 14), qh = qLines.length * lh + 8, qw = Math.min(bw, Math.max.apply(null, qLines.map(function(l){ return ctx.measureText(l).width; })) + 14);
@@ -869,20 +871,20 @@ function heroDraw(ctx, w, h, t){
     if (done) shown = N; else if (on && phase === 'reply') shown = c.stream ? Math.floor(Course.clamp((ph - 0.15) / 0.8, 0, 1) * N) : (ph > 0.82 ? N : 0); else if (on && phase === 'hold') shown = N;
     if (shown > 0) {
       var rLines = wrapLines(ctx, c.a.split(' ').slice(0, shown).join(' '), bw - 14), rh = rLines.length * lh + 8;
-      ctx.fillStyle = '#1C2748'; Course.roundRect(ctx, lx + 9, ry, bw, rh, 8); ctx.fill();
-      ctx.fillStyle = STAGE_FG; rLines.forEach(function(l, k){ ctx.fillText(l, lx + 16, ry + 6 + lh * (k + 0.75)); });
+      ctx.fillStyle = HERO_INK.bg; Course.roundRect(ctx, lx + 9, ry, bw, rh, 8); ctx.fill(); ctx.strokeStyle = HERO_INK.line; ctx.lineWidth = 1; ctx.stroke();
+      ctx.fillStyle = HERO_INK.fg; rLines.forEach(function(l, k){ ctx.fillText(l, lx + 16, ry + 6 + lh * (k + 0.75)); });
       if (on && shown < N) { ctx.fillStyle = observe; ctx.fillRect(lx + 16 + ctx.measureText(rLines[rLines.length - 1]).width + 2, ry + 6 + lh * (rLines.length - 1) + 1, 2, lh - 3); }
     } else if (on && (phase === 'think' || phase === 'reply')) {
-      ctx.fillStyle = '#1C2748'; Course.roundRect(ctx, lx + 9, ry, 44, lh + 8, 8); ctx.fill();
-      for (var d = 0; d < 3; d++) { var bob = (Math.sin(t * 5 + d * 0.9) + 1) / 2; ctx.fillStyle = STAGE_MUTED; ctx.beginPath(); ctx.arc(lx + 20 + d * 11, ry + lh / 2 + 5 - bob * 3, 2.5, 0, Math.PI * 2); ctx.fill(); }
-      if (!c.stream) { ctx.fillStyle = STAGE_MUTED; ctx.font = (fs - 1) + 'px ' + MONO; ctx.fillText('no streaming on WhatsApp', lx + 60, ry + lh / 2 + 8); }
+      ctx.fillStyle = HERO_INK.bg; Course.roundRect(ctx, lx + 9, ry, 44, lh + 8, 8); ctx.fill(); ctx.strokeStyle = HERO_INK.line; ctx.lineWidth = 1; ctx.stroke();
+      for (var d = 0; d < 3; d++) { var bob = (Math.sin(t * 5 + d * 0.9) + 1) / 2; ctx.fillStyle = HERO_INK.muted; ctx.beginPath(); ctx.arc(lx + 20 + d * 11, ry + lh / 2 + 5 - bob * 3, 2.5, 0, Math.PI * 2); ctx.fill(); }
+      if (!c.stream) { ctx.fillStyle = HERO_INK.muted; ctx.font = (fs - 1) + 'px ' + MONO; ctx.fillText('no streaming on WhatsApp', lx + 60, ry + lh / 2 + 8); }
     }
     ctx.restore();
     /* the travelling message */
     if (on && (phase === 'send' || (phase === 'reply' && ph < 0.15))) {
       var sx = lx + cw, sy = cy + chH / 2, ex = ax, ey = ay + ah / 2, p = phase === 'send' ? Course.ease(ph) : 1 - Course.ease(ph / 0.15);
       var mx = (sx + ex) / 2, px = Course.lerp(sx, ex, p), py = (1 - p) * (1 - p) * sy + 2 * (1 - p) * p * ((sy + ey) / 2) + p * p * ey;
-      ctx.strokeStyle = STAGE_LINE; ctx.lineWidth = 1; ctx.setLineDash([3, 4]); ctx.beginPath(); ctx.moveTo(sx, sy); ctx.quadraticCurveTo(mx, (sy + ey) / 2, ex, ey); ctx.stroke(); ctx.setLineDash([]);
+      ctx.strokeStyle = HERO_INK.line; ctx.lineWidth = 1; ctx.setLineDash([3, 4]); ctx.beginPath(); ctx.moveTo(sx, sy); ctx.quadraticCurveTo(mx, (sy + ey) / 2, ex, ey); ctx.stroke(); ctx.setLineDash([]);
       ctx.fillStyle = phase === 'send' ? act : observe; ctx.beginPath(); ctx.arc(px, py, 6, 0, Math.PI * 2); ctx.fill();
     }
   });

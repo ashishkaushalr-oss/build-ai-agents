@@ -16,6 +16,9 @@
   --font-mono:"JetBrains Mono",ui-monospace,"Cascadia Code",Consolas,monospace;
   --r-s:10px; --r-m:14px; --r-l:20px;
   --wrap:1120px;
+  /* banner chart ink: the chart box is white paper in both themes, so these never change with the theme */
+  --chart-bg:#FFFFFF; --chart-panel:#F4F6FB; --chart-panel-2:#E9EEF7; --chart-fg:#0E1626; --chart-muted:#5B6882; --chart-line:#D6DEEC;
+  --chart-think:#6A52F5; --chart-act:#F2552E; --chart-observe:#0E9F86; --chart-warn:#C27A00; --chart-ok:#1E9E5A; --chart-bad:#D63B3B;
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
@@ -103,10 +106,10 @@ pre.code .k{color:#8F7BFF}pre.code .s{color:#2CD2B2}pre.code .c{color:#8E9BBE}pr
 .hero .muted{color:#5B6882}
 .hero__text a:not(.btn){color:inherit}
 .hero__actions{display:flex;gap:10px;flex-wrap:wrap}
-.stage{position:relative;width:100%;max-width:100%;aspect-ratio:4/3;background:var(--stage-2);border:1px solid var(--stage-line);border-radius:var(--r-l);overflow:hidden;box-shadow:0 30px 60px rgba(0,0,0,.35)}
+.stage{position:relative;width:100%;max-width:100%;aspect-ratio:4/3;background:var(--chart-bg);border:1px solid var(--chart-line);border-radius:var(--r-l);overflow:hidden;box-shadow:0 24px 50px rgba(14,22,38,.10);color:var(--chart-fg)}
 .stage canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 .stage svg{position:absolute;inset:0;width:100%;height:100%;display:block}
-.stage__label{position:absolute;left:14px;top:12px;font-family:var(--font-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--stage-muted)}
+.stage__label{position:absolute;left:14px;top:12px;font-family:var(--font-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--chart-muted)}
 .stage__hud{position:absolute;right:12px;bottom:12px;left:12px;display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;align-items:center}
 .stage--wide{aspect-ratio:16/9}
 @media (max-width:820px){.hero .wrap{grid-template-columns:1fr;padding-block:28px}.hero::after{inset:-200px -180px auto auto;width:420px;height:420px}.stage{aspect-ratio:16/11}}
@@ -132,10 +135,13 @@ pre.code .k{color:#8F7BFF}pre.code .s{color:#2CD2B2}pre.code .c{color:#8E9BBE}pr
 .hero .chip--act{background:#FFE9E2;color:#F2552E}
 .hero .chip--observe,.hero .chip--ok{background:#DDF5EF;color:#0E9F86}
 .hero .chip--warn{background:#FFF0D6;color:#A86A00}
-/* controls that sit on the dark stage keep their dark styling */
-.stage .btn{background:rgba(7,11,22,.6);color:var(--stage-fg);border-color:var(--stage-line);box-shadow:none}
-.stage .btn--primary{background:var(--accent);border-color:var(--accent);color:#fff}
-.stage .chip{background:rgba(7,11,22,.75);color:var(--stage-fg)}
+/* controls on the chart box: white pills with a hairline, the orange one stays orange */
+.stage .btn{background:#FFFFFF;color:#0E1626;border-color:#D6DEEC;box-shadow:0 1px 2px rgba(14,22,38,.06)}
+.stage .btn--primary{background:#F2552E;border-color:#F2552E;color:#fff}
+.stage .seg{background:#FFFFFF;border-color:#D6DEEC}
+.stage .seg button{color:#5B6882}
+.stage .seg button.is-on{background:#0E1626;color:#FFFFFF}
+.stage input[type=text],.stage select{background:#FFFFFF;color:#0E1626;border-color:#D6DEEC}
 .chip{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;font-size:.8rem;font-weight:700;letter-spacing:.02em;background:var(--surface-2);color:var(--fg)}
 .chip--think{background:var(--think-soft);color:var(--think)}
 .chip--act{background:var(--act-soft);color:var(--act)}
@@ -352,7 +358,7 @@ footer.site{padding-block:32px 48px;color:var(--muted);font-size:.9rem;display:g
 .w5-space{aspect-ratio:1/1;cursor:grab;touch-action:none}
 .w5-space:active{cursor:grabbing}
 @media (min-width:821px){.hero .wrap{grid-template-columns:minmax(0,1fr) minmax(0,.92fr)}}
-.w5-tip{position:absolute;pointer-events:none;background:rgba(7,11,22,.92);color:#EAF0FF;border:1px solid #26325A;border-radius:8px;padding:4px 8px;font-size:12px;font-family:var(--font-body);transform:translate(-50%,-130%);white-space:nowrap;max-width:260px;overflow:hidden;text-overflow:ellipsis;z-index:2}
+.w5-tip{position:absolute;pointer-events:none;background:#FFFFFF;color:#0E1626;border:1px solid #D6DEEC;box-shadow:0 12px 30px rgba(14,22,38,.12);border-radius:8px;padding:4px 8px;font-size:12px;font-family:var(--font-body);transform:translate(-50%,-130%);white-space:nowrap;max-width:260px;overflow:hidden;text-overflow:ellipsis;z-index:2}
 .w5-query{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px}
 .w5-query input{font-size:.95rem;min-width:0}
 .w5-presets .btn{padding:6px 10px;font-size:.84rem}
@@ -377,6 +383,7 @@ footer.site{padding-block:32px 48px;color:var(--muted);font-size:.9rem;display:g
 .w5-simscore>b{font-family:var(--font-display);font-size:2rem;font-variant-numeric:tabular-nums}
 /* k-means */
 .w5-km{position:relative}
+.w5-km .w5-tip{background:rgba(7,11,22,.92);color:#EAF0FF;border-color:#26325A;box-shadow:none}
 /* chunking */
 .w5-chunks{display:flex;flex-wrap:wrap;gap:4px;line-height:1.5;font-size:.82rem}
 .w5-chunk{padding:2px 6px;border-radius:6px;border:1px solid transparent}
@@ -1791,6 +1798,11 @@ function simFromDist(d){ return Course.clamp(1 - d / 1.6, 0, 1); }
 /* ---------- HERO: a hand-rolled 3D projection of the space; drag to orbit, hover to read, type to place a question ---------- */
 (function(){
   var canvas = $('#heroCanvas'), tip = $('#w5-spaceTip'), stage = $('#w5-spaceStage');
+  /* hero-local ink: the banner box is white paper in both themes, so this chart is drawn as dark ink on white; the other canvases keep their own palettes */
+  var INK = {bg: Course.cssVar('--chart-bg') || '#FFFFFF', fg: Course.cssVar('--chart-fg') || '#0E1626', muted: Course.cssVar('--chart-muted') || '#5B6882', line: Course.cssVar('--chart-line') || '#D6DEEC', think: Course.cssVar('--chart-think') || '#6A52F5', act: Course.cssVar('--chart-act') || '#F2552E', observe: Course.cssVar('--chart-observe') || '#0E9F86', warn: Course.cssVar('--chart-warn') || '#C27A00'};
+  /* the five topic colours, darkened so dots and labels read on white; CLUSTERS[].color stays as is for the canvases further down */
+  var HERO_DOT = [INK.think, INK.act, INK.observe, INK.warn, '#1B74E4'];
+  function rgba(hex, a){ var m = /^#?([0-9a-f]{6})$/i.exec(String(hex).trim()); if (!m) return hex; var n = parseInt(m[1], 16); return 'rgba(' + (n >> 16 & 255) + ',' + (n >> 8 & 255) + ',' + (n & 255) + ',' + a + ')'; }
   var yaw = 0.6, pitch = 0.35, spin = Course.motionOK, dragging = false, lx = 0, ly = 0, query = null, nn = [], hover = -1, projected = [];
   function project(p, w, h){
     var cy = Math.cos(yaw), sy = Math.sin(yaw), cp = Math.cos(pitch), sp = Math.sin(pitch);
@@ -1802,22 +1814,22 @@ function simFromDist(d){ return Course.clamp(1 - d / 1.6, 0, 1); }
     if (w < 60 || h < 60) return;
     if (spin && !dragging) yaw += 0.0035;
     ctx.clearRect(0, 0, w, h);
-    var g = ctx.createRadialGradient(w / 2, h / 2, 10, w / 2, h / 2, Math.max(w, h) * 0.7); g.addColorStop(0, 'rgba(143,123,255,.10)'); g.addColorStop(1, 'rgba(0,0,0,0)'); ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
+    var g = ctx.createRadialGradient(w / 2, h / 2, 10, w / 2, h / 2, Math.max(w, h) * 0.7); g.addColorStop(0, rgba(INK.think, .10)); g.addColorStop(1, rgba(INK.think, 0)); ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
     projected = POINTS.map(function(p, i){ var pr = project(p, w, h); pr.i = i; return pr; });
     var order = projected.slice().sort(function(a, b){ return b.depth - a.depth; });
     if (query) {
       var q = project(query, w, h);
-      nn.forEach(function(n, k){ var pr = projected[n.i]; ctx.beginPath(); ctx.moveTo(q.sx, q.sy); ctx.lineTo(pr.sx, pr.sy); ctx.strokeStyle = 'rgba(255,255,255,' + (0.55 - k * 0.08) + ')'; ctx.lineWidth = 1.5; ctx.setLineDash([4, 4]); ctx.stroke(); ctx.setLineDash([]); });
+      nn.forEach(function(n, k){ var pr = projected[n.i]; ctx.beginPath(); ctx.moveTo(q.sx, q.sy); ctx.lineTo(pr.sx, pr.sy); ctx.strokeStyle = rgba(INK.fg, 0.55 - k * 0.08); ctx.lineWidth = 1.5; ctx.setLineDash([4, 4]); ctx.stroke(); ctx.setLineDash([]); });
     }
     order.forEach(function(pr){
-      var p = POINTS[pr.i], col = CLUSTERS[p.cluster].color, depthT = Course.clamp((pr.depth + 1.1) / 2.2, 0, 1);
+      var p = POINTS[pr.i], col = HERO_DOT[p.cluster], depthT = Course.clamp((pr.depth + 1.1) / 2.2, 0, 1);
       var r = 4 + 5 * (1 - depthT), alpha = 0.45 + 0.55 * (1 - depthT), isNN = nn.some(function(n){ return n.i === pr.i; });
-      if (isNN || hover === pr.i) { ctx.beginPath(); ctx.arc(pr.sx, pr.sy, r * 2.4, 0, Math.PI * 2); ctx.fillStyle = col + '44'; ctx.fill(); }
+      if (isNN || hover === pr.i) { ctx.beginPath(); ctx.arc(pr.sx, pr.sy, r * 2.4, 0, Math.PI * 2); ctx.fillStyle = rgba(col, .27); ctx.fill(); }
       ctx.beginPath(); ctx.arc(pr.sx, pr.sy, r, 0, Math.PI * 2); ctx.fillStyle = col; ctx.globalAlpha = alpha; ctx.fill(); ctx.globalAlpha = 1;
-      if (isNN) { ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5; ctx.stroke(); }
+      if (isNN) { ctx.strokeStyle = INK.fg; ctx.lineWidth = 1.5; ctx.stroke(); }
     });
-    CLUSTERS.forEach(function(c){ var pr = project({x: c.center[0], y: c.center[1] + 0.3, z: c.center[2]}, w, h); ctx.font = '700 12px ' + DISPLAY; ctx.textAlign = 'center'; ctx.fillStyle = 'rgba(7,11,22,.7)'; var tw = ctx.measureText(c.name).width; Course.roundRect(ctx, pr.sx - tw / 2 - 6, pr.sy - 11, tw + 12, 18, 6); ctx.fill(); ctx.fillStyle = c.color; ctx.fillText(c.name, pr.sx, pr.sy + 3); });
-    if (query) { var q2 = project(query, w, h); ctx.beginPath(); ctx.arc(q2.sx, q2.sy, 9 + 2 * Math.sin(t * 4), 0, Math.PI * 2); ctx.fillStyle = '#fff'; ctx.fill(); ctx.strokeStyle = '#F2552E'; ctx.lineWidth = 3; ctx.stroke(); ctx.font = '700 12px ' + SANS; ctx.textAlign = 'left'; ctx.fillStyle = '#fff'; ctx.fillText('your question', q2.sx + 14, q2.sy + 4); }
+    CLUSTERS.forEach(function(c, ci){ var pr = project({x: c.center[0], y: c.center[1] + 0.3, z: c.center[2]}, w, h); ctx.font = '700 12px ' + DISPLAY; ctx.textAlign = 'center'; ctx.fillStyle = rgba(INK.bg, .7); var tw = ctx.measureText(c.name).width; Course.roundRect(ctx, pr.sx - tw / 2 - 6, pr.sy - 11, tw + 12, 18, 6); ctx.fill(); ctx.fillStyle = HERO_DOT[ci]; ctx.fillText(c.name, pr.sx, pr.sy + 3); });
+    if (query) { var q2 = project(query, w, h); ctx.beginPath(); ctx.arc(q2.sx, q2.sy, 9 + 2 * Math.sin(t * 4), 0, Math.PI * 2); ctx.fillStyle = INK.bg; ctx.fill(); ctx.strokeStyle = INK.act; ctx.lineWidth = 3; ctx.stroke(); ctx.font = '700 12px ' + SANS; ctx.textAlign = 'left'; ctx.fillStyle = INK.fg; ctx.fillText('your question', q2.sx + 14, q2.sy + 4); }
     ctx.textAlign = 'left';
   }, {auto: true});
   stage.addEventListener('pointerdown', function(e){ dragging = true; lx = e.clientX; ly = e.clientY; stage.setPointerCapture(e.pointerId); });
@@ -1844,7 +1856,7 @@ function simFromDist(d){ return Course.clamp(1 - d / 1.6, 0, 1); }
     query = pos;
     nn = POINTS.map(function(p, i){ return {i: i, d: dist3(pos, p)}; }).sort(function(a, b){ return a.d - b.d; }).slice(0, 5);
     var list = $('#w5-nnList'); list.innerHTML = '';
-    list.appendChild(el('p', {class: 'muted', style: 'font-size:.85rem;color:var(--stage-muted)', text: top.length ? 'Five nearest neighbours, illustrative similarity:' : 'No overlap with any question in this toy space, so it lands near the centre. Try the examples above.'}));
+    list.appendChild(el('p', {class: 'muted', style: 'font-size:.85rem;color:var(--chart-muted)', text: top.length ? 'Five nearest neighbours, illustrative similarity:' : 'No overlap with any question in this toy space, so it lands near the centre. Try the examples above.'}));
     nn.forEach(function(n, k){ var s = simFromDist(n.d); list.appendChild(el('div', {}, [el('span', {class: 'w5-rank', text: String(k + 1)}), el('span', {}, [el('span', {class: 'w5-nn__t', text: POINTS[n.i].label}), el('div', {class: 'w5-bar'}, [el('i', {style: 'width:' + Math.round(s * 100) + '%'})])]), el('span', {class: 'w5-sim', text: s.toFixed(2)})])); });
     if (!api.running) api.once();
   }

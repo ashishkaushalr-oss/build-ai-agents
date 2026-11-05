@@ -16,6 +16,9 @@
   --font-mono:"JetBrains Mono",ui-monospace,"Cascadia Code",Consolas,monospace;
   --r-s:10px; --r-m:14px; --r-l:20px;
   --wrap:1120px;
+  /* banner chart ink: the chart box is white paper in both themes, so these never change with the theme */
+  --chart-bg:#FFFFFF; --chart-panel:#F4F6FB; --chart-panel-2:#E9EEF7; --chart-fg:#0E1626; --chart-muted:#5B6882; --chart-line:#D6DEEC;
+  --chart-think:#6A52F5; --chart-act:#F2552E; --chart-observe:#0E9F86; --chart-warn:#C27A00; --chart-ok:#1E9E5A; --chart-bad:#D63B3B;
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
@@ -103,10 +106,10 @@ pre.code .k{color:#8F7BFF}pre.code .s{color:#2CD2B2}pre.code .c{color:#8E9BBE}pr
 .hero .muted{color:#5B6882}
 .hero__text a:not(.btn){color:inherit}
 .hero__actions{display:flex;gap:10px;flex-wrap:wrap}
-.stage{position:relative;width:100%;max-width:100%;aspect-ratio:4/3;background:var(--stage-2);border:1px solid var(--stage-line);border-radius:var(--r-l);overflow:hidden;box-shadow:0 30px 60px rgba(0,0,0,.35)}
+.stage{position:relative;width:100%;max-width:100%;aspect-ratio:4/3;background:var(--chart-bg);border:1px solid var(--chart-line);border-radius:var(--r-l);overflow:hidden;box-shadow:0 24px 50px rgba(14,22,38,.10);color:var(--chart-fg)}
 .stage canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 .stage svg{position:absolute;inset:0;width:100%;height:100%;display:block}
-.stage__label{position:absolute;left:14px;top:12px;font-family:var(--font-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--stage-muted)}
+.stage__label{position:absolute;left:14px;top:12px;font-family:var(--font-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--chart-muted)}
 .stage__hud{position:absolute;right:12px;bottom:12px;left:12px;display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;align-items:center}
 .stage--wide{aspect-ratio:16/9}
 @media (max-width:820px){.hero .wrap{grid-template-columns:1fr;padding-block:28px}.hero::after{inset:-200px -180px auto auto;width:420px;height:420px}.stage{aspect-ratio:16/11}}
@@ -132,10 +135,13 @@ pre.code .k{color:#8F7BFF}pre.code .s{color:#2CD2B2}pre.code .c{color:#8E9BBE}pr
 .hero .chip--act{background:#FFE9E2;color:#F2552E}
 .hero .chip--observe,.hero .chip--ok{background:#DDF5EF;color:#0E9F86}
 .hero .chip--warn{background:#FFF0D6;color:#A86A00}
-/* controls that sit on the dark stage keep their dark styling */
-.stage .btn{background:rgba(7,11,22,.6);color:var(--stage-fg);border-color:var(--stage-line);box-shadow:none}
-.stage .btn--primary{background:var(--accent);border-color:var(--accent);color:#fff}
-.stage .chip{background:rgba(7,11,22,.75);color:var(--stage-fg)}
+/* controls on the chart box: white pills with a hairline, the orange one stays orange */
+.stage .btn{background:#FFFFFF;color:#0E1626;border-color:#D6DEEC;box-shadow:0 1px 2px rgba(14,22,38,.06)}
+.stage .btn--primary{background:#F2552E;border-color:#F2552E;color:#fff}
+.stage .seg{background:#FFFFFF;border-color:#D6DEEC}
+.stage .seg button{color:#5B6882}
+.stage .seg button.is-on{background:#0E1626;color:#FFFFFF}
+.stage input[type=text],.stage select{background:#FFFFFF;color:#0E1626;border-color:#D6DEEC}
 .chip{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;font-size:.8rem;font-weight:700;letter-spacing:.02em;background:var(--surface-2);color:var(--fg)}
 .chip--think{background:var(--think-soft);color:var(--think)}
 .chip--act{background:var(--act-soft);color:var(--act)}
@@ -348,10 +354,7 @@ footer.site{padding-block:32px 48px;color:var(--muted);font-size:.9rem;display:g
 .concept__text p+p{margin-top:2px}
 .dlog{display:grid;gap:10px}
 .dlog textarea{min-height:72px}
-.hero .seg{background:rgba(255,255,255,.07);border-color:var(--stage-line)}
-.hero .seg button{color:var(--stage-muted)}
-.hero .seg button.is-on{background:var(--stage-fg);color:var(--stage)}
-.w4-cap{margin-right:auto;font-family:var(--font-mono);font-size:11px;color:var(--stage-muted);letter-spacing:.04em}
+.w4-cap{margin-right:auto;font-family:var(--font-mono);font-size:11px;color:var(--chart-muted);letter-spacing:.04em}
 @media (max-width:560px){.w4-cap{display:none}}
 /* canvases */
 #w4AssembleCanvas{height:262px}
@@ -1688,13 +1691,15 @@ function wrapText(ctx, text, x, y, maxW, lh){
 /* ---------- HERO: one context window, two orders, one cache boundary ---------- */
 var hero = (function(){
   var canvas = $('#heroCanvas'), cap = $('#heroCap'), bFirst = $('#heroQFirst'), bLast = $('#heroQLast');
+  /* hero-local ink: the banner box is white paper in both themes, so the hero never reads the dark palette the concept canvases use */
+  var HERO_INK = {fg: Course.cssVar('--chart-fg') || '#0E1626', muted: Course.cssVar('--chart-muted') || '#5B6882', panel2: Course.cssVar('--chart-panel-2') || '#E9EEF7', think: Course.cssVar('--chart-think') || '#6A52F5', act: Course.cssVar('--chart-act') || '#F2552E', observe: Course.cssVar('--chart-observe') || '#0E9F86'};
   var blocks = [
-    {name: 'instructions', tok: 3000, col: '--think', min: 44},
-    {name: 'policy sheets', tok: 9000, col: '--observe', min: 56},
+    {name: 'instructions', tok: 3000, col: HERO_INK.think, min: 44},
+    {name: 'policy sheets', tok: 9000, col: HERO_INK.observe, min: 56},
     {name: 'vendor contract', tok: 48000, col: DOC, min: 60},
     {name: 'ticket export', tok: 22000, col: DOC, min: 52},
     {name: 'board pack', tok: 14000, col: DOC, min: 48},
-    {name: 'question', tok: 300, col: '--act', min: 30}
+    {name: 'question', tok: 300, col: HERO_INK.act, min: 30}
   ];
   var total = blocks.reduce(function(s, b){ return s + b.tok; }, 0), stableShare = (total - 300) / total;
   var orderLast = [0, 1, 2, 3, 4, 5], orderFirst = [5, 0, 1, 2, 3, 4];
@@ -1709,12 +1714,12 @@ var hero = (function(){
     var k = dt ? 1 - Math.exp(-dt * 4.2) : 1;
     st.mix += (st.target - st.mix) * k; if (Math.abs(st.target - st.mix) < .002) st.mix = st.target;
     var m = Course.ease(st.mix);
-    var fg = Course.cssVar('--stage-fg'), muted = Course.cssVar('--stage-muted'), think = Course.cssVar('--think'), act = Course.cssVar('--act'), obs = Course.cssVar('--observe');
+    var fg = HERO_INK.fg, muted = HERO_INK.muted, think = HERO_INK.think, act = HERO_INK.act, obs = HERO_INK.observe;
     var pad = Math.max(18, w * .05), barX = pad, barW = w - 2 * pad, barY = h * .45, barH = Course.clamp(h * .11, 28, 50), tall = h >= 330;
     var ws = widths(barW), pL = positions(orderLast, barX, ws), pF = positions(orderFirst, barX, ws);
     ctx.clearRect(0, 0, w, h);
     var aTop = h * .16, aBase = barY - 12, amp = aBase - aTop, i, u;
-    var g = ctx.createLinearGradient(0, aTop, 0, aBase); g.addColorStop(0, rgba(think, .55)); g.addColorStop(1, rgba(think, .05));
+    var g = ctx.createLinearGradient(0, aTop, 0, aBase); g.addColorStop(0, rgba(think, .40)); g.addColorStop(1, rgba(think, .04));
     ctx.beginPath(); ctx.moveTo(barX, aBase);
     for (i = 0; i <= 64; i++) { u = i / 64; ctx.lineTo(barX + u * barW, aBase - amp * att(u)); }
     ctx.lineTo(barX + barW, aBase); ctx.closePath(); ctx.fillStyle = g; ctx.fill();
@@ -1727,7 +1732,7 @@ var hero = (function(){
     var ru = Course.motionOK ? (t * .11) % 1 : 0.5, rx = barX + ru * barW, ry = aBase - amp * att(ru);
     ctx.beginPath(); ctx.arc(rx, ry, 4.5, 0, Math.PI * 2); ctx.fillStyle = fg; ctx.fill();
     ctx.beginPath(); ctx.arc(rx, ry, 9, 0, Math.PI * 2); ctx.strokeStyle = rgba(fg, .35); ctx.lineWidth = 1.5; ctx.stroke();
-    ctx.fillStyle = rgba(fg, .06); Course.roundRect(ctx, barX - 3, barY - 3, barW + 6, barH + 6, 9); ctx.fill();
+    ctx.fillStyle = HERO_INK.panel2; Course.roundRect(ctx, barX - 3, barY - 3, barW + 6, barH + 6, 9); ctx.fill();
     blocks.forEach(function(b, i){
       var x = Course.lerp(pF[i], pL[i], m), bw = ws[i];
       ctx.fillStyle = col(b.col); Course.roundRect(ctx, x + 1, barY, bw - 2, barH, 6); ctx.fill();

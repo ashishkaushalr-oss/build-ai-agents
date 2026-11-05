@@ -17,28 +17,32 @@
 .w2-tog i{width:8px;height:8px;border-radius:50%;background:currentColor;opacity:.5}
 .w2-tog.is-on{color:#fff;border-color:transparent;background:var(--c)}
 .w2-tog.is-on i{opacity:1}
-/* hero: prompt anatomy builder */
+/* hero: prompt anatomy builder. The stage is white paper, so everything in here uses the --chart-* ink. .w2-tog is shared with Day 1, so the hero re-inks it under .w2-anat rather than changing the base rule. */
 .stage.w2-stage-anat{aspect-ratio:auto}
-.w2-anat{position:relative;padding:38px 14px 56px;display:grid;gap:10px;color:var(--stage-fg)}
+.w2-stage-anat .chip{background:var(--chart-panel-2);color:var(--chart-muted)}
+.w2-anat{position:relative;padding:38px 14px 56px;display:grid;gap:10px;color:var(--chart-fg);--w2-chart-format:#2F7BEA}
+.w2-anat .w2-tog{border-color:var(--chart-line);color:var(--chart-muted)}
+.w2-anat .w2-tog.is-on{color:#fff;border-color:transparent}
 .w2-anat__chips{display:flex;gap:6px;flex-wrap:wrap}
 .w2-anat__grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:10px;align-items:stretch}
-.w2-anat pre.code{font-size:11.5px;line-height:1.5;padding:12px;min-height:220px;white-space:pre-wrap;word-break:break-word;background:var(--stage)}
+.w2-anat pre.code{font-size:11.5px;line-height:1.5;padding:12px;min-height:220px;white-space:pre-wrap;word-break:break-word;background:var(--chart-panel);color:var(--chart-fg);border:1px solid var(--chart-line)}
 .w2-anat__blk{display:grid;grid-template-rows:0fr;opacity:0;transition:grid-template-rows .45s ease,opacity .35s ease}
 .w2-anat__blk>span{display:block;overflow:hidden;min-height:0}
 .w2-anat__blk.is-on{grid-template-rows:1fr;opacity:1}
 .w2-anat__blk .t{color:var(--c);font-weight:600}
-.w2-anat__vague{color:var(--stage-muted)}
+.w2-anat__vague{color:var(--chart-muted)}
 .w2-anat__vague.is-off{display:none}
 .w2-anat__side{display:grid;gap:8px;align-content:space-between}
-.w2-anat__ans{background:var(--stage);border:1px solid var(--stage-line);border-radius:12px;padding:12px;font-size:.8rem;line-height:1.5;min-height:170px;display:grid;gap:6px;align-content:start;transition:opacity .3s}
+.w2-anat__ans{background:var(--chart-panel);border:1px solid var(--chart-line);border-radius:12px;padding:12px;font-size:.8rem;line-height:1.5;min-height:170px;display:grid;gap:6px;align-content:start;transition:opacity .3s}
 .w2-anat__ans.is-fade{opacity:.2}
 .w2-anat__ans h5{margin:0;font-family:var(--font-display);font-size:.9rem}
-.w2-anat__ans .dim{color:var(--stage-muted)}
-.w2-anat__ans .sig{color:var(--stage-muted);font-style:italic}
-.w2-gauge{display:grid;gap:4px;font-size:.74rem;color:var(--stage-muted)}
-.w2-gauge .progress{background:var(--stage-line)}
-.w2-gauge .progress>i{background:linear-gradient(90deg,var(--act),var(--observe));transition:width .6s cubic-bezier(.2,.8,.2,1)}
-.w2-gauge b{color:var(--stage-fg);font-family:var(--font-display)}
+.w2-anat__ans .dim{color:var(--chart-muted)}
+.w2-anat__ans .sig{color:var(--chart-muted);font-style:italic}
+.w2-gauge{display:grid;gap:4px;font-size:.74rem;color:var(--chart-muted)}
+.w2-gauge .meter__row{color:var(--chart-muted)}
+.w2-gauge .progress{background:var(--chart-panel-2)}
+.w2-gauge .progress>i{background:linear-gradient(90deg,var(--chart-act),var(--chart-observe));transition:width .6s cubic-bezier(.2,.8,.2,1)}
+.w2-gauge .meter__row b{color:var(--chart-fg);font-family:var(--font-display)}
 @media (max-width:560px){.w2-anat__grid{grid-template-columns:1fr}}
 /* day 1: role and task toggle */
 .w2-rt{display:grid;gap:10px}
@@ -179,27 +183,27 @@ table.w2-atk .seg button.is-held{background:var(--ok);color:#fff}table.w2-atk .s
       <span class="stage__label">live · prompt anatomy</span>
       <div class="w2-anat" id="anat">
         <div class="w2-anat__chips" role="group" aria-label="Prompt parts">
-          <button type="button" class="w2-tog" id="tog-role" data-part="role" style="--c:var(--think)" aria-pressed="false"><i></i>Role</button>
-          <button type="button" class="w2-tog" id="tog-task" data-part="task" style="--c:var(--act)" aria-pressed="false"><i></i>Task</button>
-          <button type="button" class="w2-tog" id="tog-context" data-part="context" style="--c:var(--observe)" aria-pressed="false"><i></i>Context</button>
-          <button type="button" class="w2-tog" id="tog-rules" data-part="rules" style="--c:var(--warn)" aria-pressed="false"><i></i>Rules</button>
-          <button type="button" class="w2-tog" id="tog-format" data-part="format" style="--c:var(--w2-format)" aria-pressed="false"><i></i>Format</button>
+          <button type="button" class="w2-tog" id="tog-role" data-part="role" style="--c:var(--chart-think)" aria-pressed="false"><i></i>Role</button>
+          <button type="button" class="w2-tog" id="tog-task" data-part="task" style="--c:var(--chart-act)" aria-pressed="false"><i></i>Task</button>
+          <button type="button" class="w2-tog" id="tog-context" data-part="context" style="--c:var(--chart-observe)" aria-pressed="false"><i></i>Context</button>
+          <button type="button" class="w2-tog" id="tog-rules" data-part="rules" style="--c:var(--chart-warn)" aria-pressed="false"><i></i>Rules</button>
+          <button type="button" class="w2-tog" id="tog-format" data-part="format" style="--c:var(--w2-chart-format)" aria-pressed="false"><i></i>Format</button>
         </div>
         <div class="w2-anat__grid">
-          <pre class="code" id="anatCode" aria-live="off"><span class="w2-anat__vague" id="anatVague">reply to this customer</span><span class="w2-anat__blk" data-part="role" style="--c:var(--think)"><span><b class="t">&lt;role&gt;</b>
+          <pre class="code" id="anatCode" aria-live="off"><span class="w2-anat__vague" id="anatVague">reply to this customer</span><span class="w2-anat__blk" data-part="role" style="--c:var(--chart-think)"><span><b class="t">&lt;role&gt;</b>
 You are Sol, the support assistant for Ledgerly, an invoicing app for small businesses.
 <b class="t">&lt;/role&gt;</b>
-</span></span><span class="w2-anat__blk" data-part="task" style="--c:var(--act)"><span><b class="t">&lt;task&gt;</b>
+</span></span><span class="w2-anat__blk" data-part="task" style="--c:var(--chart-act)"><span><b class="t">&lt;task&gt;</b>
 Reply to the customer email below. Say what happened and what happens next.
 <b class="t">&lt;/task&gt;</b>
-</span></span><span class="w2-anat__blk" data-part="context" style="--c:var(--observe)"><span><b class="t">&lt;context&gt;</b>
+</span></span><span class="w2-anat__blk" data-part="context" style="--c:var(--chart-observe)"><span><b class="t">&lt;context&gt;</b>
 Priya Nair was charged twice on 14 October for the Pro annual plan. Billing reverses duplicate charges automatically within 5 working days. She does not need to do anything.
 <b class="t">&lt;/context&gt;</b>
-</span></span><span class="w2-anat__blk" data-part="rules" style="--c:var(--warn)"><span><b class="t">&lt;rules&gt;</b>
+</span></span><span class="w2-anat__blk" data-part="rules" style="--c:var(--chart-warn)"><span><b class="t">&lt;rules&gt;</b>
 - Never promise a date you were not given.
 - Under 120 words. Apologise once.
 <b class="t">&lt;/rules&gt;</b>
-</span></span><span class="w2-anat__blk" data-part="format" style="--c:var(--w2-format)"><span><b class="t">&lt;format&gt;</b>
+</span></span><span class="w2-anat__blk" data-part="format" style="--c:var(--w2-chart-format)"><span><b class="t">&lt;format&gt;</b>
 A one-line subject, two short paragraphs, then "Sol, Ledgerly support".
 <b class="t">&lt;/format&gt;</b>
 </span></span></pre>
@@ -209,7 +213,7 @@ A one-line subject, two short paragraphs, then "Sol, Ledgerly support".
           </div>
         </div>
       </div>
-      <div class="stage__hud"><span class="chip" id="anatCount" style="background:var(--stage);color:var(--stage-muted)">0 of 5 parts</span><button class="btn btn--small" id="heroReplay" type="button">Replay</button></div>
+      <div class="stage__hud"><span class="chip" id="anatCount">0 of 5 parts</span><button class="btn btn--small" id="heroReplay" type="button">Replay</button></div>
     </div>
   </div>
 </section>
