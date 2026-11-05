@@ -102,6 +102,10 @@ pre.code .k{color:#8F7BFF}pre.code .s{color:#2CD2B2}pre.code .c{color:#8E9BBE}pr
 .hero__text .eyebrow{color:#5B6882}
 .hero h1{color:#0E1626}
 .hero h1 em{font-style:normal;background:linear-gradient(90deg,#6A52F5,#F2552E);-webkit-background-clip:text;background-clip:text;color:transparent}
+/* week banners: the module name in an ink-to-violet gradient, the plain-words description under it in the violet-to-orange one, then a short paragraph */
+.hero h1.hero__title{justify-self:start;max-width:100%;background:linear-gradient(90deg,#0E1626 25%,#6A52F5);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero__desc{margin:0;justify-self:start;max-width:100%;font-size:1.3rem;line-height:1.35;font-weight:600;text-wrap:balance;background:linear-gradient(90deg,#6A52F5,#F2552E);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero__text .lede.hero__lede{font-size:1.02rem}
 .hero__text .lede{color:#3F4A63}
 .hero .muted{color:#5B6882}
 .hero__text a:not(.btn){color:inherit}
@@ -536,8 +540,9 @@ p code{overflow-wrap:anywhere}
   <div class="wrap">
     <div class="hero__text">
       <span class="eyebrow">Week 9 · Modules 12 to 14 · five days · about 6 hours in total</span>
-      <h1>Your agent works. Now give people <em>a way to reach it.</em></h1>
-      <p class="lede">The agent you built in Weeks 7 and 8 answers only when you press Test in n8n. This week it gets a front door: a chat window on a web page, memory that survives until tomorrow, a clean handover to a colleague when it is out of its depth, and, if you want it, a WhatsApp number. One agent behind every door. I have cut the week into five days; the last one holds both labs, so give it a long sitting.</p>
+      <h1 class="hero__title">Chat Channels</h1>
+      <p class="hero__desc">Put your agent where your people already are, in Slack, WhatsApp or web chat</p>
+      <p class="lede hero__lede">Your agent gets a front door: a chat window on a web page, memory that lasts, a clean handover to a person, and an optional WhatsApp number. One agent behind every door.</p>
       <div class="hero__actions">
         <a class="btn btn--primary" href="#day1">Start Day 1</a>
         <a class="btn" href="#day5">Go to Day 5, the labs</a>

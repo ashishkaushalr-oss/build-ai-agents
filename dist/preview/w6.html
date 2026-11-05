@@ -102,6 +102,10 @@ pre.code .k{color:#8F7BFF}pre.code .s{color:#2CD2B2}pre.code .c{color:#8E9BBE}pr
 .hero__text .eyebrow{color:#5B6882}
 .hero h1{color:#0E1626}
 .hero h1 em{font-style:normal;background:linear-gradient(90deg,#6A52F5,#F2552E);-webkit-background-clip:text;background-clip:text;color:transparent}
+/* week banners: the module name in an ink-to-violet gradient, the plain-words description under it in the violet-to-orange one, then a short paragraph */
+.hero h1.hero__title{justify-self:start;max-width:100%;background:linear-gradient(90deg,#0E1626 25%,#6A52F5);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero__desc{margin:0;justify-self:start;max-width:100%;font-size:1.3rem;line-height:1.35;font-weight:600;text-wrap:balance;background:linear-gradient(90deg,#6A52F5,#F2552E);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero__text .lede.hero__lede{font-size:1.02rem}
 .hero__text .lede{color:#3F4A63}
 .hero .muted{color:#5B6882}
 .hero__text a:not(.btn){color:inherit}
@@ -454,8 +458,9 @@ html.no-motion .w6-fnode,html.no-motion .w6-phone.is-buzz{animation:none}
   <div class="wrap">
     <div class="hero__text">
       <span class="eyebrow">Week 6 · Module 7 · five days · about 5 hours in total</span>
-      <h1>Your agent needs a body. This week you build one out of <em>boxes and lines.</em></h1>
-      <p class="lede">Every automation you have ever wished for at work, the form that files itself, the ticket that lands in the right channel, the reminder that goes out on its own, is a few boxes connected left to right. n8n is where we draw them. I will show you how data moves through a workflow, how to start one from the outside world with a webhook, and how to read the JSON that flows between the boxes. By Friday you will have a support-ticket intake running, and your Week 7 agent will plug straight into it.</p>
+      <h1 class="hero__title">n8n Workflows</h1>
+      <p class="hero__desc">Build automated workflows in n8n that connect apps and carry out steps for you</p>
+      <p class="lede hero__lede">Most automations you wish for at work are a few boxes connected left to right. You learn how data moves through n8n, start a workflow from a webhook, and finish with a support-ticket intake.</p>
       <div class="hero__actions">
         <a class="btn btn--primary" href="#day1">Start Day 1</a>
         <a class="btn" href="#day5">Go to Day 5, the lab</a>

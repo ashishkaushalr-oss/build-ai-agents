@@ -102,6 +102,10 @@ pre.code .k{color:#8F7BFF}pre.code .s{color:#2CD2B2}pre.code .c{color:#8E9BBE}pr
 .hero__text .eyebrow{color:#5B6882}
 .hero h1{color:#0E1626}
 .hero h1 em{font-style:normal;background:linear-gradient(90deg,#6A52F5,#F2552E);-webkit-background-clip:text;background-clip:text;color:transparent}
+/* week banners: the module name in an ink-to-violet gradient, the plain-words description under it in the violet-to-orange one, then a short paragraph */
+.hero h1.hero__title{justify-self:start;max-width:100%;background:linear-gradient(90deg,#0E1626 25%,#6A52F5);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero__desc{margin:0;justify-self:start;max-width:100%;font-size:1.3rem;line-height:1.35;font-weight:600;text-wrap:balance;background:linear-gradient(90deg,#6A52F5,#F2552E);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero__text .lede.hero__lede{font-size:1.02rem}
 .hero__text .lede{color:#3F4A63}
 .hero .muted{color:#5B6882}
 .hero__text a:not(.btn){color:inherit}
@@ -486,8 +490,9 @@ table.tbl--acc input[type=text]{min-width:170px}
   <div class="wrap">
     <div class="hero__text">
       <span class="eyebrow">Week 4 · Module 5 · five days · about 5 hours in total</span>
-      <h1>You wrote the instructions. Now decide <em>what else the model sees.</em></h1>
-      <p class="lede">In Weeks 2 and 3 you learned to write a good prompt and to keep files in a Project. This week I want to show you the rest of the desk: the documents, the tool results and the conversation that surround your prompt on every call, where in that pile a fact gets found, what it costs to read it again and again, and how the API can be told to read the stable part once. Five short days, from 40 minutes to an hour and a half, ending with your first real measurements in the Anthropic Console.</p>
+      <h1 class="hero__title">Context Engineering</h1>
+      <p class="hero__desc">Choose what information the AI sees, so it gives more reliable answers</p>
+      <p class="lede hero__lede">Every call carries more than your prompt: documents, tool results and the conversation so far. You learn where a fact gets found in that pile, what rereading it costs, and how to cache the stable part.</p>
       <div class="hero__actions">
         <a class="btn btn--primary" href="#day1">Start Day 1</a>
         <a class="btn" href="#day5">Go to Day 5, the lab</a>

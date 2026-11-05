@@ -102,6 +102,10 @@ pre.code .k{color:#8F7BFF}pre.code .s{color:#2CD2B2}pre.code .c{color:#8E9BBE}pr
 .hero__text .eyebrow{color:#5B6882}
 .hero h1{color:#0E1626}
 .hero h1 em{font-style:normal;background:linear-gradient(90deg,#6A52F5,#F2552E);-webkit-background-clip:text;background-clip:text;color:transparent}
+/* week banners: the module name in an ink-to-violet gradient, the plain-words description under it in the violet-to-orange one, then a short paragraph */
+.hero h1.hero__title{justify-self:start;max-width:100%;background:linear-gradient(90deg,#0E1626 25%,#6A52F5);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero__desc{margin:0;justify-self:start;max-width:100%;font-size:1.3rem;line-height:1.35;font-weight:600;text-wrap:balance;background:linear-gradient(90deg,#6A52F5,#F2552E);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero__text .lede.hero__lede{font-size:1.02rem}
 .hero__text .lede{color:#3F4A63}
 .hero .muted{color:#5B6882}
 .hero__text a:not(.btn){color:inherit}
@@ -537,8 +541,9 @@ footer.site{padding-block:32px 48px;color:var(--muted);font-size:.9rem;display:g
   <div class="wrap">
     <div class="hero__text">
       <span class="eyebrow">Week 10 · Module 15 and the capstone · five days · about 8 hours in total</span>
-      <h1>Nine weeks of parts. This week you make them <em>one assistant.</em></h1>
-      <p class="lede">A branded chat widget, a webhook, a Claude agent, a vector store, a calculator, a dispatch tool, a run log and an alert. You have built every one of them. The capstone is the week you connect them, prove they work together on messages you did not write, and show it to someone in five minutes. I have cut it into five days: the brief, the plan and its cost, two days of building, and a day to demonstrate. Drag the model to look around it. Send a message and watch it travel.</p>
+      <h1 class="hero__title">Capstone</h1>
+      <p class="hero__desc">Bring it all together and launch your own working AI assistant</p>
+      <p class="lede hero__lede">You have built every part: widget, webhook, agent, vector store, calculator, dispatch and alerts. This week you connect them, test them on messages you did not write, and demo the result in five minutes.</p>
       <div class="hero__actions">
         <a class="btn btn--primary" href="#day1">Start Day 1</a>
         <a class="btn" href="#day5">Go to Day 5, the capstone</a>
