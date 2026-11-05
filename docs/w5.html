@@ -1727,7 +1727,14 @@ window.FIREBASE_CONFIG = {
   if (!site || !Course) return;
 
   if ('serviceWorker' in navigator) {
-    window.addEventListener('load', function(){ navigator.serviceWorker.register('sw.js').catch(function(){}); });
+    /* When a newer version of the course takes over: reload once if it happens right after the page opened, otherwise say so */
+    var hadController = !!navigator.serviceWorker.controller, openedAt = Date.now(), reloading = false;
+    navigator.serviceWorker.addEventListener('controllerchange', function(){
+      if (!hadController || reloading) return;
+      if (Date.now() - openedAt < 20000) { reloading = true; location.reload(); }
+      else if (Course.toast) Course.toast('A newer version of the course is ready. Reload the page to see it.', 9000);
+    });
+    window.addEventListener('load', function(){ navigator.serviceWorker.register('sw.js', {updateViaCache: 'none'}).then(function(reg){ reg.update().catch(function(){}); }).catch(function(){}); });
   }
   if (site.page !== 'hub') return;
 
