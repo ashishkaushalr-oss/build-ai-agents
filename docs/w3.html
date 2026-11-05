@@ -174,7 +174,7 @@ textarea{min-height:120px;resize:vertical;line-height:1.5}
 .concept{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:32px;align-items:center;padding-block:28px}
 .concept+.concept{border-top:1px dashed var(--line)}
 .concept:nth-of-type(even) .concept__viz{order:2}
-.concept__viz{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-l);padding:18px;min-height:240px;display:grid;align-content:center;gap:12px;overflow:hidden;box-shadow:var(--shadow);min-width:0}
+.concept__viz{grid-template-columns:minmax(0,1fr);background:var(--surface);border:1px solid var(--line);border-radius:var(--r-l);padding:18px;min-height:240px;display:grid;align-content:center;gap:12px;overflow:hidden;box-shadow:var(--shadow);min-width:0}
 .concept__viz canvas{width:100%;display:block;border-radius:var(--r-m)}
 .concept__viz--dark{background:var(--stage);color:var(--stage-fg);border-color:var(--stage-line)}
 .concept__text{display:grid;gap:14px;min-width:0}
@@ -377,6 +377,7 @@ footer.site{padding-block:32px 48px;color:var(--muted);font-size:.9rem;display:g
 /* canvases */
 #w3RulesCanvas{height:272px}#w3BudgetCanvas{height:212px}#w3RagCanvas{height:300px}#w3ArtCanvas{height:300px}#w3TeamCanvas{height:230px}#w3LoopCanvas{height:256px}
 @media (max-width:480px){#w3ArtCanvas{height:270px}#w3RagCanvas{height:320px}}
+@media (max-width:520px){.hero .stage{aspect-ratio:1/1}}   /* phone banner: square, so the three chat cards have room for answer and citation lines (as in Week 1) */
 /* concept 5: versions */
 .w3-vers{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
 .w3-vers .btn.is-on{background:var(--think);border-color:var(--think);color:#fff}
@@ -1276,6 +1277,31 @@ policy documents uploaded to this Project.
     if (opts.auto !== false) api.start();
     return api;
   };
+  /* ---------- canvas text that always fits its box ---------- */
+  /* fitText: the string, or as much of it as fits plus an ellipsis */
+  Course.fitText = function(ctx, s, maxW){
+    s = String(s == null ? '' : s); if (!(maxW > 0)) return '';
+    if (ctx.measureText(s).width <= maxW) return s;
+    var lo = 0, hi = s.length - 1;
+    while (lo < hi) { var mid = Math.ceil((lo + hi) / 2); if (ctx.measureText(s.slice(0, mid).replace(/\s+$/, '') + '…').width <= maxW) lo = mid; else hi = mid - 1; }
+    return lo > 0 ? s.slice(0, lo).replace(/\s+$/, '') + '…' : '';
+  };
+  /* fitFont: sets ctx.font to the largest size from px down to minPx at which s fits maxW, and returns that size */
+  Course.fitFont = function(ctx, s, maxW, px, minPx, weight, family){
+    var lo = minPx || 8, pre = weight ? weight + ' ' : '';
+    for (var p = px; p > lo; p -= 0.5) { ctx.font = pre + p + 'px ' + family; if (ctx.measureText(s).width <= maxW) return p; }
+    ctx.font = pre + lo + 'px ' + family; return lo;
+  };
+  /* fitLines: word-wraps text into lines no wider than maxW, at most maxLines (the last one ellipsised) */
+  Course.fitLines = function(ctx, text, maxW, maxLines){
+    var lines = [], line = '';
+    String(text == null ? '' : text).split(/\s+/).forEach(function(wd){ if (!wd) return; var test = line ? line + ' ' + wd : wd; if (ctx.measureText(test).width > maxW && line) { lines.push(line); line = wd; } else line = test; });
+    if (line) lines.push(line);
+    if (maxLines && lines.length > maxLines) { var rest = lines.slice(maxLines - 1).join(' '); lines = lines.slice(0, maxLines - 1); lines.push(rest); }
+    return lines.map(function(l){ return ctx.measureText(l).width > maxW ? Course.fitText(ctx, l, maxW) : l; });
+  };
+  /* clampLabel: the x at which a centred label of width tw stays between minX and maxX */
+  Course.clampLabel = function(x, tw, minX, maxX){ if (maxX - minX <= tw) return (minX + maxX) / 2; return Math.max(minX + tw / 2, Math.min(maxX - tw / 2, x)); };
   Course.roundRect = function(ctx, x, y, w, h, r){ if (!(w > 0) || !(h > 0)) { ctx.beginPath(); return; } r = Math.max(0, Math.min(r, w/2, h/2)); ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); };
 
   /* ---------- typewriter ---------- */
@@ -1776,20 +1802,23 @@ var rules = {turns: 1, pastedAt: 1, chat: 1}, rulesScroll = {l: 0, r: 0}, rulesA
 function rulesStrength(){ if (rules.pastedAt == null) return 0; var d = rules.turns - rules.pastedAt; return d <= 6 ? 1 : Math.max(0.4, 1 - (d - 6) * 0.025); }
 function drawRuleCard(ctx, x, y, w, h, obs, fg, mut, pinned){
   ctx.fillStyle = rgba(obs, 0.14); ctx.strokeStyle = obs; ctx.lineWidth = 1.5; Course.roundRect(ctx, x, y, w, h, 8); ctx.fill(); ctx.stroke();
-  txt(ctx, pinned ? 'Project instructions · 12 rules · pinned' : 'Rules · 12 · pasted as a message', x + 8, y + 15, '600 10.5px ' + SANS, fg);
+  var ttl = pinned ? 'Project instructions · 12 rules · pinned' : 'Rules · 12 · pasted as a message';
+  Course.fitFont(ctx, ttl, w - 16, 10.5, 9, '600', SANS); txt(ctx, Course.fitText(ctx, ttl, w - 16), x + 8, y + 15, ctx.font, fg);
   ctx.font = '9px ' + MONO; txt(ctx, clipText(ctx, '1 Cite the section   2 Say when not covered', w - 16), x + 8, y + 28, ctx.font, mut);
   txt(ctx, clipText(ctx, '3 No legal or financial advice   4 Short answer first', w - 16), x + 8, y + 39, ctx.font, mut);
 }
 function rulesDraw(ctx, w, h, t, dt){
   if (w < 60 || h < 60) return;
+  var stacked = w < 460, wantH = stacked ? '500px' : '272px';   /* below 460px the two chats stack, plain chat above the Project */
+  if (ctx.canvas.style.height !== wantH) { ctx.canvas.style.height = wantH; if (ctx.canvas.__course) ctx.canvas.__course.resize(); return; }
   var fg = cv('--fg'), mut = cv('--muted'), line = cv('--line'), s2 = cv('--surface-2'), sf = cv('--surface'), obs = cv('--observe'), act = cv('--act'), ok = cv('--ok'), bad = cv('--bad'), warn = cv('--warn');
   var k = (Course.motionOK && dt) ? 1 - Math.pow(0.0005, dt) : 1, settled = true;
   ctx.clearRect(0, 0, w, h);
-  var pad = 8, gap = 12, laneW = (w - pad * 2 - gap) / 2, top = 44, winH = h - top - 74;
+  var pad = 8, gap = 12, sgap = 16, laneW = stacked ? w - pad * 2 : (w - pad * 2 - gap) / 2, blockH = stacked ? (h - sgap) / 2 : h, winH = blockH - 44 - 74;
   [0, 1].forEach(function(side){
-    var x = pad + side * (laneW + gap), isProject = side === 1, key = side ? 'r' : 'l';
-    txt(ctx, isProject ? 'Project · chat ' + rules.chat : 'Plain chat' + (rules.chat > 1 ? ' · chat ' + rules.chat : ''), x, 18, '600 12px ' + SANS, fg);
-    ctx.font = '9.5px ' + MONO; txt(ctx, clipText(ctx, isProject ? 'instructions applied automatically' : (rules.pastedAt != null ? 'rules pasted in message ' + rules.pastedAt : 'no rules in this chat'), laneW), x, 33, ctx.font, mut);
+    var x = stacked ? pad : pad + side * (laneW + gap), oy = stacked ? side * (blockH + sgap) : 0, top = oy + 44, isProject = side === 1, key = side ? 'r' : 'l';
+    txt(ctx, isProject ? 'Project · chat ' + rules.chat : 'Plain chat' + (rules.chat > 1 ? ' · chat ' + rules.chat : ''), x, oy + 18, '600 12px ' + SANS, fg);
+    ctx.font = '9.5px ' + MONO; txt(ctx, clipText(ctx, isProject ? 'instructions applied automatically' : (rules.pastedAt != null ? 'rules pasted in message ' + rules.pastedAt : 'no rules in this chat'), laneW), x, oy + 33, ctx.font, mut);
     ctx.fillStyle = s2; ctx.strokeStyle = line; ctx.lineWidth = 1; Course.roundRect(ctx, x, top, laneW, winH, 10); ctx.fill(); ctx.stroke();
     var innerX = x + 7, innerW = laneW - 14, pinnedH = isProject ? RULES_CARD + 8 : 0;
     if (isProject) drawRuleCard(ctx, innerX, top + 6, innerW, RULES_CARD, obs, fg, mut, true);
@@ -1799,22 +1828,28 @@ function rulesDraw(ctx, w, h, t, dt){
     ctx.save(); ctx.beginPath(); ctx.rect(x + 1, areaY, laneW - 2, areaH); ctx.clip();
     var y = areaY - rulesScroll[key], uw = innerW * 0.44, cwid = innerW * 0.56;
     for (var i = 1; i <= rules.turns; i++) {
-      if (hasCard && i === rules.pastedAt) { drawRuleCard(ctx, innerX, y, innerW, RULES_CARD, obs, fg, mut, false); y += RULES_CARD + 6; }
+      if (hasCard && i === rules.pastedAt) { if (y + RULES_CARD > areaY && y < areaY + areaH) drawRuleCard(ctx, innerX, y, innerW, RULES_CARD, obs, fg, mut, false); y += RULES_CARD + 6; }
       if (y + RULES_ROW > areaY && y < areaY + areaH) {
-        ctx.fillStyle = sf; ctx.strokeStyle = line; ctx.lineWidth = 1; Course.roundRect(ctx, innerX, y + 2, uw, 10, 5); ctx.fill(); ctx.stroke();
-        ctx.fillStyle = rgba(act, 0.28); Course.roundRect(ctx, innerX + innerW - cwid, y + 14, cwid, 10, 5); ctx.fill();
+        var ubT = Math.max(y + 2, areaY), cbT = Math.max(y + 14, areaY);   /* a bubble half out of view is drawn only from the window edge down */
+        if (ubT < y + 12) { ctx.fillStyle = sf; ctx.strokeStyle = line; ctx.lineWidth = 1; Course.roundRect(ctx, innerX, ubT, uw, y + 12 - ubT, 5); ctx.fill(); ctx.stroke(); }
+        if (cbT < y + 24) { ctx.fillStyle = rgba(act, 0.28); Course.roundRect(ctx, innerX + innerW - cwid, cbT, cwid, y + 24 - cbT, 5); ctx.fill(); }
         if (i === rules.turns) { ctx.font = '8.5px ' + MONO; txt(ctx, 'turn ' + i, innerX + uw + 5, y + 10, ctx.font, mut); }
       }
       y += RULES_ROW;
     }
     ctx.restore();
-    if (!isProject && rules.pastedAt != null && rulesScroll[key] > RULES_CARD) { ctx.font = '9px ' + MONO; txt(ctx, '▲ rules, ' + Math.round(rulesScroll[key] / RULES_ROW) + ' turns up', x + laneW / 2, top + 16, ctx.font, mut, 'center'); }
+    if (!isProject && rules.pastedAt != null && rulesScroll[key] > RULES_CARD) {
+      ctx.font = '9px ' + MONO; var upS = '▲ rules, ' + Math.round(rulesScroll[key] / RULES_ROW) + ' turns up', upW = ctx.measureText(upS).width;
+      /* a tab on the window's top edge, so it never sits on the bubbles */
+      ctx.fillStyle = s2; ctx.strokeStyle = line; ctx.lineWidth = 1; Course.roundRect(ctx, x + laneW / 2 - upW / 2 - 7, top - 7, upW + 14, 14, 7); ctx.fill(); ctx.stroke();
+      txt(ctx, upS, x + laneW / 2, top + 3.5, ctx.font, mut, 'center');
+    }
     var s = isProject ? 1 : rulesStrength(), by = top + winH + 12, col = s >= 1 ? ok : s >= 0.7 ? warn : bad;
     txt(ctx, 'rules followed', x, by + 9, '9.5px ' + MONO, mut);
     ctx.fillStyle = s2; Course.roundRect(ctx, x, by + 15, laneW, 8, 4); ctx.fill();
     if (s > 0) { ctx.fillStyle = col; Course.roundRect(ctx, x, by + 15, laneW * s, 8, 4); ctx.fill(); }
     ctx.font = '600 9.5px ' + MONO; txt(ctx, clipText(ctx, s > 0 ? '~' + Math.round(12 * s) + ' of 12' + (isProject ? ' · every chat' : '') : 'none here', laneW * 0.55), x + laneW, by + 9, ctx.font, col, 'right');
-    txt(ctx, isProject ? 'starts briefed, every time' : (rules.pastedAt == null ? 'started empty' : s >= 1 ? 'rules still in view' : 'newer text wins attention'), x, h - 8, '9.5px ' + SANS, mut);
+    txt(ctx, isProject ? 'starts briefed, every time' : (rules.pastedAt == null ? 'started empty' : s >= 1 ? 'rules still in view' : 'newer text wins attention'), x, oy + blockH - 8, '9.5px ' + SANS, mut);
   });
   if (settled && rulesAnim) rulesAnim.stop();
 }
@@ -1863,9 +1898,10 @@ budgetAnim = Course.canvas($('#w3BudgetCanvas'), function(ctx, w, h, t, dt){
   if (Math.abs(budgetShown - tot.tokens) < 60) budgetShown = tot.tokens;
   ctx.clearRect(0, 0, w, h);
   var x0 = 14, bw = w - 28, y = 62, bh = 36, limitW = bw * 0.78, perTok = limitW / LIMIT;
-  txt(ctx, 'Context window · 200,000 tokens', x0, 26, '600 13px ' + SANS, fg);
-  var over = Math.max(0, Math.round(budgetShown) - LIMIT);
-  txt(ctx, over ? Course.fmt(over) + ' over' : Course.fmt(Math.round(budgetShown)) + ' used', w - 14, 26, '600 12px ' + MONO, over ? bad : mut, 'right');
+  var bTitle = 'Context window · 200,000 tokens'; txt(ctx, bTitle, x0, 26, '600 13px ' + SANS, fg);
+  var over = Math.max(0, Math.round(budgetShown) - LIMIT), titleW = ctx.measureText(bTitle).width;
+  ctx.font = '600 12px ' + MONO; var figRow2 = titleW + ctx.measureText('000,000 used').width + 12 > bw;   /* decided by width, so the figure never hops rows mid-count */
+  txt(ctx, over ? Course.fmt(over) + ' over' : Course.fmt(Math.round(budgetShown)) + ' used', figRow2 ? x0 : w - 14, figRow2 ? 45 : 26, '600 12px ' + MONO, over ? bad : mut, figRow2 ? 'left' : 'right');
   ctx.fillStyle = s2; ctx.strokeStyle = line; ctx.lineWidth = 1; Course.roundRect(ctx, x0, y, bw, bh, 10); ctx.fill(); ctx.stroke();
   ctx.save(); Course.roundRect(ctx, x0, y, bw, bh, 10); ctx.clip();
   var cx = x0, scale = tot.tokens ? budgetShown / tot.tokens : 0;
@@ -1881,11 +1917,12 @@ budgetAnim = Course.canvas($('#w3BudgetCanvas'), function(ctx, w, h, t, dt){
   ctx.setLineDash([4, 4]); ctx.strokeStyle = over ? bad : mut; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(x0 + limitW, y - 8); ctx.lineTo(x0 + limitW, y + bh + 8); ctx.stroke(); ctx.setLineDash([]);
   txt(ctx, 'limit', x0 + limitW, y - 12, '10px ' + MONO, over ? bad : mut, 'center');
   [0, 50000, 100000, 150000, 200000].forEach(function(v){ var tx = x0 + v * perTok; ctx.fillStyle = line; ctx.fillRect(tx, y + bh + 4, 1, 5); txt(ctx, v ? (v / 1000) + 'k' : '0', tx, y + bh + 22, '10px ' + MONO, mut, v === 0 ? 'left' : 'center'); });
-  if (over) txt(ctx, 'retrieval', x0 + limitW + (bw - limitW) / 2, y + bh + 22, '10px ' + MONO, bad, 'center');
-  var room = LIMIT - tot.tokens;
+  ctx.font = '10px ' + MONO; var rW = ctx.measureText('retrieval').width, rX = x0 + limitW + (bw - limitW) / 2, rLow = rX - rW / 2 < x0 + limitW + ctx.measureText('200k').width / 2 + 6;
+  if (over) txt(ctx, 'retrieval', rLow ? Course.clampLabel(rX, rW, x0 + limitW, w - 4) : rX, y + bh + (rLow ? 36 : 22), '10px ' + MONO, bad, 'center');
+  var room = LIMIT - tot.tokens, msgY = y + bh + 46 + (over && rLow ? 14 : 0);
   ctx.font = '12px ' + SANS;
   var msg = !budget.length ? 'Empty. Add a file: it is read whole into every chat, every time.' : room >= 0 ? 'Room left for the conversation itself: ' + Course.fmt(room) + ' tokens, about ' + Course.fmt(Math.round(room / 500)) + ' pages of chat.' : 'Too big to load whole. Claude will search the files and pull only the relevant sections onto the desk.';
-  wrapLines(ctx, msg, w - 28).forEach(function(l, i){ txt(ctx, l, x0, y + bh + 46 + i * 16, '12px ' + SANS, room >= 0 ? fg : bad); });
+  wrapLines(ctx, msg, w - 28).forEach(function(l, i){ txt(ctx, l, x0, msgY + i * 16, '12px ' + SANS, room >= 0 ? fg : bad); });
   if (budgetShown === tot.tokens && budgetAnim) budgetAnim.stop();
 }, {auto: false});
 $$('#w3BudgetBank [data-file]').forEach(function(b){ b.addEventListener('click', function(){ budget.push(FILES[+b.getAttribute('data-file')]); budgetSync(); }); });
@@ -2022,7 +2059,7 @@ function artDraw(ctx, w, h, t){
       ctx.font = '10px ' + SANS; txt(ctx, clipText(ctx, s, panelW - 40), px + 18, fy + i * lineH, ctx.font, fg); ctx.globalAlpha = 1;
     });
     var sb = easeOut((tt - END + 0.6) / 0.4);
-    if (sb > 0) { ctx.globalAlpha = sb; ctx.fillStyle = obs; Course.roundRect(ctx, px + panelW - 84, h - 42, 80, 26, 13); ctx.fill(); txt(ctx, 'Publish', px + panelW - 44, h - 25, '600 11px ' + SANS, '#fff', 'center'); txt(ctx, 'Edit · Download · Copy', px + 16, h - 25, '10px ' + SANS, mut); ctx.globalAlpha = 1; }
+    if (sb > 0) { ctx.globalAlpha = sb; ctx.fillStyle = obs; Course.roundRect(ctx, px + panelW - 84, h - 42, 80, 26, 13); ctx.fill(); txt(ctx, 'Publish', px + panelW - 44, h - 25, '600 11px ' + SANS, '#fff', 'center'); ctx.font = '10px ' + SANS; var edS = 'Edit · Download · Copy', edBeside = px + 16 + ctx.measureText(edS).width + 8 <= px + panelW - 84; txt(ctx, edS, px + 16, edBeside ? h - 25 : h - 52, '10px ' + SANS, mut); ctx.globalAlpha = 1; }
   }
   if (tt >= END && artAnim && Course.motionOK) artAnim.stop();
 }

@@ -174,7 +174,7 @@ textarea{min-height:120px;resize:vertical;line-height:1.5}
 .concept{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:32px;align-items:center;padding-block:28px}
 .concept+.concept{border-top:1px dashed var(--line)}
 .concept:nth-of-type(even) .concept__viz{order:2}
-.concept__viz{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-l);padding:18px;min-height:240px;display:grid;align-content:center;gap:12px;overflow:hidden;box-shadow:var(--shadow);min-width:0}
+.concept__viz{grid-template-columns:minmax(0,1fr);background:var(--surface);border:1px solid var(--line);border-radius:var(--r-l);padding:18px;min-height:240px;display:grid;align-content:center;gap:12px;overflow:hidden;box-shadow:var(--shadow);min-width:0}
 .concept__viz canvas{width:100%;display:block;border-radius:var(--r-m)}
 .concept__viz--dark{background:var(--stage);color:var(--stage-fg);border-color:var(--stage-line)}
 .concept__text{display:grid;gap:14px;min-width:0}
@@ -390,8 +390,10 @@ footer.site{padding-block:32px 48px;color:var(--muted);font-size:.9rem;display:g
 @container (max-width:520px){.ft__tree{column-gap:4px;row-gap:22px}.ft__node{padding:7px 7px;border-radius:9px}.ft__node b{font-size:.76rem}.ft__node small{font-size:.66rem}}
 /* canvases */
 #trainCanvas,#ctxCanvas,#mmCanvas{height:250px}
+@media (max-width:520px){.hero .stage{aspect-ratio:1/1}}
 .ctrl{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .ctrl label{display:flex;gap:8px;align-items:center;font-size:.85rem;color:var(--muted)}
+.ctrl label{flex-wrap:wrap;max-width:100%}.ctrl label input[type=range]{flex:1 1 60px;width:auto;min-width:60px}.ctrl label .mono{white-space:nowrap}
 .ctrl input[type=range]{width:120px}
 /* next-word predictor */
 .pred{display:grid;gap:12px}
@@ -410,7 +412,7 @@ footer.site{padding-block:32px 48px;color:var(--muted);font-size:.9rem;display:g
 /* tokenizer */
 .tokbox{display:grid;gap:12px}
 .tokens{display:flex;flex-wrap:wrap;gap:10px 14px;min-height:64px;padding:12px;border:1px dashed var(--line);border-radius:var(--r-m);background:var(--surface)}
-.tokw{display:inline-flex;gap:2px}
+.tokw{display:inline-flex;flex-wrap:wrap;gap:2px;max-width:100%}
 .tok{font-family:var(--font-mono);font-size:.9rem;padding:4px 7px;border-radius:7px;background:var(--surface-2);color:var(--fg);animation:popin .25s ease both}
 .tok--0{background:var(--think-soft)}.tok--1{background:var(--act-soft)}.tok--2{background:var(--observe-soft)}
 .tok--punct{opacity:.75}
@@ -443,7 +445,7 @@ footer.site{padding-block:32px 48px;color:var(--muted);font-size:.9rem;display:g
 @keyframes bub{0%,8%{opacity:0;transform:translateY(5px)}22%,62%{opacity:1;transform:none}76%,100%{opacity:0}}
 .m-lens{animation:lens 3.2s ease-in-out infinite}
 @keyframes lens{0%,100%{transform:translateX(0)}50%{transform:translateX(58px)}}
-.m-cite{animation:cite 3.2s ease-in-out infinite}
+.m-cite{animation:cite 3.2s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
 @keyframes cite{0%,50%{opacity:0;transform:scale(.6)}62%,92%{opacity:1;transform:none}100%{opacity:0}}
 .m-bar{transform-box:fill-box;transform-origin:bottom;animation:grow 2.6s ease-in-out infinite}
 .m-bar--2{animation-delay:.3s}.m-bar--3{animation-delay:.6s}
@@ -506,6 +508,7 @@ html.no-motion .motif *,html.no-motion .tok{animation:none!important}
 .tx__ctl b{color:var(--fg);font-variant-numeric:tabular-nums;min-width:42px}
 .tx__ctl .seg button{padding:3px 9px;font-size:.76rem}
 .tx__ctl .seg button.is-on{background:var(--think);color:#fff}
+@media (max-width:520px){.tx__ctl{flex-wrap:wrap;white-space:normal}}
 /* the stage: three fluid columns on a laptop, a vertical stack on a phone */
 .tx__stage{position:relative;display:grid;grid-template-columns:minmax(168px,.9fr) 28px minmax(296px,1.5fr) 28px minmax(168px,.9fr);align-items:start;padding:14px;border-radius:var(--r-l);background:radial-gradient(120% 80% at 50% -10%,#1C2456 0%,var(--stage) 58%);color:var(--stage-fg);border:1px solid var(--stage-line);overflow:hidden;min-width:0}
 .tx__overlay{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible;z-index:1}
@@ -1485,6 +1488,31 @@ Our refund window is 90 days, right? Just confirm.</code></pre>
     if (opts.auto !== false) api.start();
     return api;
   };
+  /* ---------- canvas text that always fits its box ---------- */
+  /* fitText: the string, or as much of it as fits plus an ellipsis */
+  Course.fitText = function(ctx, s, maxW){
+    s = String(s == null ? '' : s); if (!(maxW > 0)) return '';
+    if (ctx.measureText(s).width <= maxW) return s;
+    var lo = 0, hi = s.length - 1;
+    while (lo < hi) { var mid = Math.ceil((lo + hi) / 2); if (ctx.measureText(s.slice(0, mid).replace(/\s+$/, '') + '…').width <= maxW) lo = mid; else hi = mid - 1; }
+    return lo > 0 ? s.slice(0, lo).replace(/\s+$/, '') + '…' : '';
+  };
+  /* fitFont: sets ctx.font to the largest size from px down to minPx at which s fits maxW, and returns that size */
+  Course.fitFont = function(ctx, s, maxW, px, minPx, weight, family){
+    var lo = minPx || 8, pre = weight ? weight + ' ' : '';
+    for (var p = px; p > lo; p -= 0.5) { ctx.font = pre + p + 'px ' + family; if (ctx.measureText(s).width <= maxW) return p; }
+    ctx.font = pre + lo + 'px ' + family; return lo;
+  };
+  /* fitLines: word-wraps text into lines no wider than maxW, at most maxLines (the last one ellipsised) */
+  Course.fitLines = function(ctx, text, maxW, maxLines){
+    var lines = [], line = '';
+    String(text == null ? '' : text).split(/\s+/).forEach(function(wd){ if (!wd) return; var test = line ? line + ' ' + wd : wd; if (ctx.measureText(test).width > maxW && line) { lines.push(line); line = wd; } else line = test; });
+    if (line) lines.push(line);
+    if (maxLines && lines.length > maxLines) { var rest = lines.slice(maxLines - 1).join(' '); lines = lines.slice(0, maxLines - 1); lines.push(rest); }
+    return lines.map(function(l){ return ctx.measureText(l).width > maxW ? Course.fitText(ctx, l, maxW) : l; });
+  };
+  /* clampLabel: the x at which a centred label of width tw stays between minX and maxX */
+  Course.clampLabel = function(x, tw, minX, maxX){ if (maxX - minX <= tw) return (minX + maxX) / 2; return Math.max(minX + tw / 2, Math.min(maxX - tw / 2, x)); };
   Course.roundRect = function(ctx, x, y, w, h, r){ if (!(w > 0) || !(h > 0)) { ctx.beginPath(); return; } r = Math.max(0, Math.min(r, w/2, h/2)); ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); };
 
   /* ---------- typewriter ---------- */
@@ -1907,9 +1935,11 @@ function heroDraw(ctx, w, h, t){
   if (appended) tokens.push({s: HERO_STEPS[step][0][0], gen: true, a: phase === 'slide' ? Course.ease(ph) : 1});
   ctx.textBaseline = 'alphabetic'; ctx.textAlign = 'left';
   ctx.fillStyle = ink.muted; ctx.font = '11px ' + MONO;
-  ctx.fillText('REPLY SO FAR  ·  grey = your text, violet = predicted', pad, 40);
+  var legend = 'REPLY SO FAR  ·  grey = your text, violet = predicted';
+  if (ctx.measureText(legend).width > w - pad * 2) legend = 'REPLY SO FAR  ·  violet = predicted';
+  ctx.fillText(Course.fitText(ctx, legend, w - pad * 2), pad, 40);
   ctx.font = '600 ' + fontPx + 'px ' + MONO;
-  var x = pad, y = 66, lineH = fontPx + 16, maxW = w - pad * 2;
+  var x = pad, y = small ? 62 : 66, lineH = fontPx + (small ? 12 : 16), maxW = w - pad * 2;
   tokens.forEach(function(tk){
     var tw = ctx.measureText(tk.s).width;
     if (x + tw > pad + maxW && x > pad) { x = pad; y += lineH; }
@@ -1924,24 +1954,24 @@ function heroDraw(ctx, w, h, t){
   ctx.globalAlpha = 1;
   if (phase !== 'pause' && Math.floor(t * 2) % 2 === 0) { ctx.fillStyle = violet; ctx.fillRect(x + 4, y - fontPx, 2, fontPx + 4); }
 
-  var top = y + 34, cands = HERO_STEPS[step];
+  var top = y + (small ? 28 : 34), cands = HERO_STEPS[step];
   ctx.fillStyle = ink.muted; ctx.font = '11px ' + MONO;
   ctx.fillText(phase === 'pause' ? 'DONE  ·  REPLAYING' : 'WHAT COMES NEXT?   guess ' + (step + 1) + ' of ' + n, pad, top);
   var labelW = small ? 86 : 110, pctW = 54, barX = pad + labelW, barW = w - pad - pctW - barX;
-  var rowH = Math.min(30, Math.max(20, (h - top - 48) / cands.length));
+  var rowH = Math.min(30, Math.max(15, (h - 36 - (top + 10)) / cands.length)), barH = Math.max(6, rowH - 9), rowFont = rowH < 21 ? 11 : 12;
   var e = phase === 'grow' ? Course.ease(ph) : 1;
   cands.forEach(function(c, i){
-    var ry = top + 12 + i * rowH, isTop = i === 0;
+    var ry = top + 10 + i * rowH, isTop = i === 0, base = ry + barH / 2 + rowFont * 0.36;
     var flash = phase === 'flash' ? (Math.sin(ph * Math.PI * 4) > 0 ? 1 : 0.45) : 1;
     ctx.fillStyle = isTop ? violet : ink.muted;
     ctx.globalAlpha = isTop ? flash : (phase === 'grow' ? 0.9 : 0.45);
-    Course.roundRect(ctx, barX, ry, Math.max(3, barW * Math.max(0.012, c[1] / 100) * e), rowH - 9, 4); ctx.fill();
+    Course.roundRect(ctx, barX, ry, Math.max(3, barW * Math.max(0.012, c[1] / 100) * e), barH, 4); ctx.fill();
     ctx.globalAlpha = 1;
     ctx.fillStyle = isTop && phase !== 'grow' ? ink.fg : ink.muted;
-    ctx.font = (isTop ? '600 ' : '') + '12px ' + MONO;
-    ctx.fillText('"' + c[0].trim() + '"', pad, ry + rowH - 14);
+    ctx.font = (isTop ? '600 ' : '') + rowFont + 'px ' + MONO;
+    ctx.fillText(Course.fitText(ctx, '"' + c[0].trim() + '"', labelW - 6), pad, base);
     ctx.textAlign = 'right';
-    ctx.fillText((c[1] * e).toFixed(c[1] < 1 ? 1 : 0) + '%', w - pad, ry + rowH - 14);
+    ctx.fillText((c[1] * e).toFixed(c[1] < 1 ? 1 : 0) + '%', w - pad, base);
     ctx.textAlign = 'left';
   });
 
@@ -2051,28 +2081,34 @@ function trState(){
 }
 function trDraw(ctx, w, h, t, dt){
   if (w < 60 || h < 60) return;   /* hidden or not laid out yet */
+  /* under 460px there is no room for the ticket, the model and the chart side by side: stack the chart below and make the canvas taller */
+  var stacked = w < 460, wantH = stacked ? '440px' : '250px';
+  if (ctx.canvas.style.height !== wantH) { ctx.canvas.style.height = wantH; if (ctx.canvas.__course) ctx.canvas.__course.resize(); return; }   /* re-measure now and redraw at the new height */
   var fg = Course.cssVar('--fg'), muted = Course.cssVar('--muted'), lineC = Course.cssVar('--line'), soft = Course.cssVar('--surface-2'), ok = Course.cssVar('--ok'), bad = Course.cssVar('--bad'), violet = think();
   var speed = parseInt($('#trainSpeed').value, 10) || 2;
   if (!tr.cur) trStart();
   if (tr.running && Course.motionOK) { tr.el += dt * speed; if (tr.el >= ROUND) { tr.el = 0; trFinish(); if (!tr.done) trStart(); } }
   var ph = Course.clamp(tr.el / ROUND, 0, 1);
   ctx.clearRect(0, 0, w, h);
-  var pad = 12, leftW = Math.min(300, Math.floor(w * 0.5)), chartX = leftW + 24, chartW = w - pad - chartX, chartY = 44, chartH = h - chartY - 34;
+  var pad = 12, leftW = stacked ? w - pad : Math.min(320, Math.floor(w * 0.56));
+  var chartX = stacked ? pad + 2 : leftW + 20, chartY = stacked ? 268 : 44, chartW = w - pad - chartX, chartH = h - chartY - 34;
+  ctx.font = '10px ' + MONO; var need = Math.ceil(ctx.measureText(Course.fmt(1200 + TR_MAX * 3) + ' weights').width) + 18;   /* the model box always holds its widest label */
   ctx.textBaseline = 'alphabetic'; ctx.textAlign = 'left';
   ctx.fillStyle = fg; ctx.font = '600 13px ' + SANS; ctx.fillText('Round ' + tr.round + ' of ' + TR_MAX, pad, 22);
   ctx.fillStyle = muted; ctx.font = '11px ' + MONO; ctx.fillText('right so far: ' + Math.round(tr.acc * 100) + '%', pad + 118, 22);
   /* ticket card slides in */
-  var cardW = Math.min(150, leftW - 110), cardH = 50, cardY = 60, slide = Course.ease(Course.clamp(ph / 0.25, 0, 1)), cardX = Course.lerp(-cardW - 10, pad, slide);
   var cur = tr.cur, col = Course.cssVar(CAT_COL[cur.label]);
+  var cardW = Math.max(96, Math.min(150, leftW - pad - 22 - need - 6)), cardY = 60, slide = Course.ease(Course.clamp(ph / 0.25, 0, 1)), cardX = Course.lerp(-cardW - 10, pad, slide);
+  ctx.font = '600 12px ' + SANS; var cardLines = Course.fitLines(ctx, '"' + cur.text + '"', cardW - 20, 4), cardH = Math.max(50, 16 + cardLines.length * 15);
   ctx.fillStyle = soft; Course.roundRect(ctx, cardX, cardY, cardW, cardH, 8); ctx.fill(); ctx.strokeStyle = lineC; ctx.lineWidth = 1; ctx.stroke();
-  ctx.fillStyle = fg; ctx.font = '600 12px ' + SANS; wrapText(ctx, '"' + cur.text + '"', cardX + 10, cardY + 20, cardW - 20, 15);
+  ctx.fillStyle = fg; ctx.font = '600 12px ' + SANS; cardLines.forEach(function(l, i){ ctx.fillText(l, cardX + 10, cardY + 20 + i * 15); });
   /* the model box */
-  var mX = pad + cardW + 22, mW = Math.max(64, leftW - mX - 6), mY = cardY - 6, mH = cardH + 12;
+  var mX = pad + cardW + 22, mW = Math.max(need, Math.min(150, leftW - mX - 6)), mY = cardY - 6, mH = cardH + 12;
   var thinking = ph > 0.25 && ph < 0.5, pulse = thinking ? 0.12 + 0.18 * (0.5 + 0.5 * Math.sin(t * 14)) : 0.1;
   ctx.fillStyle = violet; ctx.globalAlpha = pulse; Course.roundRect(ctx, mX, mY, mW, mH, 10); ctx.fill(); ctx.globalAlpha = 1;
   ctx.strokeStyle = violet; ctx.lineWidth = 2; ctx.stroke();
   ctx.fillStyle = fg; ctx.font = '600 12px ' + SANS; ctx.textAlign = 'center'; ctx.fillText('model', mX + mW / 2, mY + 18);
-  ctx.fillStyle = muted; ctx.font = '10px ' + MONO; ctx.fillText(thinking ? 'weighing…' : (tr.round === 0 && ph <= 0.25 ? 'no rules yet' : Course.fmt(1200 + tr.round * 3) + ' weights'), mX + mW / 2, mY + mH - 10);
+  ctx.fillStyle = muted; ctx.font = '10px ' + MONO; ctx.fillText(Course.fitText(ctx, thinking ? 'weighing…' : (tr.round === 0 && ph <= 0.25 ? 'no rules yet' : Course.fmt(1200 + tr.round * 3) + ' weights'), mW - 12), mX + mW / 2, mY + mH - 10);
   /* arrow card -> model */
   ctx.strokeStyle = lineC; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(cardX + cardW + 2, cardY + cardH / 2); ctx.lineTo(mX - 4, cardY + cardH / 2); ctx.stroke();
   /* guess and label */
@@ -2270,9 +2306,15 @@ function ctxDraw(ctx, w, h, t, dt){
     var dy = b.drop ? Math.max(0, pad - b.x) * 0.35 : 0;
     ctx.globalAlpha = Course.clamp(b.a, 0, 1); ctx.fillStyle = b.drop ? bad : Course.cssVar(b.c);
     Course.roundRect(ctx, b.x + 1, barY + 4 + dy, Math.max(0, b.w - 2), barH - 8, 6); ctx.fill();
-    if (b.w > 66) {
+    var room = b.w - 18;
+    if (room > 30) {
+      /* the label wraps onto two lines inside its block; the clip keeps a growing or sliding block's text inside it */
+      ctx.save(); ctx.beginPath(); ctx.rect(b.x + 1, barY + 4 + dy, Math.max(0, b.w - 2), barH - 8); ctx.clip();
       ctx.fillStyle = b.dark && !b.drop ? '#0E1626' : '#FFFFFF'; ctx.font = '600 12px ' + SANS; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
-      ctx.fillText(b.label, b.x + 9, barY + 25 + dy); ctx.font = '11px ' + MONO; ctx.fillText(Course.fmt(b.tokens), b.x + 9, barY + 42 + dy);
+      var bl = Course.fitLines(ctx, b.label, room, barH > 70 ? 2 : 1);
+      bl.forEach(function(l, i){ ctx.fillText(l, b.x + 9, barY + 25 + i * 15 + dy); });
+      ctx.font = '11px ' + MONO; ctx.fillText(Course.fitText(ctx, Course.fmt(b.tokens), room), b.x + 9, barY + 27 + bl.length * 15 + dy);
+      ctx.restore();
     }
     ctx.globalAlpha = 1;
   });
@@ -2280,8 +2322,10 @@ function ctxDraw(ctx, w, h, t, dt){
   for (var i = 0; i <= 4; i++) { var sx = pad + barW * i / 4; ctx.fillRect(sx - 0.5, barY + barH + 4, 1, 6); ctx.fillText(i === 0 ? '0' : (i * 50) + 'k', Course.clamp(sx, 16, w - 16), barY + barH + 24); }
   var total = ctxTotal();
   ctxShown += (total - ctxShown) * Math.min(1, k * 1.5); if (Math.abs(total - ctxShown) < 1) ctxShown = total;
-  ctx.textAlign = 'left'; ctx.fillStyle = fg; ctx.font = '600 13px ' + SANS; ctx.fillText('The model\'s desk: the context window', pad, 30);
-  ctx.textAlign = 'right'; ctx.font = '600 14px ' + MONO; ctx.fillText(Course.fmt(Math.round(ctxShown)) + ' / 200,000', w - pad, 30);
+  ctx.textAlign = 'right'; ctx.fillStyle = fg; ctx.font = '600 14px ' + MONO; var tally = Course.fmt(Math.round(ctxShown)) + ' / 200,000', tallyW = ctx.measureText('200,000 / 200,000').width; ctx.fillText(tally, w - pad, 30);
+  ctx.textAlign = 'left'; ctx.font = '600 13px ' + SANS; var ctxTitle = 'The model\'s desk: the context window', titleRoom = w - pad * 2 - tallyW - 14;
+  if (ctx.measureText(ctxTitle).width > titleRoom) ctxTitle = 'The context window';
+  ctx.fillText(Course.fitText(ctx, ctxTitle, titleRoom), pad, 30);
   ctx.fillStyle = bad; ctx.fillRect(pad + barW - 1, barY - 6, 2, barH + 12);
   ctx.textAlign = 'left'; ctx.font = '12px ' + SANS;
   var msg;
@@ -2363,15 +2407,18 @@ function mmDraw(ctx, w, h, t){
   var pad = 12, cs = Math.floor(Math.min((w - pad * 2) * 0.3 / 10, (h - 66) / 8)), pw = cs * 10, ph = cs * 8, top = 36 + Math.floor((h - 66 - ph) / 2);
   var mw = Math.max(64, Math.round(w * 0.12)), mx = Math.round(w / 2 - mw / 2), my = top + 4, mh = ph - 8, gw = (mw - 16) / 8, gh = (mh - 20) / 10, gs = Math.min(gw, gh) * 0.7;
   var lx = pad, rx = w - pad - pw, aw = (pw - 16) / 10, ah = (ph - 16) / 8;
+  /* captions sit under their picture on up to two short lines, inside their own column, never under the model */
+  function caption(lines, cx, minX, maxX){ ctx.fillStyle = muted; ctx.textAlign = 'center'; lines.forEach(function(s, i){ Course.fitFont(ctx, s, maxX - minX, 11, 9, '', MONO); var tw = Math.min(ctx.measureText(s).width, maxX - minX); ctx.fillText(Course.fitText(ctx, s, maxX - minX), Course.clampLabel(cx, tw, minX, maxX), top + ph + 16 + i * 13); }); }
+  var leftMax = mx - 10, rightMin = mx + mw + 10;
   ctx.textBaseline = 'alphabetic'; ctx.textAlign = 'left'; ctx.font = '600 13px ' + SANS; ctx.fillStyle = fg;
-  ctx.fillText(fwd ? 'In: pixels become tokens' : 'Out: tokens become a page', pad, 22);
+  ctx.fillText(Course.fitText(ctx, fwd ? 'In: pixels become tokens' : 'Out: tokens become a page', w - pad * 2 - 118), pad, 22);
   ctx.fillStyle = violet; ctx.globalAlpha = 0.1 + (fwd ? Course.clamp((tc - 1.7) / 2.2, 0, 1) : Course.clamp(1 - tc / 3.1, 0, 1)) * 0.12; Course.roundRect(ctx, mx, my, mw, mh, 10); ctx.fill(); ctx.globalAlpha = 1;
   ctx.strokeStyle = violet; ctx.lineWidth = 2; ctx.stroke();
   ctx.fillStyle = fg; ctx.font = '600 12px ' + SANS; ctx.textAlign = 'center'; ctx.fillText('Claude', mx + mw / 2, my + mh + 16);
   ctx.fillStyle = muted; ctx.font = '10px ' + MONO; ctx.fillText(fwd ? 'reads tokens' : 'writes tokens', mx + mw / 2, my + mh + 29);
   if (fwd) {
-    ctx.fillStyle = muted; ctx.font = '11px ' + MONO; ctx.fillText('whiteboard photo · 1000 × 750 px', lx + pw / 2, top + ph + 16);
-    ctx.fillText('≈ 1,000 tokens', rx + pw / 2, top + ph + 16);
+    caption(['whiteboard photo', '1000 × 750 px'], lx + pw / 2, pad, leftMax);
+    caption(['≈ 1,000 tokens'], rx + pw / 2, rightMin, w - pad);
     var absorbed = 0;
     MM_CELLS.forEach(function(cell, i){
       var sx = lx + cell.c * cs + cs / 2, sy = top + cell.r * cs + cs / 2, gcx = mx + 8 + (i % 8 + 0.5) * gw, gcy = my + 10 + (Math.floor(i / 8) + 0.5) * gh;
@@ -2382,12 +2429,16 @@ function mmDraw(ctx, w, h, t){
       if (e > 0) { ctx.globalAlpha = e; ctx.fillStyle = violet; ctx.fillRect(x - size / 2, y - size / 2, size, size); ctx.globalAlpha = 1; }
     });
     ctx.fillStyle = fg; ctx.font = '600 12px ' + MONO; ctx.textAlign = 'right'; ctx.fillText(absorbed + ' / 80 patches in', w - pad, 22);
-    ctx.fillStyle = muted; ctx.font = '11px ' + SANS; ctx.textAlign = 'center';
-    wrapText(ctx, absorbed === 80 ? 'The model never saw a picture. It saw tokens, next to your words.' : 'Each patch becomes a token the model reads like text.', rx + pw / 2, top + ph / 2 - 6, pw + 10, 15);
+    ctx.fillStyle = muted; ctx.font = (pw < 110 ? 10 : 11) + 'px ' + SANS; ctx.textAlign = 'center';
+    var noteW = w - pad - rightMin, noteLh = pw < 110 ? 13 : 15, noteLines = Course.fitLines(ctx, absorbed === 80 ? 'The model never saw a picture. It saw tokens, next to your words.' : 'Each patch becomes a token the model reads like text.', noteW, Math.max(1, Math.floor((ph - 4) / noteLh)));
+    var noteY = top + ph / 2 - (noteLines.length - 1) * noteLh / 2 + 4;
+    noteLines.forEach(function(l, i){ ctx.fillText(l, rightMin + noteW / 2, noteY + i * noteLh); });
   } else {
     ctx.fillStyle = soft; Course.roundRect(ctx, lx, top, pw, ph, 10); ctx.fill(); ctx.strokeStyle = lineC; ctx.lineWidth = 1; ctx.stroke();
-    ctx.fillStyle = fg; ctx.font = '600 12px ' + SANS; ctx.textAlign = 'left'; wrapText(ctx, 'Make me an onboarding checklist I can edit.', lx + 10, top + 24, pw - 20, 16);
-    ctx.fillStyle = muted; ctx.font = '11px ' + MONO; ctx.textAlign = 'center'; ctx.fillText('your prompt', lx + pw / 2, top + ph + 16); ctx.fillText('artifact · a working page', rx + pw / 2, top + ph + 16);
+    ctx.fillStyle = fg; ctx.textAlign = 'left'; ctx.font = '600 ' + (pw < 110 ? 10 : 12) + 'px ' + SANS;
+    var pLh = pw < 110 ? 13 : 16; Course.fitLines(ctx, 'Make me an onboarding checklist I can edit.', pw - 16, Math.max(1, Math.floor((ph - 14) / pLh))).forEach(function(l, i){ ctx.fillText(l, lx + 8, top + 18 + i * pLh); });
+    caption(['your prompt'], lx + pw / 2, pad, leftMax);
+    caption(['artifact', 'a working page'], rx + pw / 2, rightMin, w - pad);
     ctx.fillStyle = soft; Course.roundRect(ctx, rx, top, pw, ph, 8); ctx.fill(); ctx.strokeStyle = lineC; ctx.stroke();
     var landed = 0;
     MM_CELLS.forEach(function(cell, i){

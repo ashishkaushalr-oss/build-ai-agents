@@ -174,7 +174,7 @@ textarea{min-height:120px;resize:vertical;line-height:1.5}
 .concept{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:32px;align-items:center;padding-block:28px}
 .concept+.concept{border-top:1px dashed var(--line)}
 .concept:nth-of-type(even) .concept__viz{order:2}
-.concept__viz{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-l);padding:18px;min-height:240px;display:grid;align-content:center;gap:12px;overflow:hidden;box-shadow:var(--shadow);min-width:0}
+.concept__viz{grid-template-columns:minmax(0,1fr);background:var(--surface);border:1px solid var(--line);border-radius:var(--r-l);padding:18px;min-height:240px;display:grid;align-content:center;gap:12px;overflow:hidden;box-shadow:var(--shadow);min-width:0}
 .concept__viz canvas{width:100%;display:block;border-radius:var(--r-m)}
 .concept__viz--dark{background:var(--stage);color:var(--stage-fg);border-color:var(--stage-line)}
 .concept__text{display:grid;gap:14px;min-width:0}
@@ -509,7 +509,9 @@ p code{overflow-wrap:anywhere}
 .w9-scorebar b{font-family:var(--font-display);font-size:1.6rem;font-variant-numeric:tabular-nums}
 .w9-chtest td:first-child{color:var(--muted);font-family:var(--font-display);font-weight:800}
 .w9-site{font-size:12px}
-@media (max-width:820px){.hero .stage{aspect-ratio:1/1}}
+/* the three channel cards need height for a question and a whole reply: the banner box is square below 1100px and taller than wide on phones */
+@media (max-width:1100px){.hero .stage{aspect-ratio:1/1}}
+@media (max-width:520px){.hero .stage{aspect-ratio:4/5}}
 </style>
 
 <header class="rail">
@@ -886,7 +888,7 @@ and say so. Treat the channel as proof of nothing.</code></pre>
           <text x="388" y="51" text-anchor="middle">n8n</text><text class="sub" x="388" y="67" text-anchor="middle">WhatsApp Trigger node</text>
           <text class="badge" id="waVerified" x="388" y="20" text-anchor="middle">webhook verified</text>
           <rect class="box box--agent" id="waAgent" x="330" y="170" width="116" height="56" rx="10"></rect>
-          <text x="388" y="193" text-anchor="middle">The same agent</text><text class="sub" x="388" y="209" text-anchor="middle">3 · memory keyed on her number</text>
+          <text x="388" y="189" text-anchor="middle">The same agent</text><text class="sub" x="388" y="204" text-anchor="middle">3 · memory keyed</text><text class="sub" x="388" y="217" text-anchor="middle">on her number</text>
           <circle class="pkt" id="waPkt" cx="220" cy="95" r="7" opacity="0"></circle>
         </svg>
         <div class="w9-status" id="waStatus" aria-live="polite">Press Replay to watch a message travel the whole loop.</div>
@@ -1422,6 +1424,31 @@ channel: &#123;&#123; $('WhatsApp Trigger').isExecuted ? 'whatsapp: plain text, 
     if (opts.auto !== false) api.start();
     return api;
   };
+  /* ---------- canvas text that always fits its box ---------- */
+  /* fitText: the string, or as much of it as fits plus an ellipsis */
+  Course.fitText = function(ctx, s, maxW){
+    s = String(s == null ? '' : s); if (!(maxW > 0)) return '';
+    if (ctx.measureText(s).width <= maxW) return s;
+    var lo = 0, hi = s.length - 1;
+    while (lo < hi) { var mid = Math.ceil((lo + hi) / 2); if (ctx.measureText(s.slice(0, mid).replace(/\s+$/, '') + '…').width <= maxW) lo = mid; else hi = mid - 1; }
+    return lo > 0 ? s.slice(0, lo).replace(/\s+$/, '') + '…' : '';
+  };
+  /* fitFont: sets ctx.font to the largest size from px down to minPx at which s fits maxW, and returns that size */
+  Course.fitFont = function(ctx, s, maxW, px, minPx, weight, family){
+    var lo = minPx || 8, pre = weight ? weight + ' ' : '';
+    for (var p = px; p > lo; p -= 0.5) { ctx.font = pre + p + 'px ' + family; if (ctx.measureText(s).width <= maxW) return p; }
+    ctx.font = pre + lo + 'px ' + family; return lo;
+  };
+  /* fitLines: word-wraps text into lines no wider than maxW, at most maxLines (the last one ellipsised) */
+  Course.fitLines = function(ctx, text, maxW, maxLines){
+    var lines = [], line = '';
+    String(text == null ? '' : text).split(/\s+/).forEach(function(wd){ if (!wd) return; var test = line ? line + ' ' + wd : wd; if (ctx.measureText(test).width > maxW && line) { lines.push(line); line = wd; } else line = test; });
+    if (line) lines.push(line);
+    if (maxLines && lines.length > maxLines) { var rest = lines.slice(maxLines - 1).join(' '); lines = lines.slice(0, maxLines - 1); lines.push(rest); }
+    return lines.map(function(l){ return ctx.measureText(l).width > maxW ? Course.fitText(ctx, l, maxW) : l; });
+  };
+  /* clampLabel: the x at which a centred label of width tw stays between minX and maxX */
+  Course.clampLabel = function(x, tw, minX, maxX){ if (maxX - minX <= tw) return (minX + maxX) / 2; return Math.max(minX + tw / 2, Math.min(maxX - tw / 2, x)); };
   Course.roundRect = function(ctx, x, y, w, h, r){ if (!(w > 0) || !(h > 0)) { ctx.beginPath(); return; } r = Math.max(0, Math.min(r, w/2, h/2)); ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); };
 
   /* ---------- typewriter ---------- */
@@ -1766,20 +1793,27 @@ function heroDraw(ctx, w, h, t){
   var pulse = phase === 'think' ? 0.10 + 0.08 * (0.5 + 0.5 * Math.sin(t * 12)) : phase === 'reply' ? 0.14 : 0.07;
   ctx.fillStyle = violet; ctx.globalAlpha = pulse; Course.roundRect(ctx, ax, ay, aw, ah, 12); ctx.fill(); ctx.globalAlpha = 1;
   ctx.strokeStyle = violet; ctx.lineWidth = 2; ctx.stroke();
-  ctx.fillStyle = HERO_INK.fg; ctx.font = '700 ' + (fs + 2) + 'px ' + DISP; ctx.fillText('n8n · AI Agent node', ax + 10, ay + 18);
-  ctx.fillStyle = HERO_INK.muted; ctx.font = fs + 'px ' + MONO; ctx.fillText('claude-sonnet-5-5', ax + 10, ay + 18 + lh);
+  ctx.fillStyle = HERO_INK.fg; Course.fitFont(ctx, 'n8n · AI Agent node', aw - 20, fs + 2, 9, '700', DISP); ctx.fillText('n8n · AI Agent node', ax + 10, ay + 18);
+  ctx.fillStyle = HERO_INK.muted; Course.fitFont(ctx, 'claude-sonnet-5-5', aw - 20, fs, 9, '', MONO); ctx.fillText('claude-sonnet-5-5', ax + 10, ay + 18 + lh);
   var status = phase === 'send' ? 'reading the message…' : phase === 'think' ? HERO_CH[cur].tool : phase === 'reply' ? (HERO_CH[cur].stream ? 'streaming the reply…' : 'sending one whole message…') : phase === 'hold' ? 'done · waiting' : 'idle · all three answered';
   ctx.fillStyle = phase === 'pause' || phase === 'hold' ? HERO_INK.muted : observe; ctx.font = '600 ' + fs + 'px ' + SANS;
   wrapLines(ctx, status, aw - 20).forEach(function(l, i){ ctx.fillText(l, ax + 10, ay + 18 + lh * (2.2 + i)); });
-  ctx.fillStyle = HERO_INK.muted; ctx.font = (fs - 1) + 'px ' + MONO; ctx.fillText('tools: shipments · invoices · pickups', ax + 10, ay + ah - 10);
+  ctx.fillStyle = HERO_INK.muted; ctx.font = (fs - 1) + 'px ' + MONO;
+  var tools = 'tools: shipments · invoices · pickups', toolL = ctx.measureText(tools).width <= aw - 20 ? [tools] : ['tools: shipments ·', 'invoices · pickups'];
+  toolL.forEach(function(l, i){ ctx.fillText(Course.fitText(ctx, l, aw - 20), ax + 10, ay + ah - 10 - (toolL.length - 1 - i) * lh); });
   /* memory box */
   ctx.fillStyle = HERO_INK.panel; Course.roundRect(ctx, ax, my, aw, mh, 12); ctx.fill(); ctx.strokeStyle = HERO_INK.line; ctx.lineWidth = 1; ctx.stroke();
-  ctx.fillStyle = HERO_INK.fg; ctx.font = '700 ' + (fs + 1) + 'px ' + DISP; ctx.fillText('Memory · one row per session id', ax + 10, my + 17);
+  ctx.fillStyle = HERO_INK.fg; ctx.font = '700 ' + (fs + 1) + 'px ' + DISP;
+  var memT = ['Memory · one row per session id'];
+  if (ctx.measureText(memT[0]).width > aw - 20) { memT = ['Memory ·', 'one row per session id']; Course.fitFont(ctx, memT[1], aw - 20, fs + 1, 9, '700', DISP); }
+  memT.forEach(function(l, k){ ctx.fillText(Course.fitText(ctx, l, aw - 20), ax + 10, my + 17 + k * lh); });
+  var rowY = my + 17 + (memT.length - 1) * lh, wrapped = 0;
   HERO_CH.forEach(function(c, i){
     var turns = (finished || i < cur) ? 2 : i === cur ? (phase === 'send' ? (ph > 0.9 ? 1 : 0) : phase === 'think' ? 1 : 2) : 0;
-    var ry = my + 17 + lh * (i + 1.4), on = i === cur && !finished;
+    var ry = rowY + lh * (i + wrapped + 1.4), on = i === cur && !finished;
     ctx.fillStyle = on ? observe : turns ? HERO_INK.fg : HERO_INK.muted; ctx.font = (on ? '600 ' : '') + (fs - 1) + 'px ' + MONO;
     ctx.fillText(c.sess, ax + 10, ry);
+    if (ctx.measureText(c.sess).width + 8 + ctx.measureText('2 turns').width > aw - 20) { wrapped++; ry += lh; }
     ctx.textAlign = 'right'; ctx.fillText(turns ? turns + ' turns' : 'empty', ax + aw - 10, ry); ctx.textAlign = 'left';
   });
   /* channel cards */
@@ -1803,7 +1837,7 @@ function heroDraw(ctx, w, h, t){
     } else if (on && (phase === 'think' || phase === 'reply')) {
       ctx.fillStyle = HERO_INK.bg; Course.roundRect(ctx, lx + 9, ry, 44, lh + 8, 8); ctx.fill(); ctx.strokeStyle = HERO_INK.line; ctx.lineWidth = 1; ctx.stroke();
       for (var d = 0; d < 3; d++) { var bob = (Math.sin(t * 5 + d * 0.9) + 1) / 2; ctx.fillStyle = HERO_INK.muted; ctx.beginPath(); ctx.arc(lx + 20 + d * 11, ry + lh / 2 + 5 - bob * 3, 2.5, 0, Math.PI * 2); ctx.fill(); }
-      if (!c.stream) { ctx.fillStyle = HERO_INK.muted; ctx.font = (fs - 1) + 'px ' + MONO; ctx.fillText('no streaming on WhatsApp', lx + 60, ry + lh / 2 + 8); }
+      if (!c.stream) { ctx.fillStyle = HERO_INK.muted; ctx.font = (fs - 1) + 'px ' + MONO; var note = 'no streaming on WhatsApp'; if (ctx.measureText(note).width > cw - 66) note = 'no streaming'; ctx.fillText(Course.fitText(ctx, note, cw - 66), lx + 60, ry + lh / 2 + 8); }
     }
     ctx.restore();
     /* the travelling message */
@@ -1889,23 +1923,48 @@ mviShow(0);
   var LEAD = 0.6, FIRST = 0.3, HOLD = 3.2, cur = 2;
   var RUNGS = [['immediate', '<0.1 s'], ['stammer', '0.1–1 s'], ['interruption', '1–10 s'], ['disruption', '>10 s']];
   function rung(v){ if (v < 0.1) return [0, v / 0.1]; if (v < 1) return [1, Math.log10(v) + 1]; if (v < 10) return [2, Math.log10(v)]; return [3, Math.min(1, Math.log10(v) - 1)]; }
+  /* Layout from the width alone: the two windows sit side by side from 460 px and stack below it. Each window is tall
+     enough for the longest reply, so the reply text always wraps inside its own panel and the canvas height does not
+     change when you switch the reply length; the timing labels and the ladder get their own rows underneath. */
+  function layout(ctx, w){
+    var L = {stacked: w < 460, small: w < 430};
+    L.fs = L.small ? 11 : 12; L.lh = L.fs * 1.4; L.pad = L.small ? 6 : 8; L.m = L.small ? 10 : 14; L.gap = L.small ? 8 : 12;
+    L.pw = L.stacked ? w - L.m * 2 : (w - L.m * 2 - L.gap) / 2;
+    L.bw = L.pw - 20 - (L.small ? 10 : 24);
+    ctx.font = L.fs + 'px ' + SANS;
+    var qn = wrapLines(ctx, Q, L.bw - L.pad * 2).length, rn = 1;
+    [1, 2, 3].forEach(function(k){ rn = Math.max(rn, wrapLines(ctx, REPLIES[k].text, L.bw - L.pad * 2).length); });
+    L.ph = Math.ceil(32 + qn * L.lh + L.pad * 2 + 10 + rn * L.lh + L.pad * 2 + 10);
+    L.lfs = L.small ? 9 : 10; L.lw = (w - L.m * 2) / 4;
+    ctx.font = '600 ' + L.lfs + 'px ' + SANS;
+    L.oneLine = RUNGS.every(function(r){ return ctx.measureText(r[0] + ' · ' + r[1]).width <= L.lw - 12; });
+    L.rungH = L.oneLine ? 16 : 28;
+    /* side by side, each window's clock sits on its own row under it; stacked, it sits in the window's title row */
+    L.panelsH = L.stacked ? L.ph * 2 + L.gap + 4 : L.ph + (L.small ? 24 : 28);
+    L.ly = L.m + L.panelsH + 18;
+    L.H = Math.ceil(L.ly + L.rungH + 24 + L.m);
+    return L;
+  }
   var api = Course.canvas(canvas, function(ctx, w, h, t){
     if (w < 60 || h < 60) return;
+    var L = layout(ctx, w);
+    if (canvas.style.height !== L.H + 'px') { canvas.style.height = L.H + 'px'; if (canvas.__course) canvas.__course.resize(); return; }
     var R = REPLIES[cur], LAST = R.last, TOTAL = LEAD + LAST + HOLD, WORDS = R.text.split(' '), N = WORDS.length;
     var tm = Course.motionOK ? t % TOTAL : LEAD + LAST + 0.1, clock = Math.max(0, tm - LEAD);
-    var small = w < 430, fs = small ? 11 : 12, lh = fs * 1.4, pad = small ? 6 : 8;
-    var m = small ? 10 : 14, gap = small ? 8 : 12, pw = (w - m * 2 - gap) / 2, top = m + 12, bar = small ? 36 : 42, LAD = 46, ph = h - top - bar - LAD - m;
+    var small = L.small, fs = L.fs, lh = L.lh, pad = L.pad, m = L.m, gap = L.gap, pw = L.pw, ph = L.ph, bw = L.bw;
     var fg = Course.cssVar('--fg'), muted = Course.cssVar('--muted'), line = Course.cssVar('--line'), observe = Course.cssVar('--observe'), violet = think(), act = Course.cssVar('--act'), soft = Course.cssVar('--surface-2'), surf = Course.cssVar('--surface');
     ctx.clearRect(0, 0, w, h);
     clockEl.textContent = clock.toFixed(1) + ' s';
+    var labFont = '600 ' + (small ? 10 : 11) + 'px ' + MONO;
+    ctx.font = labFont;
+    var labW = ctx.measureText('whole reply at 12.0 s').width;
     for (var side = 0; side < 2; side++) {
-      var x = m + side * (pw + gap), col = side === 0 ? observe : act;
+      var x = L.stacked ? m : m + side * (pw + gap), top = L.stacked ? m + side * (ph + gap + 4) : m, col = side === 0 ? observe : act;
       ctx.fillStyle = soft; Course.roundRect(ctx, x, top, pw, ph, 12); ctx.fill(); ctx.strokeStyle = line; ctx.lineWidth = 1; ctx.stroke();
       ctx.font = '700 ' + (small ? 10 : 11) + 'px ' + DISP; ctx.fillStyle = side === 0 ? observe : muted; ctx.textBaseline = 'alphabetic'; ctx.textAlign = 'left';
       ctx.fillText(side === 0 ? 'Streaming on' : 'Streaming off', x + 10, top + 17);
       ctx.save(); ctx.beginPath(); ctx.rect(x, top + 24, pw, ph - 24); ctx.clip();
       ctx.font = fs + 'px ' + SANS;
-      var bw = pw - 20 - (small ? 10 : 24);
       var qLines = wrapLines(ctx, Q, bw - pad * 2), qh = qLines.length * lh + pad * 2;
       var qw = Math.min(bw, Math.max.apply(null, qLines.map(function(l){ return ctx.measureText(l).width; })) + pad * 2);
       var qy = top + 32, qx = x + pw - 10 - qw;
@@ -1918,7 +1977,7 @@ mviShow(0);
           var rLines = wrapLines(ctx, WORDS.slice(0, shown).join(' '), bw - pad * 2), rh = rLines.length * lh + pad * 2;
           ctx.fillStyle = surf; Course.roundRect(ctx, x + 10, ry, bw, rh, 10); ctx.fill(); ctx.strokeStyle = line; ctx.stroke();
           ctx.fillStyle = fg; rLines.forEach(function(l, i){ ctx.fillText(l, x + 10 + pad, ry + pad + lh * (i + .78)); });
-          if (side === 0 && shown < N) { var lastLine = rLines[rLines.length - 1]; ctx.fillStyle = observe; ctx.fillRect(x + 10 + pad + ctx.measureText(lastLine).width + 3, ry + pad + lh * (rLines.length - 1) + 2, 2, lh - 4); }
+          if (side === 0 && shown < N) { var lastLine = rLines[rLines.length - 1]; ctx.fillStyle = observe; ctx.fillRect(Math.min(x + 10 + bw - 4, x + 10 + pad + ctx.measureText(lastLine).width + 3), ry + pad + lh * (rLines.length - 1) + 2, 2, lh - 4); }
         } else {
           ctx.fillStyle = surf; Course.roundRect(ctx, x + 10, ry, 56, lh + pad * 2, 10); ctx.fill(); ctx.strokeStyle = line; ctx.stroke();
           for (var d = 0; d < 3; d++) { var bob = Course.motionOK ? (Math.sin(clock * 5 + d * .9) + 1) / 2 : .5; ctx.beginPath(); ctx.arc(x + 10 + 16 + d * 12, ry + pad + lh / 2 + 2 - bob * 4, 3, 0, Math.PI * 2); ctx.fillStyle = muted; ctx.fill(); }
@@ -1926,23 +1985,36 @@ mviShow(0);
         }
       }
       ctx.restore();
-      var sy = top + ph + (small ? 16 : 19), done = side === 0 ? clock >= FIRST : clock >= LAST, at = side === 0 ? FIRST : LAST;
+      /* the clock and its label: under the window side by side, in the window's title row when stacked */
+      var done = side === 0 ? clock >= FIRST : clock >= LAST, at = side === 0 ? FIRST : LAST;
       var label = tm < LEAD ? 'sending the question' : done ? (side === 0 ? 'first word at ' : 'whole reply at ') + at.toFixed(1) + ' s' : 'waiting… ' + clock.toFixed(1) + ' s';
+      var sy = L.stacked ? top + 17 : top + ph + (small ? 16 : 19), cx = L.stacked ? x + pw - 10 - labW - 14 : x + 18;
       ctx.strokeStyle = done ? col : muted; ctx.lineWidth = 1.5;
-      ctx.beginPath(); ctx.arc(x + 18, sy - 4, 7, 0, Math.PI * 2); ctx.stroke();
+      ctx.beginPath(); ctx.arc(cx, sy - 4, 7, 0, Math.PI * 2); ctx.stroke();
       var ang = -Math.PI / 2 + ((done ? at : clock) / LAST) * Math.PI * 2;
-      ctx.beginPath(); ctx.moveTo(x + 18, sy - 4); ctx.lineTo(x + 18 + Math.cos(ang) * 5, sy - 4 + Math.sin(ang) * 5); ctx.stroke();
-      ctx.font = '600 ' + (small ? 10 : 11) + 'px ' + MONO; ctx.fillStyle = done ? col : muted; ctx.fillText(label, x + 32, sy);
+      ctx.beginPath(); ctx.moveTo(cx, sy - 4); ctx.lineTo(cx + Math.cos(ang) * 5, sy - 4 + Math.sin(ang) * 5); ctx.stroke();
+      ctx.font = labFont; ctx.fillStyle = done ? col : muted; ctx.fillText(Course.fitText(ctx, label, (L.stacked ? x + pw - 10 : x + pw - 6) - (cx + 14)), cx + 14, sy);
     }
-    /* the ladder */
-    var ly = h - m - LAD + 14, lw = (w - m * 2) / 4;
-    ctx.font = '600 ' + (small ? 9 : 10) + 'px ' + SANS; ctx.textAlign = 'left';
-    RUNGS.forEach(function(r, i){ var rx = m + i * lw; ctx.fillStyle = soft; Course.roundRect(ctx, rx + 1, ly, lw - 2, 16, 4); ctx.fill(); ctx.fillStyle = muted; ctx.fillText(r[0] + (small ? '' : ' · ' + r[1]), rx + 6, ly + 12); });
-    ctx.fillStyle = muted; ctx.font = (small ? 9 : 10) + 'px ' + MONO; ctx.fillText('how a wait feels', m, ly - 5);
-    [[FIRST, observe, 'first word', clock >= FIRST], [LAST, act, 'whole reply', clock >= LAST]].forEach(function(mk){
-      var rr = rung(mk[0]), mx = m + rr[0] * lw + 6 + rr[1] * (lw - 12);
-      ctx.globalAlpha = mk[3] ? 1 : 0.35; ctx.fillStyle = mk[1]; ctx.beginPath(); ctx.moveTo(mx, ly + 17); ctx.lineTo(mx - 5, ly + 25); ctx.lineTo(mx + 5, ly + 25); ctx.closePath(); ctx.fill();
-      ctx.textAlign = 'center'; ctx.font = '600 ' + (small ? 9 : 10) + 'px ' + SANS; ctx.fillText(mk[2], Course.clamp(mx, m + 28, w - m - 28), ly + 35); ctx.textAlign = 'left'; ctx.globalAlpha = 1;
+    /* the ladder, on its own rows under the windows */
+    var ly = L.ly, lw = L.lw, lfs = L.lfs, rh2 = L.rungH;
+    ctx.fillStyle = muted; ctx.font = lfs + 'px ' + MONO; ctx.textAlign = 'left'; ctx.fillText('how a wait feels', m, ly - 5);
+    RUNGS.forEach(function(r, i){
+      var rx = m + i * lw; ctx.fillStyle = soft; Course.roundRect(ctx, rx + 1, ly, lw - 2, rh2, 4); ctx.fill(); ctx.fillStyle = muted;
+      ctx.font = '600 ' + lfs + 'px ' + SANS;
+      if (L.oneLine) ctx.fillText(r[0] + ' · ' + r[1], rx + 6, ly + 12);
+      else { ctx.fillText(Course.fitText(ctx, r[0], lw - 12), rx + 6, ly + 12); ctx.font = lfs + 'px ' + MONO; ctx.fillText(Course.fitText(ctx, r[1], lw - 12), rx + 6, ly + 24); }
+    });
+    ctx.font = '600 ' + lfs + 'px ' + SANS;
+    var MK = [[FIRST, observe, 'first word', clock >= FIRST], [LAST, act, 'whole reply', clock >= LAST]];
+    var mxs = MK.map(function(mk){ var rr = rung(mk[0]); return m + rr[0] * lw + 6 + rr[1] * (lw - 12); });
+    var tws = MK.map(function(mk){ return ctx.measureText(mk[2]).width; });
+    var lxs = MK.map(function(mk, i){ return Course.clampLabel(mxs[i], tws[i], m, w - m); });
+    var need = (tws[0] + tws[1]) / 2 + 10;
+    if (lxs[1] - lxs[0] < need) { lxs[1] = Math.min(w - m - tws[1] / 2, lxs[0] + need); lxs[0] = Math.max(m + tws[0] / 2, lxs[1] - need); }
+    MK.forEach(function(mk, i){
+      var mx = mxs[i];
+      ctx.globalAlpha = mk[3] ? 1 : 0.35; ctx.fillStyle = mk[1]; ctx.beginPath(); ctx.moveTo(mx, ly + rh2 + 1); ctx.lineTo(mx - 5, ly + rh2 + 9); ctx.lineTo(mx + 5, ly + rh2 + 9); ctx.closePath(); ctx.fill();
+      ctx.textAlign = 'center'; ctx.fillText(mk[2], lxs[i], ly + rh2 + 20); ctx.textAlign = 'left'; ctx.globalAlpha = 1;
     });
   });
   $('#w9StreamReplay').addEventListener('click', function(){ api.resetTime(); api.start(); });

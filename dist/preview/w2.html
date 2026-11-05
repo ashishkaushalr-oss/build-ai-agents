@@ -174,7 +174,7 @@ textarea{min-height:120px;resize:vertical;line-height:1.5}
 .concept{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:32px;align-items:center;padding-block:28px}
 .concept+.concept{border-top:1px dashed var(--line)}
 .concept:nth-of-type(even) .concept__viz{order:2}
-.concept__viz{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-l);padding:18px;min-height:240px;display:grid;align-content:center;gap:12px;overflow:hidden;box-shadow:var(--shadow);min-width:0}
+.concept__viz{grid-template-columns:minmax(0,1fr);background:var(--surface);border:1px solid var(--line);border-radius:var(--r-l);padding:18px;min-height:240px;display:grid;align-content:center;gap:12px;overflow:hidden;box-shadow:var(--shadow);min-width:0}
 .concept__viz canvas{width:100%;display:block;border-radius:var(--r-m)}
 .concept__viz--dark{background:var(--stage);color:var(--stage-fg);border-color:var(--stage-line)}
 .concept__text{display:grid;gap:14px;min-width:0}
@@ -411,7 +411,7 @@ footer.site{padding-block:32px 48px;color:var(--muted);font-size:.9rem;display:g
 .w2-hr__ans.is-bad{border-color:var(--bad)}.w2-hr__ans.is-ok{border-color:var(--ok)}
 /* day 2: system plate */
 .w2-stk{position:relative;height:290px;border-radius:12px;background:var(--stage);border:1px solid var(--stage-line);overflow:hidden;color:var(--stage-fg)}
-.w2-stk__plate{position:absolute;left:10px;right:10px;bottom:10px;height:60px;border-radius:10px;background:color-mix(in srgb,var(--think) 35%,var(--stage-2));border:1px solid var(--think);padding:8px 12px;font-size:.78rem;display:grid;gap:2px;z-index:2;align-content:start}
+.w2-stk__plate{position:absolute;left:10px;right:10px;bottom:10px;min-height:60px;border-radius:10px;background:color-mix(in srgb,var(--think) 35%,var(--stage-2));border:1px solid var(--think);padding:8px 12px;font-size:.78rem;line-height:1.3;display:grid;gap:2px;z-index:2;align-content:start}
 .w2-stk__plate b{font-family:var(--font-display);font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--think)}
 .w2-stk__plate .rule{color:#fff;font-weight:600}
 .w2-stk__plate .rule.is-off{color:var(--stage-muted);font-weight:400;font-style:italic}
@@ -1355,6 +1355,31 @@ Assistant: Sorry it has not worked out. Could you give me your account ID (it lo
     if (opts.auto !== false) api.start();
     return api;
   };
+  /* ---------- canvas text that always fits its box ---------- */
+  /* fitText: the string, or as much of it as fits plus an ellipsis */
+  Course.fitText = function(ctx, s, maxW){
+    s = String(s == null ? '' : s); if (!(maxW > 0)) return '';
+    if (ctx.measureText(s).width <= maxW) return s;
+    var lo = 0, hi = s.length - 1;
+    while (lo < hi) { var mid = Math.ceil((lo + hi) / 2); if (ctx.measureText(s.slice(0, mid).replace(/\s+$/, '') + '…').width <= maxW) lo = mid; else hi = mid - 1; }
+    return lo > 0 ? s.slice(0, lo).replace(/\s+$/, '') + '…' : '';
+  };
+  /* fitFont: sets ctx.font to the largest size from px down to minPx at which s fits maxW, and returns that size */
+  Course.fitFont = function(ctx, s, maxW, px, minPx, weight, family){
+    var lo = minPx || 8, pre = weight ? weight + ' ' : '';
+    for (var p = px; p > lo; p -= 0.5) { ctx.font = pre + p + 'px ' + family; if (ctx.measureText(s).width <= maxW) return p; }
+    ctx.font = pre + lo + 'px ' + family; return lo;
+  };
+  /* fitLines: word-wraps text into lines no wider than maxW, at most maxLines (the last one ellipsised) */
+  Course.fitLines = function(ctx, text, maxW, maxLines){
+    var lines = [], line = '';
+    String(text == null ? '' : text).split(/\s+/).forEach(function(wd){ if (!wd) return; var test = line ? line + ' ' + wd : wd; if (ctx.measureText(test).width > maxW && line) { lines.push(line); line = wd; } else line = test; });
+    if (line) lines.push(line);
+    if (maxLines && lines.length > maxLines) { var rest = lines.slice(maxLines - 1).join(' '); lines = lines.slice(0, maxLines - 1); lines.push(rest); }
+    return lines.map(function(l){ return ctx.measureText(l).width > maxW ? Course.fitText(ctx, l, maxW) : l; });
+  };
+  /* clampLabel: the x at which a centred label of width tw stays between minX and maxX */
+  Course.clampLabel = function(x, tw, minX, maxX){ if (maxX - minX <= tw) return (minX + maxX) / 2; return Math.max(minX + tw / 2, Math.min(maxX - tw / 2, x)); };
   Course.roundRect = function(ctx, x, y, w, h, r){ if (!(w > 0) || !(h > 0)) { ctx.beginPath(); return; } r = Math.max(0, Math.min(r, w/2, h/2)); ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); };
 
   /* ---------- typewriter ---------- */
@@ -1804,9 +1829,10 @@ var STK_CHAT = [
 ];
 var stkMsgs = $('#stkMsgs'), stkTurn = $('#stkTurn'), stkDrift = $('#stkDrift'), stkRule = $('#stkRule'), stkSys = $('#stkSys'), stkMsg1 = $('#stkMsg1'), stkAuto = $('#stkAuto');
 var stk = {turn: 0, mode: 'sys', items: [], timer: null, first: null};
-var STK_ROW = 44, STK_BASE = 290 - 10 - 60 - 8 - 38;
+var STK_ROW = 44, STK_BASE = 290 - 10 - 60 - 8 - 38, stkPlate = $('#stk .w2-stk__plate');
+function stkBase(){ return 290 - 10 - Math.max(60, stkPlate.offsetHeight || 60) - 8 - 38; }   /* the plate grows when its rule wraps */
 function stkLayout(){
-  var n = stk.items.length;
+  var n = stk.items.length; STK_BASE = stkBase();
   stk.items.forEach(function(it, i){
     var y = STK_BASE - (n - 1 - i) * STK_ROW;
     it.style.transform = 'translateY(' + y + 'px)'; it.style.opacity = String(Course.clamp((y + 38) / 70, 0, 1));
@@ -1829,7 +1855,7 @@ function stkAdd(){
     var label = words + ' words' + (stk.mode === 'msg1' && k >= 6 ? ' · named a price' : '');
     row.appendChild(el('span', {class: 'wc' + (words > 80 ? ' is-over' : ''), text: label}));
   }
-  row.style.transform = 'translateY(' + (STK_BASE + STK_ROW) + 'px)'; row.style.opacity = '0';
+  STK_BASE = stkBase(); row.style.transform = 'translateY(' + (STK_BASE + STK_ROW) + 'px)'; row.style.opacity = '0';
   stkMsgs.appendChild(row); stk.items.push(row); if (t === 0) stk.first = row; stk.turn++;
   if (Course.motionOK) requestAnimationFrame(function(){ requestAnimationFrame(stkLayout); }); else stkLayout();
 }
@@ -1845,6 +1871,7 @@ $('#stkReset').addEventListener('click', stkReset);
 stkAuto.addEventListener('click', function(){ if (stk.timer) return stkStopAuto(); if (stk.turn >= 20) stkReset(); stk.timer = setInterval(stkAdd, Course.motionOK ? 650 : 900); stkAuto.textContent = 'Pause'; });
 stkSys.addEventListener('click', function(){ stkMode('sys'); }); stkMsg1.addEventListener('click', function(){ stkMode('msg1'); });
 stkMode('sys');
+if (window.ResizeObserver) new ResizeObserver(function(){ stkLayout(); }).observe(stkPlate);
 
 /* ---------- DAY 2, concept 4: quarantine demo ---------- */
 var qrCtx = $('#qrCtx'), qrInstr = $('#qrInstr'), qrMail = $('#qrMail'), qrReply = $('#qrReply'), qrReplyText = $('#qrReplyText');
@@ -2008,7 +2035,7 @@ function gateDraw(ctx, w, h, t){
   if (gateOn) { var lh = (bottom - top - 16) / 3; for (var i = 0; i < 3; i++) lanes.push({y: top + i * (lh + 8), h: lh, label: GATE_LANES[i][narrow ? 1 : 0], c: Course.cssVar(GATE_LANES[i][2])}); }
   else lanes.push({y: top, h: bottom - top, label: narrow ? 'answer · everything' : 'answer · everything gets through', c: Course.cssVar('--observe')});
   ctx.textBaseline = 'alphabetic'; ctx.textAlign = 'left';
-  lanes.forEach(function(L){ ctx.fillStyle = soft; Course.roundRect(ctx, laneX, L.y, laneW, L.h, 10); ctx.fill(); ctx.strokeStyle = L.c; ctx.lineWidth = 1.5; ctx.stroke(); ctx.fillStyle = L.c; ctx.font = '700 11px ' + SANS; ctx.fillText(L.label, laneX + 10, L.y + 16); });
+  lanes.forEach(function(L){ ctx.fillStyle = soft; Course.roundRect(ctx, laneX, L.y, laneW, L.h, 10); ctx.fill(); ctx.strokeStyle = L.c; ctx.lineWidth = 1.5; ctx.stroke(); ctx.fillStyle = L.c; Course.fitFont(ctx, L.label, laneW - 20, 11, 9, '700', SANS); ctx.fillText(Course.fitText(ctx, L.label, laneW - 20), laneX + 10, L.y + 16); });
   ctx.fillStyle = gateOn ? violet : soft; Course.roundRect(ctx, gateX - 7, top, 14, bottom - top, 7); ctx.fill();
   if (!gateOn) { ctx.setLineDash([4, 4]); ctx.strokeStyle = muted; ctx.lineWidth = 1; ctx.stroke(); ctx.setLineDash([]); }
   ctx.fillStyle = gateOn ? violet : muted; ctx.font = '700 11px ' + SANS; ctx.textAlign = 'center'; ctx.fillText(gateOn ? 'system prompt' : 'no system prompt', gateX, top - 12);
@@ -2016,12 +2043,14 @@ function gateDraw(ctx, w, h, t){
   ctx.strokeStyle = lineC; ctx.lineWidth = 1; ctx.setLineDash([3, 5]); ctx.beginPath(); ctx.moveTo(pad, h / 2); ctx.lineTo(gateX - 10, h / 2); ctx.stroke(); ctx.setLineDash([]);
   ctx.font = '600 11px ' + SANS;
   var counts = [0, 0, 0], tally = [0, 0, 0], wrong = 0, cellW = 112, cellH = 22, cols = Math.max(1, Math.floor((laneW - 16) / cellW));
+  /* the queue: waiting messages stack one row apart below the incoming line and move up a row after each departure clears */
+  var qp = tc / G_STEP, qn = Math.floor(qp), qShift = qn + Course.ease(Course.clamp((qp - qn - 0.4) / 0.6, 0, 1));
   GATE_MSGS.forEach(function(m, i){
     var s = i * G_STEP, lane = gateOn ? m.lane : 0, L = lanes[lane], slot = counts[lane]++;
     var pw = ctx.measureText(m.t).width + 16, ph = 18;
     var x0 = pad + pw / 2, y0 = h / 2, tx = laneX + 8 + (slot % cols) * cellW + pw / 2, ty = L.y + 24 + Math.floor(slot / cols) * cellH + ph / 2;
     var x, y, phase;
-    if (tc < s) { x = x0; y = y0; phase = 'wait'; }
+    if (tc < s) { x = x0; y = y0 + Math.max(0, i - qShift) * cellH; phase = 'wait'; }
     else if (tc < s + G_TRAVEL) { var e1 = Course.ease((tc - s) / G_TRAVEL); x = Course.lerp(x0, gateX, e1); y = y0; phase = 'in'; }
     else if (tc < s + 2 * G_TRAVEL) { var e2 = Course.ease((tc - s - G_TRAVEL) / G_TRAVEL); x = Course.lerp(gateX, tx, e2); y = Course.lerp(y0, ty, e2) - Math.sin(e2 * Math.PI) * 18; phase = 'route'; }
     else { x = tx; y = ty; phase = 'landed'; tally[lane]++; }
@@ -2034,9 +2063,10 @@ function gateDraw(ctx, w, h, t){
     ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.fillText(m.t, x, y + 4);
     ctx.globalAlpha = 1;
   });
-  ctx.textAlign = 'left'; ctx.font = '600 12px ' + SANS;
-  if (gateOn) { ctx.fillStyle = fg; ctx.fillText('answered ' + tally[0] + ' · asked first ' + tally[1] + ' · refused ' + tally[2], pad, h - 10); }
-  else { ctx.fillStyle = wrong ? bad : fg; ctx.fillText('answered ' + tally[0] + (wrong ? ' · ' + wrong + ' should not have been answered outright' : ''), pad, h - 10); }
+  ctx.textAlign = 'left';
+  var gSum = gateOn ? 'answered ' + tally[0] + ' · asked first ' + tally[1] + ' · refused ' + tally[2] : 'answered ' + tally[0] + (wrong ? ' · ' + wrong + ' should not have been answered outright' : '');
+  Course.fitFont(ctx, gSum, w - 2 * pad, 12, 9, '600', SANS);
+  ctx.fillStyle = gateOn || !wrong ? fg : bad; ctx.fillText(Course.fitText(ctx, gSum, w - 2 * pad), pad, h - 10);
 }
 var gate = Course.canvas($('#gateCanvas'), gateDraw, {auto: true});
 function gateSet(on){ gateOn = on; segOn(on ? $('#gateOn') : $('#gateOff'), [on ? $('#gateOff') : $('#gateOn')]); var c = $('#gateChip'); c.textContent = on ? 'routing six messages' : 'no guardrails: everything is answered'; c.className = 'chip ' + (on ? 'chip--think' : 'chip--bad'); gate.resetTime(); gate.start(); gate.once(); }

@@ -174,7 +174,7 @@ textarea{min-height:120px;resize:vertical;line-height:1.5}
 .concept{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:32px;align-items:center;padding-block:28px}
 .concept+.concept{border-top:1px dashed var(--line)}
 .concept:nth-of-type(even) .concept__viz{order:2}
-.concept__viz{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-l);padding:18px;min-height:240px;display:grid;align-content:center;gap:12px;overflow:hidden;box-shadow:var(--shadow);min-width:0}
+.concept__viz{grid-template-columns:minmax(0,1fr);background:var(--surface);border:1px solid var(--line);border-radius:var(--r-l);padding:18px;min-height:240px;display:grid;align-content:center;gap:12px;overflow:hidden;box-shadow:var(--shadow);min-width:0}
 .concept__viz canvas{width:100%;display:block;border-radius:var(--r-m)}
 .concept__viz--dark{background:var(--stage);color:var(--stage-fg);border-color:var(--stage-line)}
 .concept__text{display:grid;gap:14px;min-width:0}
@@ -1278,6 +1278,31 @@ Q3  By how much does the board want facilities spend cut, and by when?</code></p
     if (opts.auto !== false) api.start();
     return api;
   };
+  /* ---------- canvas text that always fits its box ---------- */
+  /* fitText: the string, or as much of it as fits plus an ellipsis */
+  Course.fitText = function(ctx, s, maxW){
+    s = String(s == null ? '' : s); if (!(maxW > 0)) return '';
+    if (ctx.measureText(s).width <= maxW) return s;
+    var lo = 0, hi = s.length - 1;
+    while (lo < hi) { var mid = Math.ceil((lo + hi) / 2); if (ctx.measureText(s.slice(0, mid).replace(/\s+$/, '') + '…').width <= maxW) lo = mid; else hi = mid - 1; }
+    return lo > 0 ? s.slice(0, lo).replace(/\s+$/, '') + '…' : '';
+  };
+  /* fitFont: sets ctx.font to the largest size from px down to minPx at which s fits maxW, and returns that size */
+  Course.fitFont = function(ctx, s, maxW, px, minPx, weight, family){
+    var lo = minPx || 8, pre = weight ? weight + ' ' : '';
+    for (var p = px; p > lo; p -= 0.5) { ctx.font = pre + p + 'px ' + family; if (ctx.measureText(s).width <= maxW) return p; }
+    ctx.font = pre + lo + 'px ' + family; return lo;
+  };
+  /* fitLines: word-wraps text into lines no wider than maxW, at most maxLines (the last one ellipsised) */
+  Course.fitLines = function(ctx, text, maxW, maxLines){
+    var lines = [], line = '';
+    String(text == null ? '' : text).split(/\s+/).forEach(function(wd){ if (!wd) return; var test = line ? line + ' ' + wd : wd; if (ctx.measureText(test).width > maxW && line) { lines.push(line); line = wd; } else line = test; });
+    if (line) lines.push(line);
+    if (maxLines && lines.length > maxLines) { var rest = lines.slice(maxLines - 1).join(' '); lines = lines.slice(0, maxLines - 1); lines.push(rest); }
+    return lines.map(function(l){ return ctx.measureText(l).width > maxW ? Course.fitText(ctx, l, maxW) : l; });
+  };
+  /* clampLabel: the x at which a centred label of width tw stays between minX and maxX */
+  Course.clampLabel = function(x, tw, minX, maxX){ if (maxX - minX <= tw) return (minX + maxX) / 2; return Math.max(minX + tw / 2, Math.min(maxX - tw / 2, x)); };
   Course.roundRect = function(ctx, x, y, w, h, r){ if (!(w > 0) || !(h > 0)) { ctx.beginPath(); return; } r = Math.max(0, Math.min(r, w/2, h/2)); ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); };
 
   /* ---------- typewriter ---------- */
@@ -1687,6 +1712,22 @@ function wrapText(ctx, text, x, y, maxW, lh){
   if (line) ctx.fillText(line, x, y);
   return y;
 }
+/* a chart title with a muted note on the right of the same row. notes is [long form, short form]; the note takes its short form, then a smaller size, when the row is tight.
+   titleDrop measures the widest note the chart can show: when even its short form at 10 px cannot share the row, the note drops to its own line under the title,
+   and titleDrop returns how far the chart below must move down (0 when it fits). */
+function titleDrop(ctx, title, widest, x0, x1){
+  ctx.font = '600 13px ' + SANS; var room = x1 - x0 - ctx.measureText(title).width - 12;
+  ctx.font = '10px ' + MONO; return ctx.measureText(widest[widest.length - 1]).width > room ? 15 : 0;
+}
+function titleRow(ctx, title, notes, x0, x1, y, fg, muted, drop){
+  ctx.textBaseline = 'alphabetic'; ctx.textAlign = 'left'; ctx.fillStyle = fg; ctx.font = '600 13px ' + SANS; ctx.fillText(title, x0, y);
+  var room = drop ? x1 - x0 : x1 - x0 - ctx.measureText(title).width - 12, s = notes[0], i;
+  ctx.font = '11px ' + MONO;
+  for (i = 0; i < notes.length; i++) { s = notes[i]; if (ctx.measureText(s).width <= room) break; }
+  if (ctx.measureText(s).width > room) { Course.fitFont(ctx, s, room, 11, 9, '', MONO); s = Course.fitText(ctx, s, room); }
+  ctx.fillStyle = muted;
+  if (drop) { ctx.textAlign = 'left'; ctx.fillText(s, x0, y + drop); } else { ctx.textAlign = 'right'; ctx.fillText(s, x1, y); }
+}
 
 /* ---------- HERO: one context window, two orders, one cache boundary ---------- */
 var hero = (function(){
@@ -1733,14 +1774,28 @@ var hero = (function(){
     ctx.beginPath(); ctx.arc(rx, ry, 4.5, 0, Math.PI * 2); ctx.fillStyle = fg; ctx.fill();
     ctx.beginPath(); ctx.arc(rx, ry, 9, 0, Math.PI * 2); ctx.strokeStyle = rgba(fg, .35); ctx.lineWidth = 1.5; ctx.stroke();
     ctx.fillStyle = HERO_INK.panel2; Course.roundRect(ctx, barX - 3, barY - 3, barW + 6, barH + 6, 9); ctx.fill();
+    /* while the order changes, the question block slides over the others: a count it covers is hidden, and its own label is hidden while it crosses another label in its row */
+    var qx = Course.lerp(pF[5], pL[5], m), qw = ws[5], moving = m > 0 && m < 1, labs = [], labLo = Math.max(4, barX - 14), labHi = Math.min(w - 4, barX + barW + 14);
     blocks.forEach(function(b, i){
       var x = Course.lerp(pF[i], pL[i], m), bw = ws[i];
       ctx.fillStyle = col(b.col); Course.roundRect(ctx, x + 1, barY, bw - 2, barH, 6); ctx.fill();
-      if (bw >= 34) { ctx.fillStyle = '#FFFFFF'; ctx.font = '600 12px ' + SANS; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(kTok(b.tok), x + bw / 2, barY + barH / 2); }
-      var ly = barY + barH + (i % 2 ? 31 : 16);
+      if (bw >= 34) {
+        ctx.font = '600 12px ' + SANS; var kt = kTok(b.tok), kw = ctx.measureText(kt).width, kx = x + bw / 2;
+        if (i === 5 || kx + kw / 2 < qx || kx - kw / 2 > qx + qw) { ctx.fillStyle = '#FFFFFF'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(kt, kx, barY + barH / 2); }
+      }
+      var ly = barY + barH + (i % 2 ? 31 : 16), lt = b.name + (bw < 34 ? ' ' + kTok(b.tok) : '');
       ctx.strokeStyle = rgba(muted, .5); ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(x + bw / 2, barY + barH + 2); ctx.lineTo(x + bw / 2, ly - 10); ctx.stroke();
-      ctx.fillStyle = i === 5 ? act : fg; ctx.font = (i === 5 ? '700 ' : '500 ') + '12px ' + SANS; ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
-      ctx.fillText(b.name + (bw < 34 ? ' ' + kTok(b.tok) : ''), Course.clamp(x + bw / 2, barX + 40, barX + barW - 40), ly);
+      ctx.font = (i === 5 ? '700 ' : '500 ') + '12px ' + SANS;
+      var lw = ctx.measureText(lt).width;
+      labs.push({i: i, t: lt, x: Course.clampLabel(x + bw / 2, lw, barX, barX + barW), y: ly, w: lw});
+    });
+    /* once the question has landed, push its label clear of any neighbour in its row; it may then reach a little past the end of the bar */
+    var q = labs[5];
+    if (!moving) { labs.forEach(function(o){ if (o === q || o.y !== q.y) return; var gap = (o.w + q.w) / 2 + 6 - Math.abs(o.x - q.x); if (gap > 0) q.x += q.x >= o.x ? gap : -gap; }); q.x = Course.clampLabel(q.x, q.w, labLo, labHi); }
+    labs.forEach(function(L){
+      if (L.i === 5 && moving && labs.some(function(o){ return o !== L && o.y === L.y && Math.abs(o.x - L.x) < (o.w + L.w) / 2 + 4; })) return;
+      ctx.fillStyle = L.i === 5 ? act : fg; ctx.font = (L.i === 5 ? '700 ' : '500 ') + '12px ' + SANS; ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+      ctx.fillText(L.t, L.x, L.y);
     });
     var bx = Course.lerp(barX, pL[5], m), cached = m * stableShare * 100;
     ctx.setLineDash([5, 5]); ctx.strokeStyle = rgba(fg, .9); ctx.lineWidth = 1.5;
@@ -1831,10 +1886,11 @@ var hero = (function(){
     if (w < 60 || h < 60) return;
     var k = Course.motionOK && dt ? 1 - Math.pow(0.002, dt) : 1;
     var fg = Course.cssVar('--fg'), muted = Course.cssVar('--muted'), soft = Course.cssVar('--surface-2'), lineC = Course.cssVar('--line');
+    var pad = 10, TITLE = 'The desk after each tool runs', NOTES = ['scale: 56,000 tokens', 'scale: 56K tokens'], drop = titleDrop(ctx, TITLE, NOTES, pad, w - pad), wantH = (150 + drop) + 'px';
+    if (ctx.canvas.style.height !== wantH) { ctx.canvas.style.height = wantH; if (ctx.canvas.__course) ctx.canvas.__course.resize(); return; }
     ctx.clearRect(0, 0, w, h);
-    var pad = 10, barY = 30, barH = Math.min(56, h - 76), barW = w - pad * 2, scale = barW / SCALE, x = pad, settled = true, small = [];
-    ctx.textBaseline = 'alphabetic'; ctx.fillStyle = fg; ctx.font = '600 13px ' + SANS; ctx.textAlign = 'left'; ctx.fillText('The desk after each tool runs', pad, 18);
-    ctx.fillStyle = muted; ctx.font = '11px ' + MONO; ctx.textAlign = 'right'; ctx.fillText('scale: 56,000 tokens', w - pad, 18);
+    var barY = 30 + drop, barH = Math.min(56, h - 76 - drop), barW = w - pad * 2, scale = barW / SCALE, x = pad, settled = true, small = [];
+    titleRow(ctx, TITLE, NOTES, pad, w - pad, 18, fg, muted, drop);
     ctx.fillStyle = soft; Course.roundRect(ctx, pad, barY, barW, barH, 8); ctx.fill(); ctx.strokeStyle = lineC; ctx.lineWidth = 1; ctx.stroke();
     blocks.forEach(function(b){
       var tw = Math.max(6, b.tok * scale);
@@ -1912,15 +1968,21 @@ var hero = (function(){
       ctx.strokeStyle = A.flash != null ? (A.hit ? okc : badc) : fg; ctx.lineWidth = 2.5; Course.roundRect(ctx, px + 1, py + 1, G.cw - 2, G.cw - 2, 4); ctx.stroke();
       ctx.font = '600 12px ' + SANS; ctx.textAlign = 'right'; ctx.textBaseline = 'alphabetic'; ctx.fillStyle = A.flash != null ? (A.hit ? okc : badc) : muted;
       ctx.fillText(A.flash != null ? (A.hit ? 'found' : 'missed') + ' · trial ' + (A.trial + 1) + ' / 20' : 'reading… trial ' + (A.trial + 1) + ' / 20', G.gx + G.gw, G.gy + G.gh + 16);
-    } else { ctx.font = '11px ' + MONO; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic'; ctx.fillStyle = muted; ctx.fillText('60 pages · the orange mark is the clause', G.gx, G.gy + G.gh + 16); }
-    var chY0 = G.gy + G.gh + 30, chY1 = h - 20, chH = chY1 - chY0, bw = G.gw / 5, cur = bucketOf(st.primary);
+    } else {
+      var cap = '60 pages · the orange mark is the clause';
+      ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic'; ctx.fillStyle = muted; Course.fitFont(ctx, cap, w - 12, 11, 9, '', MONO);
+      ctx.fillText(cap, Course.clamp(G.gx, 6, w - 6 - ctx.measureText(cap).width), G.gy + G.gh + 16);
+    }
+    /* the chart title has its own row under the status line, so the two never share a baseline */
+    var chY0 = G.gy + G.gh + 40, chY1 = h - 20, chH = chY1 - chY0, bw = G.gw / 5, cur = bucketOf(st.primary);
     ctx.font = '11px ' + MONO; ctx.textAlign = 'right'; ctx.textBaseline = 'alphabetic'; ctx.fillStyle = muted; ctx.fillText('hit rate by position', G.gx + G.gw, chY0 - 8);
     buckets.forEach(function(b, j){
       var sj = stats[j], x = G.gx + j * bw, pct = sj.trials ? sj.hits / sj.trials : 0, bh = pct * chH;
       ctx.fillStyle = rgba(lineC, .6); ctx.fillRect(x + 8, chY0, bw - 16, chH);
       ctx.fillStyle = j === cur ? act : obs; ctx.fillRect(x + 8, chY1 - bh, bw - 16, bh);
       ctx.font = '600 11px ' + SANS; ctx.textAlign = 'center'; ctx.fillStyle = fg; ctx.fillText(sj.trials ? Math.round(pct * 100) + '%' : '–', x + bw / 2, Math.max(chY0 + 12, chY1 - bh - 5));
-      ctx.fillStyle = muted; ctx.fillText(b + (sj.trials ? ' · ' + sj.trials : ''), x + bw / 2, h - 6);
+      var bl = b + (sj.trials ? ' · ' + sj.trials : ''); Course.fitFont(ctx, bl, bw - 4, 11, 9, '600', SANS);
+      ctx.fillStyle = muted; ctx.fillText(bl, x + bw / 2, h - 6);
     });
     if (!st.anim && api) api.stop();
   }
@@ -1953,7 +2015,16 @@ var hero = (function(){
   function draw(ctx, w, h){
     if (w < 60 || h < 60) return;
     var fg = Course.cssVar('--fg'), muted = Course.cssVar('--muted'), lineC = Course.cssVar('--line'), think = Course.cssVar('--think'), act = Course.cssVar('--act'), obs = Course.cssVar('--observe'), warn = Course.cssVar('--warn'), surf = Course.cssVar('--surface');
-    var p = pages, x0 = 14, x1 = w - 14, y0 = 30, y1 = h - 78, cw = x1 - x0, ch = y1 - y0;
+    var p = pages, x0 = 14, x1 = w - 14, cw = x1 - x0;
+    /* the legend wraps to a second row and the two captions under the bar stack when the canvas is narrow; both are measured on their widest values so the layout does not jump as the slider moves */
+    ctx.font = '600 12px ' + SANS;
+    var legend = [], lgx = x0, lgy = 13;
+    ['accuracy 95%', 'cost 24.3×', 'first word 8.0 s'].forEach(function(s){ var iw = 14 + ctx.measureText(s).width; if (lgx > x0 && lgx + iw > x1) { lgx = x0; lgy += 18; } legend.push({x: lgx, y: lgy}); lgx += iw + 16; });
+    var mw = function(s){ return ctx.measureText(s).width; };
+    var stackCap = Math.max(mw('context: ' + Course.fmt(BASE) + ' tokens') + mw('only the 4 relevant documents'), mw('context: ' + Course.fmt(BASE + MAX * PAGE) + ' tokens') + mw(Course.fmt(MAX * PAGE) + ' irrelevant')) + 16 > cw;
+    var topX = lgy - 13, botX = stackCap ? 16 : 0, wantH = (290 + topX + botX) + 'px';
+    if (ctx.canvas.style.height !== wantH) { ctx.canvas.style.height = wantH; if (ctx.canvas.__course) ctx.canvas.__course.resize(); return; }
+    var y0 = 30 + topX, y1 = h - 78 - botX, ch = y1 - y0;
     var series = [
       {name: 'accuracy', c: obs, f: acc, lo: 60, hi: 100, fmt: function(v){ return Math.round(v) + '%'; }},
       {name: 'cost', c: act, f: cost, lo: 0, hi: cost(MAX), fmt: function(v){ return v.toFixed(1) + '×'; }},
@@ -1964,21 +2035,21 @@ var hero = (function(){
     series.forEach(function(S){ ctx.beginPath(); for (var i = 0; i <= 50; i++) { var q = MAX * i / 50, x = x0 + cw * i / 50, y = y1 - ch * (S.f(q) - S.lo) / (S.hi - S.lo); if (i) ctx.lineTo(x, y); else ctx.moveTo(x, y); } ctx.strokeStyle = S.c; ctx.lineWidth = 2.5; ctx.stroke(); });
     var mx = x0 + cw * p / MAX;
     ctx.setLineDash([4, 4]); ctx.strokeStyle = rgba(fg, .5); ctx.beginPath(); ctx.moveTo(mx, y0); ctx.lineTo(mx, y1); ctx.stroke(); ctx.setLineDash([]);
-    var lx = x0; ctx.font = '600 12px ' + SANS; ctx.textBaseline = 'middle'; ctx.textAlign = 'left';
-    series.forEach(function(S){
-      var v = S.f(p), y = y1 - ch * (v - S.lo) / (S.hi - S.lo);
+    ctx.font = '600 12px ' + SANS; ctx.textBaseline = 'middle'; ctx.textAlign = 'left';
+    series.forEach(function(S, si){
+      var v = S.f(p), y = y1 - ch * (v - S.lo) / (S.hi - S.lo), L = legend[si];
       ctx.beginPath(); ctx.arc(mx, y, 5, 0, Math.PI * 2); ctx.fillStyle = S.c; ctx.fill(); ctx.strokeStyle = surf; ctx.lineWidth = 2; ctx.stroke();
-      ctx.fillStyle = S.c; ctx.fillRect(lx, 8, 10, 10); ctx.fillStyle = fg; var lab = S.name + ' ' + S.fmt(v); ctx.fillText(lab, lx + 14, 13); lx += 14 + ctx.measureText(lab).width + 16;
+      ctx.fillStyle = S.c; ctx.fillRect(L.x, L.y - 5, 10, 10); ctx.fillStyle = fg; ctx.fillText(S.name + ' ' + S.fmt(v), L.x + 14, L.y);
     });
     ctx.textBaseline = 'alphabetic'; ctx.fillStyle = muted; ctx.font = '11px ' + MONO; ctx.textAlign = 'left'; ctx.fillText('0 pages added', x0, y1 + 14); ctx.textAlign = 'right'; ctx.fillText('200 pages', x1, y1 + 14);
-    var by = h - 42, bh = 18, totalTok = BASE + p * PAGE, maxTok = BASE + MAX * PAGE, relW = cw * BASE / maxTok, irrW = cw * p * PAGE / maxTok;
+    var by = h - 42 - botX, bh = 18, totalTok = BASE + p * PAGE, maxTok = BASE + MAX * PAGE, relW = cw * BASE / maxTok, irrW = cw * p * PAGE / maxTok;
     ctx.fillStyle = rgba(lineC, .7); Course.roundRect(ctx, x0, by, cw, bh, 6); ctx.fill();
     ctx.fillStyle = obs; Course.roundRect(ctx, x0, by, Math.max(relW, 8), bh, 6); ctx.fill();
     if (irrW > 0) { ctx.fillStyle = rgba(act, .75); Course.roundRect(ctx, x0 + relW, by, irrW, bh, 6); ctx.fill(); }
     var xw = x0 + cw * 100000 / maxTok; ctx.strokeStyle = warn; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(xw, by - 6); ctx.lineTo(xw, by + bh + 4); ctx.stroke();
     ctx.fillStyle = warn; ctx.font = '600 11px ' + SANS; ctx.textAlign = 'center'; ctx.fillText('100K: mistakes start', xw, by - 10);
     ctx.fillStyle = fg; ctx.font = '600 12px ' + SANS; ctx.textAlign = 'left'; ctx.fillText('context: ' + Course.fmt(totalTok) + ' tokens', x0, by + bh + 16);
-    ctx.textAlign = 'right'; ctx.fillStyle = muted; ctx.fillText(p ? Course.fmt(p * PAGE) + ' irrelevant' : 'only the 4 relevant documents', x1, by + bh + 16);
+    ctx.textAlign = stackCap ? 'left' : 'right'; ctx.fillStyle = muted; ctx.fillText(p ? Course.fmt(p * PAGE) + ' irrelevant' : 'only the 4 relevant documents', stackCap ? x0 : x1, by + bh + 16 + botX);
     setText(val, String(p));
     setText(statsEl, 'Accuracy ' + Math.round(acc(p)) + '% · cost ' + cost(p).toFixed(1) + '× · ' + secs(p).toFixed(1) + ' s to the first word · ' + Course.fmt(totalTok) + ' tokens');
   }
@@ -2023,10 +2094,12 @@ var hero = (function(){
   function draw(ctx, w, h){
     if (w < 60 || h < 60) return;
     var fg = Course.cssVar('--fg'), muted = Course.cssVar('--muted'), soft = Course.cssVar('--surface-2'), think = Course.cssVar('--think'), e = evaluate();
+    /* the widest scale note is six digits (every item ticked); the layout is decided on that so the canvas does not change height as items are ticked */
+    var pad = 10, TITLE = 'The packed window, in order', drop = titleDrop(ctx, TITLE, ['scale: 000,000 tokens', 'scale: 000.0K tokens'], pad, w - pad), wantH = (150 + drop) + 'px';
+    if (ctx.canvas.style.height !== wantH) { ctx.canvas.style.height = wantH; if (ctx.canvas.__course) ctx.canvas.__course.resize(); return; }
     ctx.clearRect(0, 0, w, h);
-    var pad = 10, barY = 64, barH = 40, barW = w - pad * 2, scale = Math.max(e.tok, 12000), x = pad, i, u;
-    ctx.textBaseline = 'alphabetic'; ctx.textAlign = 'left'; ctx.fillStyle = fg; ctx.font = '600 13px ' + SANS; ctx.fillText('The packed window, in order', pad, 18);
-    ctx.fillStyle = muted; ctx.font = '11px ' + MONO; ctx.textAlign = 'right'; ctx.fillText('scale: ' + Course.fmt(scale) + ' tokens', w - pad, 18);
+    var barY = 64 + drop, barH = 40, barW = w - pad * 2, scale = Math.max(e.tok, 12000), x = pad, i, u;
+    titleRow(ctx, TITLE, ['scale: ' + Course.fmt(scale) + ' tokens', 'scale: ' + kTok(scale) + ' tokens'], pad, w - pad, 18, fg, muted, drop);
     ctx.beginPath(); for (i = 0; i <= 40; i++) { u = i / 40; var px = pad + u * barW, py = barY - 6 - 30 * att(u); if (i) ctx.lineTo(px, py); else ctx.moveTo(px, py); }
     ctx.strokeStyle = rgba(think, .45); ctx.lineWidth = 1.5; ctx.stroke();
     ctx.fillStyle = rgba(think, .9); ctx.font = '10px ' + MONO; ctx.textAlign = 'center'; ctx.fillText('attention', pad + barW / 2, barY - 24);
@@ -2075,19 +2148,32 @@ var hero = (function(){
   var EV = [
     {s: 1, cat: 'instr', tok: 3200, name: 'instructions + goal'},
     {s: 4, cat: 'tool', tok: 42000, name: 'CSV export', drop: 11, keep: 400},
-    {s: 9, cat: 'tool', tok: 18000, name: 'web search, 10 pages', drop: 11, keep: 0},
+    {s: 9, cat: 'tool', tok: 18000, name: 'web search, 10 pages', short: 'web search', drop: 11, keep: 0},
     {s: 10, cat: 'sum', tok: 150, name: 'one-line summary'},
     {s: 13, cat: 'tool', tok: 2400, name: 'error log', drop: 14, keep: 0},
     {s: 14, cat: 'scratch', tok: 1300, drop: 19, keep: 0}, {s: 15, cat: 'scratch', tok: 1300, drop: 19, keep: 0}, {s: 16, cat: 'scratch', tok: 1300, drop: 19, keep: 0}, {s: 17, cat: 'scratch', tok: 1300, drop: 19, keep: 0}, {s: 18, cat: 'scratch', tok: 1300, name: 'scratch notes', drop: 19, keep: 0},
     {s: 20, cat: 'scratch', tok: 1200, name: 'draft v1', drop: 22, keep: 0},
     {s: 22, cat: 'scratch', tok: 1300, name: 'draft v2', drop: 32, keep: 0},
     {s: 26, cat: 'tool', tok: 900, name: 'customer record'},
-    {s: 31, cat: 'tool', tok: 26000, name: 'carrier terms, fetched', drop: 33, keep: 1600},
+    {s: 31, cat: 'tool', tok: 26000, name: 'carrier terms, fetched', short: 'carrier terms', drop: 33, keep: 1600},
     {s: 32, cat: 'scratch', tok: 1400, name: 'draft v3'}
   ];
   var CATS = [['instr', '--think'], ['tool', '--warn'], ['scratch', DOC], ['sum', '--observe']];
   function stack(s, pruned){ var c = {instr: 0, tool: 0, scratch: 0, sum: 0}; EV.forEach(function(e){ if (e.s > s) return; var tok = e.tok; if (pruned && e.drop != null && s >= e.drop) tok = e.keep || 0; c[e.cat] += tok; }); return c; }
   function total(s, pruned){ var c = stack(s, pruned), t = 0; CATS.forEach(function(k){ t += c[k[0]]; }); return t; }
+  /* event names under the axis: two rows, each name as close to its step as the row allows and inside the canvas; laid out for every event at once so names do not move as the steps play */
+  function layoutEvents(ctx, evs, X, w, useShort, px){
+    ctx.font = px + 'px ' + SANS;
+    var ends = [-Infinity, -Infinity], gap = 6, minX = 4, maxX = w - 4, ok = true;
+    var list = evs.map(function(e){
+      var s = useShort && e.short ? e.short : e.name, tw = ctx.measureText(s).width, want = Course.clamp(X(e.s) - tw / 2, minX, maxX - tw), best = null;
+      ends.forEach(function(end, r){ var L = Math.max(want, end + gap); if (L + tw <= maxX && (!best || L - want < best.d)) best = {r: r, L: L, d: L - want}; });
+      if (!best) { ok = false; best = {r: ends[0] <= ends[1] ? 0 : 1, L: want}; }
+      ends[best.r] = best.L + tw;
+      return {e: e, s: s, x: best.L, row: best.r};
+    });
+    return {ok: ok, list: list, px: px};
+  }
   function update(){ setText(stepVal, String(step)); stepEl.value = step; setText(stats, 'Step ' + step + ' · never prune: ' + Course.fmt(total(step, false)) + ' tokens · pruned: ' + Course.fmt(total(step, true)) + ' tokens'); }
   function draw(ctx, w, h, t, dt){
     if (w < 60 || h < 60) return;
@@ -2114,14 +2200,16 @@ var hero = (function(){
     ctx.setLineDash([3, 4]); ctx.strokeStyle = rgba(fg, .55); ctx.lineWidth = 1.5; ctx.stroke(); ctx.setLineDash([]);
     ctx.fillStyle = rgba(fg, .7); ctx.font = '10px ' + MONO; ctx.textAlign = 'right'; ctx.fillText('dashed: ' + (pruned ? 'never pruned' : 'pruned when done'), x1, Y(total(N, !pruned)) - 6);
     ctx.strokeStyle = rgba(fg, .6); ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(X(step), y0); ctx.lineTo(X(step), y1); ctx.stroke();
-    ctx.fillStyle = fg; ctx.font = '600 12px ' + SANS; ctx.textAlign = step > N / 2 ? 'right' : 'left'; ctx.fillText('step ' + step + ' · ' + Course.fmt(total(step, pruned)) + ' tokens', X(step) + (step > N / 2 ? -6 : 6), y0 + 2);
+    /* the step readout sits above the plot, clear of the dashed line's label, and stays inside the canvas */
+    ctx.fillStyle = fg; ctx.font = '600 12px ' + SANS; ctx.textAlign = 'left';
+    var sl = 'step ' + step + ' · ' + Course.fmt(total(step, pruned)) + ' tokens', sw = ctx.measureText(sl).width;
+    ctx.fillText(sl, Course.clamp(step > N / 2 ? X(step) - 6 - sw : X(step) + 6, 4, w - 4 - sw), y0 - 10);
     ctx.fillStyle = muted; ctx.font = '10px ' + MONO; ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
     [1, 4, 9, 13, 20, 26, 31, 33].forEach(function(s){ ctx.fillText(String(s), X(s), y1 + 14); });
-    ctx.font = '10px ' + SANS;
-    EV.filter(function(e){ return e.name && e.s <= step && e.tok >= 1200 && e.cat !== 'instr'; }).forEach(function(e, i){
-      var tx = Course.clamp(X(e.s), x0 + 30, x1 - 30);
-      ctx.fillStyle = muted; ctx.fillText(e.name, tx, y1 + 28 + (i % 2) * 11);
-    });
+    var evs = EV.filter(function(e){ return e.name && e.tok >= 1200 && e.cat !== 'instr'; }), lay = null;
+    [[false, 10], [true, 10], [true, 9]].some(function(cfg){ lay = layoutEvents(ctx, evs, X, w, cfg[0], cfg[1]); return lay.ok; });
+    ctx.font = lay.px + 'px ' + SANS; ctx.textAlign = 'left'; ctx.fillStyle = muted;
+    lay.list.forEach(function(L){ if (L.e.s <= step) ctx.fillText(L.s, L.x, y1 + 28 + L.row * 11); });
     if (!play && api) api.stop();
   }
   api = Course.canvas(canvas, draw, {auto: true});
@@ -2139,18 +2227,29 @@ var hero = (function(){
   var blocks = [{name: 'instructions', tok: 3000, col: '--think', min: 70}, {name: 'policy sheets', tok: 9000, col: '--observe', min: 84}, {name: 'vendor contract', tok: 48000, col: DOC, min: 100}, {name: 'question', tok: 300, col: '--act', min: 64}];
   var qFirst = false, anim = null, result = null;
   function order(){ return qFirst ? [3, 0, 1, 2] : [0, 1, 2, 3]; }
-  function widths(barW){ var total = blocks.reduce(function(s, b){ return s + b.tok; }, 0), sumMin = blocks.reduce(function(s, b){ return s + b.min; }, 0), extra = Math.max(0, barW - sumMin); return blocks.map(function(b){ return b.min + extra * b.tok / total; }); }
+  function sum(a){ return a.reduce(function(s, v){ return s + v; }, 0); }
+  /* block widths and the label size: the usual minimums when they fit; on a narrow canvas each block is sized from its own label, at the largest size from 11 px down to 9 px that lets the row fit */
+  function widths(ctx, barW){
+    var total = sum(blocks.map(function(b){ return b.tok; })), mins = blocks.map(function(b){ return b.min; }), px = 11;
+    if (sum(mins) > barW) {
+      for (px = 11; px > 9; px -= .5) { ctx.font = '600 ' + px + 'px ' + SANS; mins = blocks.map(function(b){ return ctx.measureText(b.name).width + 10; }); if (sum(mins) <= barW) break; }
+      if (sum(mins) > barW) { ctx.font = '600 9px ' + SANS; mins = blocks.map(function(b){ return ctx.measureText(b.name).width + 10; }); var s = sum(mins); mins = mins.map(function(v){ return v * Math.min(1, barW / s); }); }
+    }
+    var extra = Math.max(0, barW - sum(mins));
+    return {ws: blocks.map(function(b, i){ return mins[i] + extra * b.tok / total; }), px: px};
+  }
   function resolve(){ var o = order(), read = 0, full = 0, broken = false; o.forEach(function(i){ if (!broken && i !== 3) read += blocks[i].tok; else { broken = true; full += blocks[i].tok; } }); result = {read: read, full: full}; }
   function draw(ctx, w, h, t, dt){
     if (w < 60 || h < 60) return;
     var fg = Course.cssVar('--fg'), muted = Course.cssVar('--muted'), soft = Course.cssVar('--surface-2'), okc = Course.cssVar('--ok'), badc = Course.cssVar('--bad'), obs = Course.cssVar('--observe');
     if (anim && dt) { anim.u = Math.min(1, anim.u + dt / 2.2); if (anim.u >= 1) { anim = null; resolve(); api.stop(); report(); } }
     ctx.clearRect(0, 0, w, h);
-    var pad = 10, barX = pad, barW = w - pad * 2, barH = 36, y1 = 40, y2 = 112, ws = widths(barW), o = order();
-    ctx.textBaseline = 'alphabetic'; ctx.textAlign = 'left'; ctx.fillStyle = fg; ctx.font = '600 12px ' + SANS;
-    ctx.fillText('call 1 · 09:02:11 · wrote the cache', pad, y1 - 10);
-    ctx.fillText('call 2 · 09:02:40 · compared from the first token', pad, y2 - 10);
-    var headX = anim ? barX + anim.u * barW : (result ? barX + barW : barX), broken = false;
+    var pad = 10, barX = pad, barW = w - pad * 2, barH = 36, y1 = 40, y2 = 112, lay = widths(ctx, barW), ws = lay.ws, o = order();
+    var t1 = 'call 1 · 09:02:11 · wrote the cache', t2 = 'call 2 · 09:02:40 · compared from the first token';
+    ctx.textBaseline = 'alphabetic'; ctx.textAlign = 'left'; ctx.fillStyle = fg; Course.fitFont(ctx, t2, barW, 12, 9, '600', SANS);
+    ctx.fillText(t1, pad, y1 - 10);
+    ctx.fillText(t2, pad, y2 - 10);
+    var headX = anim ? barX + anim.u * barW : (result ? barX + barW : barX), broken = false, runs = [];
     [y1, y2].forEach(function(y, row){
       var x = barX;
       o.forEach(function(i){
@@ -2161,13 +2260,22 @@ var hero = (function(){
           if (passed) {
             var match = !broken && i !== 3; if (!match) broken = true;
             ctx.strokeStyle = match ? okc : badc; ctx.lineWidth = 3; Course.roundRect(ctx, x + 1, y, bw - 2, barH, 6); ctx.stroke();
-            ctx.fillStyle = match ? okc : badc; ctx.font = '600 10px ' + SANS; ctx.textAlign = 'center'; ctx.fillText(match ? 'match · read from cache' : (i === 3 ? 'differs · full price' : 'after the change · full price'), x + bw / 2, y + barH + 13);
+            /* one label per run of blocks with the same verdict, so the label never repeats or crowds a narrow block */
+            var kind = match ? 'match' : (i === 3 ? 'differs' : 'after'), last = runs[runs.length - 1];
+            if (last && last.kind === kind) last.R = right; else runs.push({kind: kind, L: x, R: right});
           }
         }
-        ctx.fillStyle = '#fff'; ctx.font = '600 11px ' + SANS; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-        ctx.fillText(b.name, x + bw / 2, y + 13); ctx.font = '10px ' + MONO; ctx.fillText(Course.fmt(b.tok), x + bw / 2, y + 26); ctx.textBaseline = 'alphabetic';
+        ctx.fillStyle = '#fff'; ctx.font = '600 ' + lay.px + 'px ' + SANS; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText(Course.fitText(ctx, b.name, bw - 6), x + bw / 2, y + 13); ctx.font = '10px ' + MONO; ctx.fillText(Course.fmt(b.tok), x + bw / 2, y + 26); ctx.textBaseline = 'alphabetic';
         x = right;
       });
+    });
+    var prevR = -Infinity;
+    ctx.font = '600 10px ' + SANS; ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+    runs.forEach(function(r){
+      var txt = r.kind === 'match' ? 'match · read from cache' : r.kind === 'differs' ? 'differs · full price' : 'after the change · full price', tw = ctx.measureText(txt).width;
+      var cx = Course.clampLabel((r.L + r.R) / 2, tw, Math.max(4, prevR + 8), w - 4);
+      ctx.fillStyle = r.kind === 'match' ? okc : badc; ctx.fillText(txt, cx, y2 + barH + 13); prevR = cx + tw / 2;
     });
     if (anim) { ctx.fillStyle = fg; ctx.fillRect(headX - 1, y2 - 6, 2, barH + 12); ctx.beginPath(); ctx.moveTo(headX - 5, y2 - 8); ctx.lineTo(headX + 5, y2 - 8); ctx.lineTo(headX, y2 - 2); ctx.closePath(); ctx.fill(); }
     var ry = y2 + barH + 40;
@@ -2262,13 +2370,22 @@ var hero = (function(){
       if (!total || !b[1]) return;
       var bw = barW * b[1] / total;
       ctx.fillStyle = col(b[2]); Course.roundRect(ctx, x + 1, barY + 3, Math.max(0, bw - 2), barH - 6, 5); ctx.fill();
-      if (bw > 70) { ctx.fillStyle = '#fff'; ctx.font = '600 10px ' + SANS; ctx.textAlign = 'left'; ctx.fillText(b[0], x + 7, barY + 18); ctx.font = '10px ' + MONO; ctx.fillText(Course.fmt(b[1]), x + 7, barY + 31); }
+      if (bw > 70) {
+        /* the name shrinks to fit its block, then sits closer to the block's left edge, and is cut short only as a last resort */
+        var inset = 7, room = bw - 12, nm = b[0]; ctx.fillStyle = '#fff'; ctx.textAlign = 'left';
+        Course.fitFont(ctx, nm, room, 10, 9, '600', SANS); if (ctx.measureText(nm).width > room) { inset = 5; room = bw - 9; }
+        ctx.fillText(Course.fitText(ctx, nm, room), x + inset, barY + 18);
+        ctx.font = '10px ' + MONO; ctx.fillText(Course.fitText(ctx, Course.fmt(b[1]), room), x + inset, barY + 31);
+      }
       x += bw;
     });
     var bx = barX + (total ? barW * stat / total : 0);
     ctx.setLineDash([5, 4]); ctx.strokeStyle = fg; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(bx, barY - 8); ctx.lineTo(bx, barY + barH + 8); ctx.stroke(); ctx.setLineDash([]);
-    ctx.fillStyle = fg; ctx.font = '600 11px ' + SANS; ctx.textAlign = bx > w / 2 ? 'right' : 'left';
-    ctx.fillText('static ' + (total ? Math.round(100 * stat / total) : 0) + '% · cache point here · dynamic ' + (total ? Math.round(100 * dyn / total) : 0) + '%', Course.clamp(bx + (bx > w / 2 ? -6 : 6), pad, w - pad), barY + barH + 22);
+    /* the boundary label sits beside the line, on the side with more room, and is kept whole inside the canvas */
+    var sd = 'static ' + (total ? Math.round(100 * stat / total) : 0) + '% · cache point here · dynamic ' + (total ? Math.round(100 * dyn / total) : 0) + '%';
+    ctx.fillStyle = fg; ctx.textAlign = 'left'; Course.fitFont(ctx, sd, w - pad * 2, 11, 9, '600', SANS);
+    var sdw = ctx.measureText(sd).width;
+    ctx.fillText(sd, Course.clamp(bx > w / 2 ? bx - 6 - sdw : bx + 6, pad, w - pad - sdw), barY + barH + 22);
     var without = calls * total * PRICE, cacheable = stat >= 512;
     var with_ = (cacheable ? stat * 1.25 * PRICE + (calls - 1) * stat * 0.1 * PRICE : calls * stat * PRICE) + calls * dyn * PRICE;
     var y = barY + barH + 48;

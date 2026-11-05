@@ -778,18 +778,39 @@ function fitText(ctx, s, maxW){ if (ctx.measureText(s).width <= maxW) return s; 
   var clock = 0, playing = Course.motionOK, auto = Course.motionOK, manualEnd = null, lastShown = -1, rmTimer = null;
   var hud = canvas.parentNode.querySelector('.stage__hud'), hudH = 34;
   if (hud) { if ('ResizeObserver' in window) new ResizeObserver(function(){ hudH = hud.offsetHeight || 34; }).observe(hud); else hudH = hud.offsetHeight || 34; }
-  function pill(ctx, x, y, text, col, fs, w){ ctx.font = '600 ' + fs + 'px ' + MONO; text = fitText(ctx, text, w * 0.5); var tw = ctx.measureText(text).width, pw = tw + 16, ph = fs + 10; x = Course.clamp(x, pw / 2 + 4, w - pw / 2 - 4); Course.roundRect(ctx, x - pw / 2, y - ph / 2, pw, ph, ph / 2); ctx.fillStyle = col; ctx.fill(); ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(text, x, y + 0.5); }
+  /* gut: the left gutter that holds the row numbers 1 to 4; pills and labels never slide into it */
+  var gut = 24, RUN = 'running in your workflow…', FORM = '(184250 - 108700) / 184250', CW = 'Claude waits. It cannot run this.', CW2 = ['Claude waits.', 'It cannot run this.'];
+  function pill(ctx, x, y, text, col, fs, w){ ctx.font = '600 ' + fs + 'px ' + MONO; text = fitText(ctx, text, w * 0.5); var tw = ctx.measureText(text).width, pw = tw + 16, ph = fs + 10; x = Course.clamp(x, gut + pw / 2, w - pw / 2 - 4); Course.roundRect(ctx, x - pw / 2, y - ph / 2, pw, ph, ph / 2); ctx.fillStyle = col; ctx.fill(); ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(text, x, y + 0.5); }
   function arrow(ctx, w, x1, x2, y, prog, col, label, fs, alpha, done){
     if (prog <= 0) return; ctx.save(); ctx.globalAlpha = alpha;
     var xe = x1 + (x2 - x1) * Course.ease(prog), dir = x2 > x1 ? 1 : -1;
     ctx.beginPath(); ctx.moveTo(x1, y); ctx.lineTo(xe, y); ctx.strokeStyle = col; ctx.lineWidth = 2; ctx.stroke();
     ctx.beginPath(); ctx.moveTo(xe, y); ctx.lineTo(xe - dir * 9, y - 5); ctx.lineTo(xe - dir * 9, y + 5); ctx.closePath(); ctx.fillStyle = col; ctx.fill();
     if (prog < 1) pill(ctx, xe - dir * 22, y, label, col, fs - 1, w);
-    else if (done !== '') { ctx.font = '600 ' + fs + 'px ' + MONO; var s = fitText(ctx, done || label, w * 0.6), tw = ctx.measureText(s).width, cx = Course.clamp((x1 + x2) / 2, tw / 2 + 8, w - tw / 2 - 8); ctx.fillStyle = HERO_INK.bg; ctx.fillRect(cx - tw / 2 - 4, y - 7 - fs, tw + 8, fs + 4); ctx.fillStyle = col; ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic'; ctx.fillText(s, cx, y - 7); }
+    else if (done !== '') { ctx.font = '600 ' + fs + 'px ' + MONO; var s = fitText(ctx, done || label, w * 0.6), tw = ctx.measureText(s).width, cx = Course.clamp((x1 + x2) / 2, gut + 4 + tw / 2, w - tw / 2 - 8); ctx.fillStyle = HERO_INK.bg; ctx.fillRect(cx - tw / 2 - 4, y - 7 - fs, tw + 8, fs + 4); ctx.fillStyle = col; ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic'; ctx.fillText(s, cx, y - 7); }
     ctx.restore();
   }
   var api = Course.canvas(canvas, function(ctx, w, h, t, dt){
     if (w < 60 || h < 60) return;
+    var fs = Course.clamp(Math.round(w / 38), 10, 13), xs = [w * 0.18, w * 0.5, w * 0.82], bh = fs * 2.2;
+    ctx.font = '700 ' + (fs - 1) + 'px ' + MONO; gut = 18 + ctx.measureText('4').width;
+    /* Step 3 puts "Claude waits" on Claude's line and the running box on the tool's line, between rows 3 and 4.
+       Both are sized from their text: the note wraps, and moves beside Claude's line when the box needs the room. */
+    var pad = 6, rMax = w - 4;
+    ctx.font = '600 ' + (fs - 1) + 'px ' + MONO; var runW = ctx.measureText(RUN).width;
+    ctx.font = '600 ' + (fs - 2) + 'px ' + MONO; var needW = Math.max(runW, ctx.measureText(FORM).width) + 2 * pad;
+    ctx.font = '600 ' + (fs - 2) + 'px ' + SANS;
+    function widest(ls){ return Math.max.apply(null, ls.map(function(l){ return ctx.measureText(l).width; })); }
+    var cwLines = ctx.measureText(CW).width <= w * 0.3 ? [CW] : CW2, cwAlign = 'center', cwX = xs[1], cwMax = w * 0.3, boxL = xs[1] + widest(cwLines) / 2 + 8;
+    if (rMax - boxL < needW && cwLines.length === 1) { cwLines = CW2; boxL = xs[1] + widest(cwLines) / 2 + 8; }
+    if (rMax - boxL < needW) { cwAlign = 'right'; cwX = xs[1] - 6; cwMax = cwX - xs[0] - 6; boxL = xs[1] + 6; }
+    var rw = Math.min(Math.max(Math.min(w * 0.36, 200), needW), rMax - boxL), rx = Course.clamp(xs[2], boxL + rw / 2, rMax - rw / 2);
+    ctx.font = '600 ' + (fs - 1) + 'px ' + MONO;
+    var runLines = runW + 2 * pad <= rw ? [RUN] : Course.fitLines(ctx, RUN, rw - 2 * pad, 2), extra = (runLines.length - 1) * (fs + 1), lhC = (fs - 2) * 1.2;
+    /* the stage grows (min-height) until rows 3 and 4 sit far enough apart to hold that box clear of the "result" pill */
+    var gapNeed = Math.max(3.2 * fs + extra + 14, 2 * (1.15 * fs + extra / 2 + (fs + 9) / 2 + 1.5), fs + 14 + (cwLines.length - 1) * lhC + 0.8 * (fs - 2));
+    var needH = Math.ceil(44 + bh / 2 + fs + 16 + hudH + 22 + gapNeed / 0.26), st = canvas.parentNode, minH = (needH + 2) + 'px';   /* + the stage's 1px borders */
+    if (st.style.minHeight !== minH) { st.style.minHeight = minH; if (h + 1 < needH) { if (canvas.__course) canvas.__course.resize(); return; } }
     if (playing) clock += dt;
     var total = N * STEP + HOLD;
     if (auto) { if (clock >= total) clock -= total; }
@@ -799,14 +820,14 @@ function fitText(ctx, s, maxW){ if (ctx.measureText(s).width <= maxW) return s; 
     if (!Course.motionOK) phase = 1;
     if (k !== lastShown) { lastShown = k; jsonEl.textContent = STEPS[k].json; stepEl.textContent = 'step ' + (k + 1) + ' of 4'; stepEl.setAttribute('title', STEPS[k].label); }
     var think = HERO_INK.think, act = HERO_INK.act, observe = HERO_INK.observe, fg = HERO_INK.fg, muted = HERO_INK.muted;
-    var fs = Course.clamp(Math.round(w / 38), 10, 13), xs = [w * 0.18, w * 0.5, w * 0.82], cols = [observe, think, act], names = ['Your workflow', 'Claude', 'The tool'], subs = ['sends and forwards', 'decides · never runs code', 'runs the calculation'];
+    var cols = [observe, think, act], names = ['Your workflow', 'Claude', 'The tool'], subs = ['sends and forwards', 'decides · never runs code', 'runs the calculation'];
     ctx.clearRect(0, 0, w, h);
-    var hy = Math.max(h * 0.1, 44), bw = Math.min(w * 0.28, 150), bh = fs * 2.2, compact = h < 300;
+    var hy = Math.max(h * 0.1, 44), bw = Math.min(w * 0.28, 150), compact = h < 300;
     for (var i = 0; i < 3; i++) {
       var on = phase < 1 && i === (k === 2 ? 2 : k === 0 ? 0 : 1);
       ctx.setLineDash([4, 6]); ctx.beginPath(); ctx.moveTo(xs[i], hy + bh / 2); ctx.lineTo(xs[i], h - 52); ctx.strokeStyle = HERO_INK.line; ctx.lineWidth = 1.5; ctx.stroke(); ctx.setLineDash([]);
       Course.roundRect(ctx, xs[i] - bw / 2, hy - bh / 2, bw, bh, 10); ctx.fillStyle = on ? cols[i] : HERO_INK.panel; ctx.fill(); ctx.strokeStyle = cols[i]; ctx.lineWidth = 2; ctx.stroke();
-      ctx.fillStyle = on ? '#fff' : cols[i]; ctx.font = '800 ' + (fs + 2) + 'px ' + DISPLAY; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(fitText(ctx, names[i], bw - 10), xs[i], hy);
+      ctx.fillStyle = on ? '#fff' : cols[i]; Course.fitFont(ctx, names[i], bw - 10, fs + 2, Math.max(9, fs - 1), '800', DISPLAY); ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(fitText(ctx, names[i], bw - 10), xs[i], hy);
       if (!compact) { ctx.fillStyle = muted; ctx.font = '600 ' + (fs - 2) + 'px ' + SANS; ctx.textBaseline = 'alphabetic'; ctx.fillText(fitText(ctx, subs[i], bw + 30), xs[i], hy + bh / 2 + fs); }
     }
     var top = hy + bh / 2 + (compact ? 10 : fs + 16), bottom = h - hudH - 22, ys = [0.04, 0.26, 0.47, 0.73, 0.98].map(function(f){ return top + (bottom - top) * f; });
@@ -819,20 +840,23 @@ function fitText(ctx, s, maxW){ if (ctx.measureText(s).width <= maxW) return s; 
       if (s === 2) {
         arrow(ctx, w, xs[0], xs[2], ys[2], Course.clamp(p / 0.3, 0, 1), act, 'run calculate_kpi(margin, [184250, 108700])', fs, a);
         if (p >= 0.3) {
-          var rp = Course.clamp((p - 0.3) / 0.3, 0, 1), rw = Math.min(w * 0.36, 200), ry = ys[3] - (ys[3] - ys[2]) * 0.5, rh = fs * (compact ? 2.8 : 3.2);
+          var rp = Course.clamp((p - 0.3) / 0.3, 0, 1), ry = ys[3] - (ys[3] - ys[2]) * 0.5, rh = fs * (compact ? 2.8 : 3.2) + extra, busy = rp < 1, sy0 = ry - fs * 0.65 - extra / 2;
           ctx.save(); ctx.globalAlpha = a;
-          var glow = ctx.createRadialGradient(xs[2], ry, 4, xs[2], ry, rw * 0.9); glow.addColorStop(0, act + (rp < 1 && Course.motionOK ? '2e' : '14')); glow.addColorStop(1, act + '00'); ctx.fillStyle = glow; ctx.fillRect(xs[2] - rw, ry - rw, rw * 2, rw * 2);
-          Course.roundRect(ctx, xs[2] - rw / 2, ry - rh / 2, rw, rh, 10); ctx.fillStyle = HERO_INK.bg; ctx.fill(); ctx.strokeStyle = act; ctx.lineWidth = 2; ctx.stroke();
+          var glow = ctx.createRadialGradient(rx, ry, 4, rx, ry, rw * 0.9); glow.addColorStop(0, act + (busy && Course.motionOK ? '2e' : '14')); glow.addColorStop(1, act + '00'); ctx.fillStyle = glow; ctx.fillRect(rx - rw, ry - rw, rw * 2, rw * 2);
+          Course.roundRect(ctx, rx - rw / 2, ry - rh / 2, rw, rh, 10); ctx.fillStyle = HERO_INK.bg; ctx.fill(); ctx.strokeStyle = act; ctx.lineWidth = 2; ctx.stroke();
           ctx.fillStyle = fg; ctx.font = '600 ' + (fs - 1) + 'px ' + MONO; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-          ctx.fillText(rp < 1 ? 'running in your workflow…' : 'done in 3 ms', xs[2], ry - fs * 0.65);
-          ctx.fillStyle = act; ctx.font = '600 ' + (fs - 2) + 'px ' + MONO; ctx.fillText(fitText(ctx, rp < 1 ? '(184250 - 108700) / 184250' : 'margin = 41.00%', rw - 16), xs[2], ry + fs * 0.75);
-          if (rp < 1 && Course.motionOK) { ctx.beginPath(); ctx.arc(xs[2] + rw / 2 - 12, ry - fs * 0.65, 5, t * 6, t * 6 + 4.2); ctx.strokeStyle = act; ctx.lineWidth = 2; ctx.stroke(); }
+          if (busy) runLines.forEach(function(l, j){ ctx.fillText(l, rx, sy0 + j * (fs + 1)); }); else ctx.fillText('done in 3 ms', rx, ry - fs * 0.65);
+          ctx.fillStyle = act; ctx.font = '600 ' + (fs - 2) + 'px ' + MONO; ctx.fillText(fitText(ctx, busy ? FORM : 'margin = 41.00%', rw - 2 * pad), rx, ry + fs * 0.75 + extra / 2);
+          if (busy && Course.motionOK) { ctx.beginPath(); ctx.arc(rx + rw / 2 - 12, sy0, 5, t * 6, t * 6 + 4.2); ctx.strokeStyle = act; ctx.lineWidth = 2; ctx.stroke(); }
           ctx.restore();
-          ctx.save(); ctx.globalAlpha = a; ctx.fillStyle = muted; ctx.font = '600 ' + (fs - 2) + 'px ' + SANS; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(fitText(ctx, 'Claude waits. It cannot run this.', w * 0.3), xs[1], ry); ctx.restore();
+          /* the note sits on Claude's line, kept above the tool_result label of row 4 */
+          var cy = Math.min(ry, ys[3] - fs - 8 - (cwLines.length - 1) * lhC / 2 - 0.4 * (fs - 2));
+          ctx.save(); ctx.globalAlpha = a; ctx.fillStyle = muted; ctx.font = '600 ' + (fs - 2) + 'px ' + SANS; ctx.textAlign = cwAlign; ctx.textBaseline = 'middle';
+          cwLines.forEach(function(l, j){ ctx.fillText(fitText(ctx, l, cwMax), cwX, cy + (j - (cwLines.length - 1) / 2) * lhC); }); ctx.restore();
         }
         if (p >= 0.6) { var q = (p - 0.6) / 0.4; arrow(ctx, w, xs[2], xs[0], ys[3], Course.clamp(q / 0.5, 0, 1), act, 'result', fs, a, ''); arrow(ctx, w, xs[0], xs[1], ys[3], Course.clamp((q - 0.5) / 0.5, 0, 1), observe, 'tool_result {"result": 41.0}', fs, a); }
       }
-      if (s === 3) { var txt = 'end_turn · "Gross margin is 41.0%."'; arrow(ctx, w, xs[1], xs[0], ys[4], Course.clamp(p / 0.5, 0, 1), think, 'final answer', fs, a, ''); if (p > 0.5) { ctx.save(); ctx.globalAlpha = a; ctx.fillStyle = fg; ctx.font = '600 ' + fs + 'px ' + SANS; ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic'; ctx.fillText(fitText(ctx, txt.slice(0, Math.ceil(txt.length * Course.clamp((p - 0.5) / 0.4, 0, 1))), w - 24), w / 2, ys[4] - 8); ctx.restore(); } }
+      if (s === 3) { var txt = 'end_turn · "Gross margin is 41.0%."'; arrow(ctx, w, xs[1], xs[0], ys[4], Course.clamp(p / 0.5, 0, 1), think, 'final answer', fs, a, ''); if (p > 0.5) { ctx.save(); ctx.globalAlpha = a; ctx.fillStyle = fg; ctx.font = '600 ' + fs + 'px ' + SANS; ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic'; ctx.fillText(fitText(ctx, txt.slice(0, Math.ceil(txt.length * Course.clamp((p - 0.5) / 0.4, 0, 1))), w - 2 * gut), w / 2, ys[4] - 8); ctx.restore(); } }
     }
     if (clock >= N * STEP && auto) { ctx.fillStyle = muted; ctx.font = '600 ' + (fs - 2) + 'px ' + SANS; ctx.textAlign = 'right'; ctx.textBaseline = 'alphabetic'; ctx.fillText('replaying…', w - 14, hy + bh / 2 + fs * 2.2); }
   });
@@ -908,12 +932,17 @@ function fitText(ctx, s, maxW){ if (ctx.measureText(s).width <= maxW) return s; 
     ctx.strokeStyle = line; ctx.lineWidth = 2; Course.roundRect(ctx, bx, by, bw, bh, 8); ctx.stroke();
     if (lh > 6) { ctx.fillStyle = flash > 0 ? bad : think; ctx.globalAlpha = .85; Course.roundRect(ctx, bx + 3, by + bh - lh + 3, bw - 6, lh - 6, 6); ctx.fill(); ctx.globalAlpha = 1; }
     ctx.fillStyle = fg; ctx.font = '600 12px ' + SANS; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic'; ctx.fillText('this minute', bx, h - 10);
-    ctx.fillText(Course.fmt(Math.round(level)) + ' input tokens left', tx, by + 14);
-    ctx.fillStyle = muted; ctx.font = '11px ' + MONO; ctx.fillText('refills ' + Course.fmt(Math.round(refill())) + ' / s · each request uses 8,000', tx, by + 31);
-    log.forEach(function(okk, i){ var x = tx + i * 24, y = by + 44; if (x + 20 > w) return; ctx.fillStyle = okk ? ok : bad; Course.roundRect(ctx, x, y, 20, 18, 5); ctx.fill(); ctx.fillStyle = '#fff'; ctx.font = '700 9px ' + MONO; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(okk ? '200' : '429', x + 10, y + 9); });
+    var tw = w - tx - 6, left = Course.fmt(Math.round(level)) + ' input tokens left';
+    Course.fitFont(ctx, left, tw, 12, 10, '600', SANS); ctx.fillText(left, tx, by + 14);
+    /* the refill line splits in two when the canvas is too narrow for it, and the request log moves down to make room */
+    var r1 = 'refills ' + Course.fmt(Math.round(refill())) + ' / s', r2 = 'each request uses 8,000', ly = by + 44;
+    ctx.fillStyle = muted; ctx.font = '11px ' + MONO;
+    if (ctx.measureText(r1 + ' · ' + r2).width <= tw) ctx.fillText(r1 + ' · ' + r2, tx, by + 31);
+    else { ctx.fillText(fitText(ctx, r1, tw), tx, by + 31); ctx.fillText(fitText(ctx, r2, tw), tx, by + 45); ly = by + 58; }
+    log.forEach(function(okk, i){ var x = tx + i * 24, y = ly; if (x + 20 > w) return; ctx.fillStyle = okk ? ok : bad; Course.roundRect(ctx, x, y, 20, 18, 5); ctx.fill(); ctx.fillStyle = '#fff'; ctx.font = '700 9px ' + MONO; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(okk ? '200' : '429', x + 10, y + 9); });
     ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
-    if (flash > 0) { ctx.fillStyle = bad; ctx.globalAlpha = Math.min(1, flash * 1.6); ctx.font = '800 20px ' + DISPLAY; ctx.fillText('429 rate_limit_error', tx, h - 12); ctx.globalAlpha = 1; }
-    else { ctx.fillStyle = muted; ctx.font = '600 11px ' + SANS; ctx.fillText(level >= NEED ? 'the next request will pass' : 'retry-after: ' + Math.ceil((NEED - level) / refill()) + ' s, then it passes', tx, h - 12); }
+    if (flash > 0) { ctx.fillStyle = bad; ctx.globalAlpha = Math.min(1, flash * 1.6); Course.fitFont(ctx, '429 rate_limit_error', tw, 20, 12, '800', DISPLAY); ctx.fillText('429 rate_limit_error', tx, h - 12); ctx.globalAlpha = 1; }
+    else { var nx = level >= NEED ? 'the next request will pass' : 'retry-after: ' + Math.ceil((NEED - level) / refill()) + ' s, then it passes'; ctx.fillStyle = muted; Course.fitFont(ctx, nx, tw, 11, 9, '600', SANS); ctx.fillText(nx, tx, h - 12); }
   }, {auto: true});
   $('#bucketOne').addEventListener('click', request);
   $('#bucketBurst').addEventListener('click', function(){ for (var i = 0; i < 7; i++) setTimeout(request, Course.motionOK ? i * 170 : 0); });
@@ -1068,15 +1097,27 @@ function fitText(ctx, s, maxW){ if (ctx.measureText(s).width <= maxW) return s; 
     if (w < 60 || h < 60) return;
     var tt = Course.motionOK ? t % T.end : RM[rmStep];
     var think = Course.cssVar('--think'), act = Course.cssVar('--act'), observe = Course.cssVar('--observe'), fg = STAGE_FG, muted = STAGE_MUTED, line = '#26325A';
-    var fs = Course.clamp(Math.round(w / 36), 10, 13), nw = Math.min(w * 0.21, 124), nh = fs * 2.4, ny = h * 0.24;
+    var fs = Course.clamp(Math.round(w / 36), 10, 13), nw = Math.min(Math.max(w * 0.21, 64), w * 0.225, 124), nh = fs * 2.4, ah = nh, ny = h * 0.24;
     var nodes = [{n: 'Data Loader', x: w * 0.14, c: fg}, {n: 'Text Splitter', x: w * 0.38, c: fg}, {n: 'Embeddings', x: w * 0.62, c: think}, {n: (STORES[storeEl.value] || STORES.simple)[0], x: w * 0.86, c: observe}];
+    /* each node name: one line, shrunk to no less than 9px; a name that still does not fit wraps onto two lines and the row of nodes grows to hold it */
+    nodes.forEach(function(nd){
+      var maxW = nw - 6, s = nd.n, words = s.split(/\s+/).join(' ');
+      for (var p = fs - 1; p >= 9; p--) { ctx.font = '800 ' + p + 'px ' + DISPLAY; if (ctx.measureText(s).width <= maxW) { nd.px = p; nd.lines = [s]; return; } }
+      for (p = fs - 1; p >= 9; p--) { ctx.font = '800 ' + p + 'px ' + DISPLAY; var ls = Course.fitLines(ctx, s, maxW, 2); if (ls.join(' ') === words) break; }
+      nd.px = Math.max(p, 9); ctx.font = '800 ' + nd.px + 'px ' + DISPLAY; nd.lines = Course.fitLines(ctx, s, maxW, 2);
+    });
+    nodes.forEach(function(nd){ if (nd.lines.length > 1) nh = Math.max(nh, nd.lines.length * Math.round(nd.px * 1.2) + 8); });
     var ag = {x: w * 0.3, y: h * 0.74}, active = tt < T.pages ? 0 : tt < T.split ? 1 : tt < T.embed ? 2 : tt < T.store ? 3 : -1;
     function ease(a, b){ return Course.ease(Course.clamp((tt - a) / (b - a), 0, 1)); }
     ctx.clearRect(0, 0, w, h);
     ctx.strokeStyle = line; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(nodes[0].x, ny); ctx.lineTo(nodes[3].x, ny); ctx.stroke();
     var toolOn = tt >= T.store; ctx.setLineDash([5, 5]); ctx.strokeStyle = toolOn ? act : line; ctx.beginPath(); ctx.moveTo(ag.x + nw * 0.55, ag.y); ctx.lineTo(nodes[3].x, ag.y); ctx.lineTo(nodes[3].x, ny + nh / 2 + 56); ctx.stroke(); ctx.setLineDash([]);
-    ctx.fillStyle = toolOn ? act : muted; ctx.font = '600 ' + (fs - 2) + 'px ' + MONO; ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic'; ctx.fillText('Vector Store Tool', (ag.x + nw * 0.55 + nodes[3].x) / 2, ag.y - 8);
-    nodes.forEach(function(nd, i){ var on = active === i; Course.roundRect(ctx, nd.x - nw / 2, ny - nh / 2, nw, nh, 9); ctx.fillStyle = on ? nd.c : STAGE_BOX; ctx.fill(); ctx.strokeStyle = nd.c; ctx.lineWidth = on ? 2.5 : 1.5; ctx.stroke(); ctx.fillStyle = on ? (i < 2 ? '#0B1020' : '#fff') : nd.c; var nf = fs - 1; ctx.font = '800 ' + nf + 'px ' + DISPLAY; while (nf > 8 && ctx.measureText(nd.n).width > nw - 10) { nf--; ctx.font = '800 ' + nf + 'px ' + DISPLAY; } ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(nd.n, nd.x, ny); });
+    /* the tool label stays left of the "12 vectors + text" caption under the store */
+    ctx.font = '600 ' + (fs - 3) + 'px ' + SANS; var capHalf = ctx.measureText('12 vectors + text').width / 2;
+    ctx.fillStyle = toolOn ? act : muted; ctx.font = '600 ' + (fs - 2) + 'px ' + MONO; ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+    var vst = fitText(ctx, 'Vector Store Tool', nodes[3].x - capHalf - 6 - (ag.x + nw * 0.55) - 4), vstW = ctx.measureText(vst).width;
+    ctx.fillText(vst, Math.min((ag.x + nw * 0.55 + nodes[3].x) / 2, nodes[3].x - capHalf - 6 - vstW / 2), ag.y - 8);
+    nodes.forEach(function(nd, i){ var on = active === i; Course.roundRect(ctx, nd.x - nw / 2, ny - nh / 2, nw, nh, 9); ctx.fillStyle = on ? nd.c : STAGE_BOX; ctx.fill(); ctx.strokeStyle = nd.c; ctx.lineWidth = on ? 2.5 : 1.5; ctx.stroke(); ctx.fillStyle = on ? (i < 2 ? '#0B1020' : '#fff') : nd.c; ctx.font = '800 ' + nd.px + 'px ' + DISPLAY; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; var lh = Math.round(nd.px * 1.2); nd.lines.forEach(function(l, j){ ctx.fillText(l, nd.x, ny + (j - (nd.lines.length - 1) / 2) * lh); }); });
     var sx = nodes[3].x - nw / 2, sy = ny + nh / 2 + 6; ctx.strokeStyle = observe; ctx.lineWidth = 1.5; ctx.setLineDash([3, 3]); Course.roundRect(ctx, sx, sy, nw, 50, 8); ctx.stroke(); ctx.setLineDash([]);
     ctx.fillStyle = muted; ctx.font = '600 ' + (fs - 3) + 'px ' + SANS; ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic'; ctx.fillText('12 vectors + text', nodes[3].x, sy + 62);
     var pageCol = [observe, think, act];
@@ -1087,10 +1128,10 @@ function fitText(ctx, s, maxW){ if (ctx.measureText(s).width <= maxW) return s; 
       else if (tt < T.split) { var e1 = ease(T.pages, T.split); if (e1 < 0.25) { if (cj) continue; x = nodes[1].x + pi * 5; y = ny - 6 + pi * 6; kind = 'page'; } else { var e = (e1 - 0.25) / 0.75; x = Course.lerp(nodes[1].x + pi * 5, splitX, e); y = Course.lerp(ny - 6 + pi * 6, splitY, e); } }
       else if (tt < T.embed) { var e2 = ease(T.split, T.embed); x = Course.lerp(splitX, nodes[2].x + (cj - 1.5) * 12, e2); y = Course.lerp(splitY, ny + (pi - 1) * 12, e2); kind = e2 > 0.7 ? 'dot' : 'chunk'; }
       else if (tt < T.store) { var e3 = ease(T.embed, T.store); x = Course.lerp(nodes[2].x + (cj - 1.5) * 12, cellX, e3); y = Course.lerp(ny + (pi - 1) * 12, cellY, e3); kind = 'dot'; }
-      else { x = cellX; y = cellY; kind = 'dot'; var pk = picked.indexOf(id); if (pk >= 0 && tt >= T.ask) { var e5 = ease(T.ask, T.pull); x = Course.lerp(cellX, ag.x + (pk - 0.5) * 34, e5); y = Course.lerp(cellY, ag.y + nh * 0.5 + 14, e5); size = 7 + 4 * e5; } }
+      else { x = cellX; y = cellY; kind = 'dot'; var pk = picked.indexOf(id); if (pk >= 0 && tt >= T.ask) { var e5 = ease(T.ask, T.pull); x = Course.lerp(cellX, ag.x + (pk - 0.5) * 34, e5); y = Course.lerp(cellY, ag.y + ah * 0.5 + 14, e5); size = 7 + 4 * e5; } }
       item(ctx, x, y, kind, col, size);
     }
-    Course.roundRect(ctx, ag.x - nw * 0.55, ag.y - nh / 2, nw * 1.1, nh, 9); ctx.fillStyle = toolOn ? think : STAGE_BOX; ctx.fill(); ctx.strokeStyle = think; ctx.lineWidth = 2; ctx.stroke();
+    Course.roundRect(ctx, ag.x - nw * 0.55, ag.y - ah / 2, nw * 1.1, ah, 9); ctx.fillStyle = toolOn ? think : STAGE_BOX; ctx.fill(); ctx.strokeStyle = think; ctx.lineWidth = 2; ctx.stroke();
     ctx.fillStyle = toolOn ? '#fff' : think; ctx.font = '800 ' + (fs - 1) + 'px ' + DISPLAY; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('AI Agent', ag.x, ag.y);
     if (toolOn) { var q = ease(T.store, T.ask), qx = ag.x + nw * 0.55 + (nodes[3].x - ag.x - nw * 0.55) * Math.min(1, q * 1.4), qy = ag.y - Math.max(0, (q - 0.7) / 0.3) * (ag.y - sy - 50); if (q < 1) { ctx.fillStyle = act; ctx.beginPath(); ctx.arc(qx, qy, 5, 0, Math.PI * 2); ctx.fill(); }
       ctx.fillStyle = fg; ctx.font = '600 ' + (fs - 1) + 'px ' + SANS; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic'; ctx.fillText(fitText(ctx, 'Q: "What is our refund window?"', w - 28), 14, h - 30);
