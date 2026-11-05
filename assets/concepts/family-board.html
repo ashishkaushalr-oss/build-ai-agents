@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Family tree options</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="/shared/course.css">
+<style>
+body{padding-bottom:40vh}
+.top{max-width:1120px;margin:0 auto;padding:22px 16px 6px;display:flex;flex-wrap:wrap;gap:12px 24px;align-items:center;justify-content:space-between}
+.top h1{font-size:1.3rem}
+.opt{max-width:1120px;margin:30px auto 0;padding:0 16px;display:grid;gap:10px}
+.lbl{display:flex;align-items:baseline;gap:12px;font-family:var(--font-mono);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.lbl b{font-family:var(--font-display);font-size:1.05rem;letter-spacing:0;text-transform:none;color:var(--fg)}
+.why{color:var(--muted);font-size:.9rem;max-width:84ch;margin:0}
+.why b{color:var(--fg)}
+.pair{display:grid;grid-template-columns:minmax(0,1fr) 332px;gap:18px;align-items:start}
+.phone{border:8px solid #0E1626;border-radius:30px;overflow:hidden;background:var(--bg);padding:14px 10px}
+.phone .card{padding:14px}
+@media (max-width:900px){.pair{grid-template-columns:1fr}.phone{max-width:332px}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-l);padding:18px;display:grid;gap:12px;box-shadow:var(--shadow);container-type:inline-size;min-width:0}
+.detail{min-height:92px;padding:12px 14px;border-radius:var(--r-m);background:var(--surface-2);font-size:.92rem;line-height:1.5}
+.detail b{font-family:var(--font-display)}
+.cap{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:.85rem;color:var(--muted);align-items:center}
+button.node{font:inherit;color:inherit;cursor:pointer;text-align:left}
+
+/* A · nested blocks */
+.nb{border:1.5px solid color-mix(in srgb,var(--think) 55%,var(--line));border-radius:16px;padding:0 10px 10px;background:color-mix(in srgb,var(--think) var(--tint,6%),var(--surface));transition:box-shadow .2s}
+.nb+.nb,.nb>.nb{margin-top:0}
+.nb.is-on{box-shadow:0 0 0 3px color-mix(in srgb,var(--think) 28%,transparent);border-color:var(--think)}
+.nb__head{display:flex;flex-wrap:wrap;gap:2px 12px;align-items:baseline;width:100%;background:none;border:0;padding:10px 4px 10px;margin:0}
+.nb__name{font-family:var(--font-display);font-weight:700;font-size:.98rem}
+.nb.is-on>.nb__head .nb__name{color:var(--think)}
+.nb__sub{font-size:.82rem;color:var(--muted)}
+.nb__year{margin-left:auto;font-family:var(--font-mono);font-size:.7rem;color:var(--muted);letter-spacing:.04em}
+.nb__core{display:flex;align-items:center;justify-content:center;gap:8px;padding:12px;border-radius:12px;background:var(--think);color:#fff;font-weight:700;font-size:.9rem;text-align:center}
+.nb__core i{width:10px;height:10px;border-radius:50%;background:#fff;box-shadow:0 0 0 4px rgba(255,255,255,.25);animation:pulse 2.4s ease-in-out infinite}
+@keyframes pulse{50%{box-shadow:0 0 0 8px rgba(255,255,255,.12)}}
+@container (max-width:520px){.nb{padding:0 7px 7px;border-radius:12px}.nb__head{padding:8px 2px}.nb__name{font-size:.9rem}.nb__sub{font-size:.76rem}.nb__year{display:none}}
+
+/* B · timeline ladder */
+.lad{display:grid;gap:8px}
+.lad__row{position:relative;display:grid;grid-template-columns:62px 1fr;gap:12px;align-items:center;border:1.5px solid color-mix(in srgb,var(--think) 55%,var(--line));border-radius:14px;padding:10px 12px;margin-left:calc(var(--i) * 26px);background:color-mix(in srgb,var(--think) var(--tint,6%),var(--surface));transition:box-shadow .2s}
+.lad__row.is-on{box-shadow:0 0 0 3px color-mix(in srgb,var(--think) 28%,transparent);border-color:var(--think)}
+.lad__year{font-family:var(--font-mono);font-size:.72rem;color:var(--think);font-weight:600;letter-spacing:.04em;display:grid;gap:4px;justify-items:start}
+.lad__year i{width:10px;height:10px;border-radius:50%;background:var(--think);opacity:calc(.35 + var(--i) * .2)}
+.lad__body{display:grid;gap:2px;min-width:0}
+.lad__body b{font-family:var(--font-display);font-size:.98rem}
+.lad__row.is-on .lad__body b{color:var(--think)}
+.lad__body small{font-size:.82rem;color:var(--muted)}
+.lad__eg{display:flex;gap:5px;flex-wrap:wrap;margin-top:4px}
+.lad__eg span{font-size:.72rem;font-weight:600;padding:2px 8px;border-radius:999px;background:var(--surface);border:1px solid var(--line);color:var(--muted)}
+.lad__in{position:absolute;right:10px;top:-9px;font-family:var(--font-mono);font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);background:var(--surface);padding:0 6px;border-radius:999px;border:1px solid var(--line)}
+@container (max-width:520px){.lad__row{grid-template-columns:1fr;gap:4px;margin-left:calc(var(--i) * 14px);padding:9px 10px}.lad__year{grid-auto-flow:column;align-items:center}.lad__eg{display:none}}
+
+/* C · the family tree */
+.tree{position:relative;display:grid;grid-template-columns:repeat(8,minmax(0,1fr));row-gap:28px;column-gap:8px;padding:4px 0}
+.tree svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}
+.tree svg path{fill:none;stroke:var(--line);stroke-width:2}
+.tree svg path.on{stroke:var(--think);stroke-width:2.5;stroke-dasharray:7 5;animation:flow 1.1s linear infinite}
+@keyframes flow{to{stroke-dashoffset:-12}}
+.tn{position:relative;z-index:1;display:grid;gap:1px;padding:9px 11px;border-radius:12px;border:1.5px solid var(--line);background:var(--surface);min-width:0}
+.tn b{font-family:var(--font-display);font-size:.9rem;line-height:1.15}
+.tn small{font-size:.74rem;color:var(--muted);line-height:1.2}
+.tn.path{border-color:color-mix(in srgb,var(--think) 60%,var(--line));background:color-mix(in srgb,var(--think) 9%,var(--surface))}
+.tn.leaf{background:var(--think);border-color:var(--think);color:#fff}
+.tn.leaf small{color:rgba(255,255,255,.8)}
+.tn.is-on{box-shadow:0 0 0 3px color-mix(in srgb,var(--think) 28%,transparent);border-color:var(--think)}
+.tn.is-on:not(.leaf) b{color:var(--think)}
+@container (max-width:520px){.tree{column-gap:4px;row-gap:22px}.tn{padding:7px 7px;border-radius:9px}.tn b{font-size:.76rem}.tn small{font-size:.66rem}}
+
+/* D · offset circles */
+.oc svg{width:100%;height:auto;display:block}
+.oc .ring circle{transition:stroke-width .2s}
+.oc .ring:hover circle,.oc .ring.is-on circle{stroke-width:3}
+.oc .ring text{font:700 11px Figtree,sans-serif;fill:var(--fg);pointer-events:none}
+.oc .ring text.sub{font-weight:500;font-size:9.5px;fill:var(--muted)}
+.oc .ring{cursor:pointer}
+</style>
+</head>
+<body>
+<div class="top"><h1>The AI family tree · four ways to draw it</h1><button class="btn btn--small" id="theme" type="button">Dark mode</button></div>
+
+<section class="opt" id="optA"><p class="lbl">Option A <b>Nested blocks</b> · the same containment, as boxes with their names on the rim</p><div class="pair"><div class="card" data-kind="blocks"></div><div class="phone"><div class="card" data-kind="blocks"></div></div></div><p class="why"><b>The idea:</b> four rounded boxes, each inside the last, each named along its own top edge so nothing can ever sit on top of anything else. Years on the right, Claude pulsing in the middle. Plain HTML, so it reflows on a phone instead of shrinking.</p></section>
+
+<section class="opt" id="optB"><p class="lbl">Option B <b>Timeline ladder</b> · four rows, newest at the bottom, each stepped inside the one above</p><div class="pair"><div class="card" data-kind="ladder"></div><div class="phone"><div class="card" data-kind="ladder"></div></div></div><p class="why"><b>The idea:</b> a ladder you read top to bottom. Each row carries its decade, its one-line definition and three workplace examples, and is indented under the row above to say "this is a kind of that". The most informative of the four, and the easiest to read on a phone.</p></section>
+
+<section class="opt" id="optC"><p class="lbl">Option C <b>The actual family tree</b> · branches, with the path to Claude lit</p><div class="pair"><div class="card" data-kind="tree"></div><div class="phone"><div class="card" data-kind="tree"></div></div></div><p class="why"><b>The idea:</b> the diagram the heading already promises. AI splits into rule-based systems and machine learning; machine learning into classic models and deep learning; deep learning into perception and generative AI; and at the bottom, the language models. A moving violet line traces the path to Claude. It also teaches something the rings cannot: the siblings, like the fraud model that is classic machine learning.</p></section>
+
+<section class="opt" id="optD"><p class="lbl">Option D <b>Offset circles</b> · your rings, fixed</p><div class="pair"><div class="card" data-kind="circles"></div><div class="phone"><div class="card" data-kind="circles"></div></div></div><p class="why"><b>The idea:</b> keep the nested circles but let them touch at the bottom instead of sharing a centre. Every ring then has a wide crescent at the top where its name and one short line fit without touching the next ring. The closest to what you have; the labels still shrink with the drawing on a phone.</p></section>
+
+<script>
+(function(){
+  'use strict';
+  var LV = [
+    {id: 'ai', label: 'Artificial intelligence', sub: 'since the 1950s · includes hand-written rules', short: '1950s · includes hand-written rules', year: '1956 →', eg: ['spam filter', 'fraud rules', 'chess program'], tint: '5%', detail: '<b>Artificial intelligence</b> is the whole family: any machine behaviour we would call intelligent, including systems where a programmer wrote every rule. <span class="muted">At work:</span> the 2005 spam filter, a rules-based fraud check, a chess program.'},
+    {id: 'ml', label: 'Machine learning', sub: 'learns the rules from examples', short: 'learns the rules from examples', year: '1980s →', eg: ['credit score', '"at risk" flag', 'demand forecast'], tint: '10%', detail: '<b>Machine learning</b> replaces hand-written rules with patterns learned from labelled examples. <span class="muted">At work:</span> a credit-risk score, the CRM\'s "at risk" flag, demand forecasting.'},
+    {id: 'dl', label: 'Deep learning', sub: 'networks of simple units, many layers', short: 'many layers of simple units', year: '2012 →', eg: ['meeting transcription', 'receipt reading', 'face unlock'], tint: '16%', detail: '<b>Deep learning</b> is machine learning done with large networks of simple units stacked in many layers. It made speech, vision and translation good enough to use at work. <span class="muted">At work:</span> meeting transcription, receipt reading, face unlock.'},
+    {id: 'gen', label: 'Generative AI', sub: 'language models · Claude', short: 'Claude lives here', year: '2020 →', eg: ['drafting', 'summarising', 'agents'], tint: '24%', detail: '<b>Generative AI</b> produces new text, images or audio. <b>Large language models</b> such as Claude are deep networks trained on text to predict what comes next. <span class="muted">At work:</span> drafting, summarising, answering from documents, and the agents you will build.'}
+  ];
+  var X = {
+    rules: {label: 'Rule-based systems', sub: 'hand-written rules', detail: '<b>Rule-based systems</b> are AI without learning: a programmer wrote every "if this, then that". Still everywhere, and still useful. <span class="muted">At work:</span> the 2005 spam filter, a rules-based fraud check, a chess program.'},
+    classic: {label: 'Classic machine learning', sub: 'scores and forecasts', detail: '<b>Classic machine learning</b> learns from tables of examples: decision trees, regressions, gradient boosting. Often the right tool, and cheaper than a language model. <span class="muted">At work:</span> a credit-risk score, the CRM\'s "at risk" flag, demand forecasting.'},
+    percep: {label: 'Perception models', sub: 'speech, vision', detail: '<b>Perception models</b> are deep networks that recognise things rather than make things. <span class="muted">At work:</span> meeting transcription, receipt reading, face unlock.'},
+    llm: {label: 'Large language models', sub: 'Claude · ChatGPT · Gemini', detail: '<b>Large language models</b> such as Claude are deep networks trained on a vast amount of text to predict what comes next, then tuned to be helpful. <span class="muted">At work:</span> drafting, summarising, answering from documents, and the agents you will build.'}
+  };
+  function byId(id){ return LV.filter(function(l){ return l.id === id; })[0] || X[id]; }
+  function el(tag, cls, html){ var e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; }
+  function wire(card, nodes, start){
+    var detail = el('div', 'detail'); card.appendChild(detail);
+    function show(id){ nodes.forEach(function(n){ n.el.classList.toggle('is-on', n.id === id); }); detail.innerHTML = byId(id).detail; }
+    nodes.forEach(function(n){ n.el.setAttribute('tabindex', '0'); n.el.addEventListener('click', function(e){ e.stopPropagation(); show(n.id); }); n.el.addEventListener('keydown', function(e){ if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); show(n.id); } }); });
+    show(start);
+  }
+
+  /* A */
+  function blocks(card){
+    var wrap = el('div'), node = wrap, nodes = [];
+    LV.forEach(function(L){ var box = el('div', 'nb'); box.style.setProperty('--tint', L.tint); box.setAttribute('role', 'button'); box.setAttribute('aria-label', L.label); box.appendChild(el('div', 'nb__head', '<span class="nb__name">' + L.label + '</span><span class="nb__sub">' + L.sub + '</span><span class="nb__year">' + L.year + '</span>')); node.appendChild(box); nodes.push({id: L.id, el: box}); node = box; });
+    node.appendChild(el('div', 'nb__core', '<i></i>Claude · ChatGPT · Gemini live here'));
+    card.appendChild(wrap);
+    card.appendChild(el('div', 'cap', '<span>Click a box. Each one sits inside the box above it.</span><span class="chip chip--think">4 boxes, 1 engine</span>'));
+    wire(card, nodes, 'gen');
+  }
+  /* B */
+  function ladder(card){
+    var wrap = el('div', 'lad'), nodes = [];
+    LV.forEach(function(L, i){ var row = el('button', 'node lad__row'); row.type = 'button'; row.style.setProperty('--i', i); row.style.setProperty('--tint', L.tint); row.innerHTML = (i ? '<i class="lad__in">inside the row above</i>' : '') + '<span class="lad__year"><i></i>' + L.year + '</span><span class="lad__body"><b>' + L.label + '</b><small>' + L.sub + '</small><span class="lad__eg">' + L.eg.map(function(e){ return '<span>' + e + '</span>'; }).join('') + '</span></span>'; wrap.appendChild(row); nodes.push({id: L.id, el: row}); });
+    card.appendChild(wrap);
+    card.appendChild(el('div', 'cap', '<span>Click a row. Newest at the bottom; each row is a kind of the one above.</span><span class="chip chip--think">4 rows, 1 engine</span>'));
+    wire(card, nodes, 'gen');
+  }
+  /* C */
+  function tree(card){
+    var wrap = el('div', 'tree'), nodes = [], ref = {};
+    var NODES = [
+      ['ai', 1, 3, 7, 'path'], ['rules', 2, 1, 4, ''], ['ml', 2, 5, 8, 'path'], ['classic', 3, 3, 6, ''], ['dl', 3, 6, 9, 'path'], ['percep', 4, 3, 6, ''], ['gen', 4, 6, 9, 'path'], ['llm', 5, 6, 9, 'path leaf']
+    ];
+    var EDGES = [['ai', 'rules'], ['ai', 'ml'], ['ml', 'classic'], ['ml', 'dl'], ['dl', 'percep'], ['dl', 'gen'], ['gen', 'llm']];
+    var PATH = ['ai', 'ml', 'dl', 'gen', 'llm'];
+    var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); wrap.appendChild(svg);
+    NODES.forEach(function(n){ var d = byId(n[0]), b = el('button', 'node tn ' + n[4]); b.type = 'button'; b.style.gridArea = n[1] + ' / ' + n[2] + ' / ' + (n[1] + 1) + ' / ' + n[3]; b.innerHTML = '<b>' + d.label + '</b><small>' + (d.id ? d.short : d.sub) + '</small>'; wrap.appendChild(b); nodes.push({id: n[0], el: b}); ref[n[0]] = b; });
+    function draw(){
+      var R = wrap.getBoundingClientRect(), out = '';
+      EDGES.forEach(function(e){ var a = ref[e[0]].getBoundingClientRect(), b = ref[e[1]].getBoundingClientRect(); var x1 = a.left + a.width / 2 - R.left, y1 = a.bottom - R.top, x2 = b.left + b.width / 2 - R.left, y2 = b.top - R.top, ym = (y1 + y2) / 2; var on = PATH.indexOf(e[0]) >= 0 && PATH.indexOf(e[1]) >= 0; out += '<path class="' + (on ? 'on' : '') + '" d="M' + x1 + ' ' + y1 + ' V' + ym + ' H' + x2 + ' V' + y2 + '"/>'; });
+      svg.innerHTML = out;
+    }
+    card.appendChild(wrap);
+    card.appendChild(el('div', 'cap', '<span>Click a branch. The moving line is the path to Claude.</span><span class="chip chip--think">1 family, 4 generations</span>'));
+    wire(card, nodes, 'llm');
+    new ResizeObserver(draw).observe(wrap); setTimeout(draw, 50); setTimeout(draw, 600);
+  }
+  /* D */
+  function circles(card){
+    var wrap = el('div', 'oc'), nodes = [];
+    var R = [[140, 160], [112, 188], [84, 216], [56, 244]], parts = '';
+    LV.forEach(function(L, i){ var r = R[i][0], cy = R[i][1], top = cy - r, op = [0.07, 0.12, 0.2, 0.34][i]; parts += '<g class="ring" data-id="' + L.id + '" role="button" aria-label="' + L.label + '"><circle cx="200" cy="' + cy + '" r="' + r + '" fill="var(--think)" fill-opacity="' + op + '" stroke="var(--think)" stroke-width="1.5"/><text x="200" y="' + (top + 30) + '" text-anchor="middle">' + L.label + '</text><text class="sub" x="200" y="' + (top + 44) + '" text-anchor="middle">' + L.short + '</text></g>'; });
+    wrap.innerHTML = '<svg viewBox="0 0 400 320" role="img" aria-label="Four circles, each inside the last and touching at the bottom">' + parts + '</svg>';
+    card.appendChild(wrap);
+    [].slice.call(wrap.querySelectorAll('.ring')).forEach(function(g){ nodes.push({id: g.getAttribute('data-id'), el: g}); });
+    card.appendChild(el('div', 'cap', '<span>Click a ring. The outer rings are older and broader. Claude lives in the smallest one.</span><span class="chip chip--think">4 rings, 1 engine</span>'));
+    wire(card, nodes, 'gen');
+  }
+  var KINDS = {blocks: blocks, ladder: ladder, tree: tree, circles: circles};
+  [].slice.call(document.querySelectorAll('.card[data-kind]')).forEach(function(c){ KINDS[c.getAttribute('data-kind')](c); });
+  var tb = document.getElementById('theme');
+  tb.addEventListener('click', function(){ var dark = document.documentElement.getAttribute('data-theme') !== 'dark'; document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light'); tb.textContent = dark ? 'Light mode' : 'Dark mode'; });
+})();
+</script>
+</body>
+</html>

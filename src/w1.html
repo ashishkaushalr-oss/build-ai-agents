@@ -24,16 +24,25 @@
 .day__detail dl{margin:0;display:grid;gap:4px;font-size:.9rem}
 .day__detail dt{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-top:4px}
 .day__detail dd{margin:0}
-/* family tree rings */
-.rings{display:grid;gap:10px}
-.rings svg{width:100%;height:auto;display:block}
-.rings .ring{cursor:pointer}
-.rings .ring circle{transition:stroke-width .2s,fill-opacity .2s}
-.rings .ring:hover circle,.rings .ring.is-on circle{stroke-width:3}
-.rings .ring text{font:700 11px Figtree,sans-serif;fill:var(--fg);pointer-events:none}
-.rings .ring text.sub{font-weight:500;font-size:9.5px;fill:var(--muted)}
-.rings__detail{min-height:96px;padding:12px 14px;border-radius:var(--r-m);background:var(--surface-2);font-size:.92rem;display:grid;gap:4px}
-.rings__detail b{font-family:var(--font-display)}
+/* family tree: a real tree, with the path to Claude lit */
+.ft{display:grid;gap:10px;container-type:inline-size;min-width:0}
+.ft__tree{position:relative;display:grid;grid-template-columns:repeat(8,minmax(0,1fr));row-gap:28px;column-gap:8px;padding:4px 0}
+.ft__tree svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}
+.ft__tree path{fill:none;stroke:var(--line);stroke-width:2}
+.ft__tree path.ft__on{stroke:var(--think);stroke-width:2.5;stroke-dasharray:7 5;animation:ft-flow 1.1s linear infinite}
+@keyframes ft-flow{to{stroke-dashoffset:-12}}
+.ft__node{position:relative;z-index:1;display:grid;gap:1px;padding:9px 11px;border-radius:12px;border:1.5px solid var(--line);background:var(--surface);min-width:0;font:inherit;color:inherit;text-align:left;cursor:pointer;transition:box-shadow .2s,border-color .2s}
+.ft__node b{font-family:var(--font-display);font-size:.9rem;line-height:1.15}
+.ft__node small{font-size:.74rem;color:var(--muted);line-height:1.2}
+.ft__path{border-color:color-mix(in srgb,var(--think) 60%,var(--line));background:color-mix(in srgb,var(--think) 9%,var(--surface))}
+.ft__leaf{background:var(--think);border-color:var(--think);color:#fff}
+.ft__leaf small{color:rgba(255,255,255,.8)}
+.ft__node.is-on{box-shadow:0 0 0 3px color-mix(in srgb,var(--think) 28%,transparent);border-color:var(--think)}
+.ft__node.is-on:not(.ft__leaf) b{color:var(--think)}
+.ft__detail{min-height:96px;padding:12px 14px;border-radius:var(--r-m);background:var(--surface-2);font-size:.92rem;line-height:1.5}
+.ft__detail b{font-family:var(--font-display)}
+@media (prefers-reduced-motion:reduce){.ft__tree path.ft__on{animation:none}}
+@container (max-width:520px){.ft__tree{column-gap:4px;row-gap:22px}.ft__node{padding:7px 7px;border-radius:9px}.ft__node b{font-size:.76rem}.ft__node small{font-size:.66rem}}
 /* canvases */
 #trainCanvas,#ctxCanvas,#mmCanvas{height:250px}
 .ctrl{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
@@ -278,7 +287,7 @@ html.no-motion .motif *,html.no-motion .tok{animation:none!important}
   <div class="wrap">
     <div class="hero__text">
       <span class="eyebrow">Week 1 · Modules 1 to 3 · five days · about 5 hours in total</span>
-      <h1>You already work with AI. Let's meet it properly.</h1>
+      <h1>You already work with AI. <em>Let's meet it properly.</em></h1>
       <p class="lede">Spam filters, autocomplete, the meeting transcript that lands in your inbox: all of that is AI doing a job. This week I will show you what is going on inside, in plain language and with real workplace examples. I have cut the week into five short days, from 35 minutes to an hour and a half. Take one a day, or several in one sitting. By the time we build agents from Week 6, none of it should feel like magic.</p>
       <div class="hero__actions">
         <a class="btn btn--primary" href="#day1">Start Day 1</a>
@@ -329,18 +338,18 @@ html.no-motion .motif *,html.no-motion .tok{animation:none!important}
     <!-- 2. The family tree -->
     <article class="concept">
       <div class="concept__viz">
-        <div class="rings">
-          <svg viewBox="0 0 400 300" role="img" aria-label="Four nested rings: artificial intelligence contains machine learning, which contains deep learning, which contains generative AI and large language models such as Claude" id="ringsSvg"></svg>
-          <div class="rings__detail" id="ringsDetail"></div>
+        <div class="ft">
+          <div class="ft__tree" id="ftTree" role="group" aria-label="The AI family tree: artificial intelligence branches into rule-based systems and machine learning; machine learning into classic models and deep learning; deep learning into perception models and generative AI; generative AI into large language models such as Claude"></div>
+          <div class="ft__detail" id="ftDetail" aria-live="polite"></div>
         </div>
-        <div class="viz-caption"><span>Click a ring. The outer rings are older and broader. Claude lives in the smallest one.</span><span class="row chip chip--think">4 rings, 1 engine</span></div>
+        <div class="viz-caption"><span>Click a branch. The moving line is the path to Claude.</span><span class="row chip chip--think">1 family, 4 generations</span></div>
       </div>
       <div class="concept__text">
         <h3>The family tree: where Claude sits</h3>
-        <p>People use "AI" for four quite different things, so let me draw the family. The outer ring is artificial intelligence itself: any machine behaviour we would call intelligent, including old rule-based systems where a programmer wrote every "if this, then that". The spam filter your company ran in 2005 lived here.</p>
-        <p>Inside it sits machine learning. Instead of writing the rules, you show the machine examples and it works the rules out. Inside that sits deep learning: machine learning done with large networks of simple units stacked in many layers, the approach that made speech recognition and photo search good enough to use at work.</p>
-        <p>In the smallest ring is generative AI, and in it the large language models: deep networks trained on a vast amount of text to produce new text. Claude, ChatGPT and Gemini all live here. Every ring still exists and still earns its keep. A fraud model at a bank is probably classic machine learning, and that is the right tool for it.</p>
-        <div class="key"><p>AI is the family. Machine learning learns from examples. Deep learning stacks layers. Language models are deep learning aimed at text. Claude is in the smallest ring.</p></div>
+        <p>People use "AI" for four quite different things, so let me draw the family tree. At the top is artificial intelligence itself: any machine behaviour we would call intelligent. It has two children. One is the rule-based systems, where a programmer wrote every "if this, then that"; the spam filter your company ran in 2005 lived there. The other is machine learning: instead of writing the rules, you show the machine examples and it works the rules out.</p>
+        <p>Machine learning has two children of its own. Classic models learn from tables of examples: the credit score, the "at risk" flag in your CRM. Deep learning is machine learning done with large networks of simple units stacked in many layers, the approach that made speech recognition and photo search good enough to use at work. Under deep learning sit the perception models that recognise speech and images, and generative AI, which makes new things.</p>
+        <p>At the bottom of the tree, the youngest generation: the large language models, deep networks trained on a vast amount of text to produce new text. Claude, ChatGPT and Gemini all live here. Every branch still exists and still earns its keep. A fraud model at a bank is probably classic machine learning, and that is the right tool for it.</p>
+        <div class="key"><p>AI is the family. Machine learning learns from examples. Deep learning stacks layers. Language models are deep learning aimed at text. Claude is at the bottom of the tree, the youngest branch.</p></div>
       </div>
     </article>
     <div class="today">
@@ -998,29 +1007,33 @@ if ('ResizeObserver' in window) new ResizeObserver(function(){ layoutDay(); }).o
 layoutDay();
 
 /* ---------- LEARN 2: the family tree ---------- */
-var RINGS = [
-  {id: 'ai', r: 140, label: 'Artificial intelligence', sub: 'since the 1950s · includes hand-written rules', op: 0.07, detail: '<b>Artificial intelligence</b> is the whole family: any machine behaviour we would call intelligent, including systems where a programmer wrote every rule. <span class="muted">At work:</span> the 2005 spam filter, a rules-based fraud check, a chess program.'},
-  {id: 'ml', r: 108, label: 'Machine learning', sub: 'learns the rules from examples', op: 0.12, detail: '<b>Machine learning</b> replaces hand-written rules with patterns learned from labelled examples. <span class="muted">At work:</span> a credit-risk score, the CRM\'s "at risk" flag, demand forecasting.'},
-  {id: 'dl', r: 76, label: 'Deep learning', sub: 'networks of simple units, many layers', op: 0.2, detail: '<b>Deep learning</b> is machine learning done with large networks of simple units stacked in many layers. It made speech, vision and translation good enough to use at work. <span class="muted">At work:</span> meeting transcription, receipt reading, face unlock.'},
-  {id: 'gen', r: 44, label: 'Generative AI', sub: 'language models · Claude', op: 0.34, detail: '<b>Generative AI</b> produces new text, images or audio. <b>Large language models</b> such as Claude are deep networks trained on text to predict what comes next. <span class="muted">At work:</span> drafting, summarising, answering from documents, and the agents you will build.'}
-];
+var FAM = {
+  ai: {label: 'Artificial intelligence', sub: '1950s · includes hand-written rules', detail: '<b>Artificial intelligence</b> is the whole family: any machine behaviour we would call intelligent, including systems where a programmer wrote every rule. Everything below is a kind of AI.'},
+  rules: {label: 'Rule-based systems', sub: 'hand-written rules', detail: '<b>Rule-based systems</b> are AI without learning: a programmer wrote every "if this, then that". Still everywhere, and still useful when the rules are known. <span class="muted">At work:</span> the 2005 spam filter, a rules-based fraud check, a chess program.'},
+  ml: {label: 'Machine learning', sub: 'learns the rules from examples', detail: '<b>Machine learning</b> replaces hand-written rules with patterns learned from labelled examples. Show it enough tickets marked billing or technical and it works out the difference itself.'},
+  classic: {label: 'Classic machine learning', sub: 'scores and forecasts', detail: '<b>Classic machine learning</b> learns from tables of examples: decision trees, regressions, gradient boosting. Often the right tool, and far cheaper than a language model. <span class="muted">At work:</span> a credit-risk score, the CRM\'s "at risk" flag, demand forecasting.'},
+  dl: {label: 'Deep learning', sub: 'many layers of simple units', detail: '<b>Deep learning</b> is machine learning done with large networks of simple units stacked in many layers. It made speech, vision and translation good enough to use at work.'},
+  percep: {label: 'Perception models', sub: 'speech, vision', detail: '<b>Perception models</b> are deep networks that recognise things rather than make things. <span class="muted">At work:</span> meeting transcription, receipt reading, face unlock.'},
+  gen: {label: 'Generative AI', sub: 'makes new text and images', detail: '<b>Generative AI</b> produces new text, images or audio instead of a label or a score. The language models are its best-known branch.'},
+  llm: {label: 'Large language models', sub: 'Claude · ChatGPT · Gemini', detail: '<b>Large language models</b> such as Claude are deep networks trained on a vast amount of text to predict what comes next, then tuned to be helpful. <span class="muted">At work:</span> drafting, summarising, answering from documents, and the agents you will build.'}
+};
 (function(){
-  var svg = $('#ringsSvg'), cx = 200, cy = 158, parts = [];
-  RINGS.forEach(function(r){
-    parts.push('<g class="ring" data-id="' + r.id + '" tabindex="0" role="button" aria-label="' + r.label + '">' +
-      '<circle cx="' + cx + '" cy="' + cy + '" r="' + r.r + '" fill="var(--think)" fill-opacity="' + r.op + '" stroke="var(--think)" stroke-width="1.5"/>' +
-      '<text x="' + cx + '" y="' + (cy - r.r + 16) + '" text-anchor="middle">' + r.label + '</text>' +
-      '<text class="sub" x="' + cx + '" y="' + (cy - r.r + 28) + '" text-anchor="middle">' + r.sub + '</text></g>');
-  });
-  svg.innerHTML = parts.join('');
-  function show(id){
-    RINGS.forEach(function(r){ var g = svg.querySelector('[data-id="' + r.id + '"]'); g.classList.toggle('is-on', r.id === id); if (r.id === id) $('#ringsDetail').innerHTML = r.detail; });
+  var tree = $('#ftTree'), detail = $('#ftDetail'); if (!tree) return;
+  var NODES = [['ai', 1, 3, 7, 'ft__path'], ['rules', 2, 1, 4, ''], ['ml', 2, 5, 8, 'ft__path'], ['classic', 3, 3, 6, ''], ['dl', 3, 6, 9, 'ft__path'], ['percep', 4, 3, 6, ''], ['gen', 4, 6, 9, 'ft__path'], ['llm', 5, 6, 9, 'ft__path ft__leaf']];
+  var EDGES = [['ai', 'rules'], ['ai', 'ml'], ['ml', 'classic'], ['ml', 'dl'], ['dl', 'percep'], ['dl', 'gen'], ['gen', 'llm']], PATH = ['ai', 'ml', 'dl', 'gen', 'llm'];
+  var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); svg.setAttribute('aria-hidden', 'true'); tree.appendChild(svg);
+  var ref = {};
+  NODES.forEach(function(n){ var d = FAM[n[0]], b = document.createElement('button'); b.type = 'button'; b.className = 'ft__node ' + n[4]; b.setAttribute('data-id', n[0]); b.style.gridArea = n[1] + ' / ' + n[2] + ' / ' + (n[1] + 1) + ' / ' + n[3]; b.innerHTML = '<b>' + d.label + '</b><small>' + d.sub + '</small>'; tree.appendChild(b); ref[n[0]] = b; });
+  function draw(){
+    var R = tree.getBoundingClientRect(); if (!R.width) return; var out = '';
+    EDGES.forEach(function(e){ var a = ref[e[0]].getBoundingClientRect(), b = ref[e[1]].getBoundingClientRect(), x1 = a.left + a.width / 2 - R.left, y1 = a.bottom - R.top, x2 = b.left + b.width / 2 - R.left, y2 = b.top - R.top, ym = (y1 + y2) / 2; out += '<path' + (PATH.indexOf(e[0]) >= 0 && PATH.indexOf(e[1]) >= 0 ? ' class="ft__on"' : '') + ' d="M' + x1 + ' ' + y1 + ' V' + ym + ' H' + x2 + ' V' + y2 + '"/>'; });
+    svg.innerHTML = out;
   }
-  $$('.ring', svg).forEach(function(g){
-    g.addEventListener('click', function(){ show(g.getAttribute('data-id')); });
-    g.addEventListener('keydown', function(e){ if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); show(g.getAttribute('data-id')); } });
-  });
-  show('gen');
+  function show(id){ Object.keys(ref).forEach(function(k){ ref[k].classList.toggle('is-on', k === id); ref[k].setAttribute('aria-pressed', k === id ? 'true' : 'false'); }); detail.innerHTML = FAM[id].detail; }
+  Object.keys(ref).forEach(function(k){ ref[k].addEventListener('click', function(){ show(k); }); });
+  if (window.ResizeObserver) new ResizeObserver(draw).observe(tree);
+  window.addEventListener('load', draw); setTimeout(draw, 100); setTimeout(draw, 800);
+  show('llm'); draw();
 })();
 
 /* ---------- LEARN 3: a ticket sorter learns ---------- */
