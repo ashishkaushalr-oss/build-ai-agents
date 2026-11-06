@@ -425,8 +425,8 @@ footer.site{padding-block:32px 48px;color:var(--muted);font-size:.9rem;display:g
 .dayp .go:hover{border-color:var(--think)}
 .concepts{display:flex;gap:6px;flex-wrap:wrap}
 .cc{padding:4px 10px;border-radius:999px;border:1px solid var(--line);font-size:.82rem;cursor:pointer;background:var(--surface);color:var(--muted);font-weight:600}
-.cc.is-on{background:var(--think-soft);border-color:var(--think);color:var(--think)}
-.cc.is-on::before{content:"✓ "}
+.cc.is-on{background:var(--observe-soft);border-color:var(--observe);color:var(--fg)}
+.cc.is-on::before{content:"✓ ";color:var(--observe)}
 .wk textarea{min-height:70px}
 .sumgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:18px}
 .sumcard{padding:14px 16px;border-radius:var(--r-m);background:var(--surface);border:1px solid var(--line);display:grid;gap:2px}
@@ -435,6 +435,9 @@ footer.site{padding-block:32px 48px;color:var(--muted);font-size:.9rem;display:g
 .todo{display:grid;gap:6px}
 .todo div{display:flex;justify-content:space-between;gap:10px;padding:8px 12px;border-radius:10px;background:var(--surface-2);font-size:.9rem}
 .todo div b{font-family:var(--font-display);color:var(--muted);font-size:.8rem;white-space:nowrap}
+.todo div.is-done{background:var(--observe-soft);box-shadow:inset 0 0 0 1px var(--observe)}
+.wk__top{display:flex;align-items:center;justify-content:space-between;gap:10px 16px;flex-wrap:wrap}
+.wk__top p{flex:1 1 320px;min-width:0}
 .mods{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
 .mod{display:grid;gap:8px;padding:18px;border:1px solid var(--line);border-radius:var(--r-l);background:var(--surface);text-decoration:none;color:inherit;transition:transform .15s,border-color .15s;position:relative}
 .mod:hover{transform:translateY(-2px);border-color:var(--think)}
@@ -1223,7 +1226,7 @@ Course.init({week: 0, title: 'Course Hub'});
       var sum = el('summary', {}, [el('span', {class: 'num', text: String(w.n)}), el('span', {class: 'title'}, [el('b', {text: 'Week ' + w.n + ' · ' + w.title}), el('small', {text: 'Days ' + dayNum(w, 0) + ' to ' + dayNum(w, 4) + ' · ' + w.hours + ' h · ' + w.lab})]), el('span', {class: 'parts', 'aria-hidden': 'true'})]);
       d.appendChild(sum);
       var body = el('div', {class: 'wk__body'});
-      body.appendChild(el('p', {class: 'muted', style: 'font-size:.92rem', html: '<strong>You will make:</strong> ' + Course.esc(w.make)}));
+      body.appendChild(el('div', {class: 'wk__top'}, [el('p', {class: 'muted', style: 'font-size:.92rem', html: '<strong>You will make:</strong> ' + Course.esc(w.make)}), el('a', {class: 'btn btn--small btn--think', 'data-href': 'w' + w.n, text: 'Open the Week ' + w.n + ' module'})]));
       body.appendChild(el('span', {class: 'eyebrow', text: 'Days ' + dayNum(w, 0) + ' to ' + dayNum(w, 4) + ' · tick a day when you finish it'}));
       var tg = el('div', {class: 'dayrow'});
       DAY_KEYS.forEach(function(k, i){ var info = dayInfo(w, i); var pill = el('div', {class: 'dayp' + (s[k] ? ' is-on' : '')}); var lab = el('label', {}); var cb = el('input', {type: 'checkbox', id: 'w' + w.n + '-' + k, 'aria-label': info.label}); cb.checked = !!s[k]; cb.addEventListener('change', function(){ s[k] = cb.checked; pill.classList.toggle('is-on', cb.checked); changed(cb.checked ? info.label : null); }); lab.appendChild(cb); lab.appendChild(el('span', {}, [el('b', {text: 'Day ' + info.num}), el('small', {text: info.title + (info.mins ? ' · about ' + (info.mins >= 120 && info.mins % 60 === 0 ? (info.mins / 60) + ' hours' : info.mins + ' min') : '')})])); pill.appendChild(lab); pill.appendChild(el('a', {class: 'go', 'data-href': 'w' + w.n, 'data-hash': '#day' + (i + 1), title: 'Open Day ' + info.num + ' in the Week ' + w.n + ' module', text: 'Open'})); tg.appendChild(pill); });
@@ -1232,8 +1235,6 @@ Course.init({week: 0, title: 'Course Hub'});
       var cc = el('div', {class: 'concepts'});
       w.concepts.forEach(function(c, i){ var b = el('button', {type: 'button', class: 'cc' + (s.concepts[i] ? ' is-on' : ''), id: 'w' + w.n + '-c' + i, text: c}); b.addEventListener('click', function(){ s.concepts[i] = !s.concepts[i]; b.classList.toggle('is-on', !!s.concepts[i]); changed(s.concepts[i] ? 'Week ' + w.n + ': ' + c : null); }); cc.appendChild(b); });
       body.appendChild(cc);
-      var row = el('div', {class: 'row', style: 'justify-content:space-between'}, [el('a', {class: 'btn btn--small btn--think', 'data-href': 'w' + w.n, text: 'Open the Week ' + w.n + ' module'}), el('span', {class: 'muted', style: 'font-size:.85rem', text: 'Deliverable: ' + w.make})]);
-      body.appendChild(row);
       var ta = el('textarea', {id: 'w' + w.n + '-notes', placeholder: 'What I built, what broke, what I learned', 'aria-label': 'Notes for week ' + w.n}); ta.value = s.notes || '';
       var nt; ta.addEventListener('input', function(){ s.notes = ta.value; clearTimeout(nt); nt = setTimeout(function(){ changed(null); }, 500); });
       body.appendChild(ta);
@@ -1265,7 +1266,7 @@ Course.init({week: 0, title: 'Course Hub'});
     if (!count) todo.appendChild(el('div', {}, [el('span', {text: 'Every concept is covered.'})]));
     var rec = $('#recent'); rec.innerHTML = ''; var ev = (state.events || []).slice().reverse().slice(0, 6);
     if (!ev.length) rec.appendChild(el('div', {}, [el('span', {class: 'muted', text: 'Nothing ticked yet. Start with Week 1.'})]));
-    ev.forEach(function(e){ rec.appendChild(el('div', {}, [el('span', {text: e.s}), el('b', {text: new Date(e.t).toLocaleDateString()})])); });
+    ev.forEach(function(e){ rec.appendChild(el('div', {class: 'is-done'}, [el('span', {text: e.s}), el('b', {text: new Date(e.t).toLocaleDateString()})])); });
     Course.init({week: 0, title: 'Course Hub'});
   }
 

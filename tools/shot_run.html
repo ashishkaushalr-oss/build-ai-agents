@@ -19,6 +19,8 @@
         var el = q.get('sel') ? D.querySelector(q.get('sel')) : null, row = el && (q.get('own') ? el : (el.closest('.concept') || el));
         if (row) row.scrollIntoView({block: q.get('block') || 'center'});
         if (el && q.get('click')) { var c = D.querySelector(q.get('click')); if (c) c.click(); }
+        /* clicks=sel1|sel2|... clicks each in turn first (e.g. tick a few boxes so a tracker shows progress), then re-centres the element */
+        if (q.get('clicks')) { q.get('clicks').split('|').forEach(function(s){ var c = D.querySelector(s); if (c) c.click(); }); if (row) row.scrollIntoView({block: q.get('block') || 'center'}); }
       }, 400);
     }, 600);
   };
