@@ -1,0 +1,27 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Close-up runner</title>
+<!-- Shows one part of a built page, for a headless screenshot of just that part:
+     chrome --headless=new --window-size=1536,900 --virtual-time-budget=8000 --screenshot=ABSOLUTE.png
+       "http://localhost:8790/tools/shot_run.html?page=w3&day=1&sel=%23w3PartsSvg"
+     It loads docs/<page>.html full-screen in a same-origin frame, opens the day tab, and scrolls the chosen element's row into the middle. -->
+<style>html,body{margin:0;height:100%;overflow:hidden}iframe{border:0;width:100%;height:100%;display:block}</style>
+<iframe id="f"></iframe>
+<script>
+(function(){
+  var q = new URLSearchParams(location.search), f = document.getElementById('f');
+  f.onload = function(){
+    var W = f.contentWindow, D = W.document, day = parseInt(q.get('day') || '0', 10);
+    setTimeout(function(){
+      if (day && W.Course && W.Course.showDay) W.Course.showDay(day, false);
+      setTimeout(function(){
+        /* own=1 centres the element itself rather than its whole row (for small items in tall rows) */
+        var el = q.get('sel') ? D.querySelector(q.get('sel')) : null, row = el && (q.get('own') ? el : (el.closest('.concept') || el));
+        if (row) row.scrollIntoView({block: q.get('block') || 'center'});
+        if (el && q.get('click')) { var c = D.querySelector(q.get('click')); if (c) c.click(); }
+      }, 400);
+    }, 600);
+  };
+  f.src = '../docs/' + (q.get('page') || 'w1') + '.html';
+})();
+</script>

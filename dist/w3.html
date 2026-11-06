@@ -513,20 +513,21 @@ footer.site{padding-block:32px 48px;color:var(--muted);font-size:.9rem;display:g
             <path d="M190 180 C 215 180, 215 150, 238 150" fill="none" stroke="var(--line)" stroke-width="2" marker-end="url(#w3Arr)"></path>
             <g class="w3-piece" data-part="knowledge" id="w3PieceKnowledge" role="button" tabindex="0" aria-label="Knowledge: the files you upload">
               <rect x="20" y="42" width="170" height="86" rx="14" fill="var(--think-soft)" stroke="var(--think)" stroke-width="2"></rect>
-              <rect x="34" y="58" width="26" height="34" rx="4" fill="var(--surface)" stroke="var(--think)" stroke-width="1.5"></rect>
-              <rect x="44" y="64" width="26" height="34" rx="4" fill="var(--surface)" stroke="var(--think)" stroke-width="1.5"></rect>
-              <rect x="54" y="70" width="26" height="34" rx="4" fill="var(--surface)" stroke="var(--think)" stroke-width="1.5"></rect>
-              <text x="96" y="80" font-family="Bricolage Grotesque, sans-serif" font-weight="800" font-size="15" fill="var(--think)">Knowledge</text>
-              <text x="96" y="98" font-family="Figtree, sans-serif" font-size="11" fill="var(--muted)">policies, sheets, contracts</text>
-              <text x="96" y="113" font-family="Figtree, sans-serif" font-size="11" fill="var(--muted)">read in every chat</text>
+              <!-- a small file stack beside the title; the description runs the full width of the box underneath, so it fits -->
+              <rect x="34" y="54" width="15" height="19" rx="3" fill="var(--surface)" stroke="var(--think)" stroke-width="1.5"></rect>
+              <rect x="40" y="58" width="15" height="19" rx="3" fill="var(--surface)" stroke="var(--think)" stroke-width="1.5"></rect>
+              <rect x="46" y="62" width="15" height="19" rx="3" fill="var(--surface)" stroke="var(--think)" stroke-width="1.5"></rect>
+              <text x="72" y="77" font-family="Bricolage Grotesque, sans-serif" font-weight="800" font-size="15" fill="var(--think)">Knowledge</text>
+              <text x="34" y="102" font-family="Figtree, sans-serif" font-size="11" fill="var(--muted)">policies, sheets, contracts</text>
+              <text x="34" y="117" font-family="Figtree, sans-serif" font-size="11" fill="var(--muted)">read in every chat</text>
             </g>
             <g class="w3-piece" data-part="instructions" id="w3PieceInstructions" role="button" tabindex="0" aria-label="Instructions: your system prompt, applied to every chat">
               <rect x="20" y="140" width="170" height="80" rx="14" fill="var(--observe-soft)" stroke="var(--observe)" stroke-width="2"></rect>
-              <rect x="34" y="156" width="40" height="48" rx="5" fill="var(--surface)" stroke="var(--observe)" stroke-width="1.5"></rect>
-              <path d="M41 168h26M41 178h26M41 188h18" stroke="var(--observe)" stroke-width="2" stroke-linecap="round"></path>
-              <text x="88" y="176" font-family="Bricolage Grotesque, sans-serif" font-weight="800" font-size="15" fill="var(--observe)">Instructions</text>
-              <text x="88" y="194" font-family="Figtree, sans-serif" font-size="11" fill="var(--muted)">your Week 2 prompt,</text>
-              <text x="88" y="209" font-family="Figtree, sans-serif" font-size="11" fill="var(--muted)">applied automatically</text>
+              <rect x="34" y="151" width="22" height="27" rx="4" fill="var(--surface)" stroke="var(--observe)" stroke-width="1.5"></rect>
+              <path d="M39 159h12M39 165h12M39 171h8" stroke="var(--observe)" stroke-width="1.6" stroke-linecap="round"></path>
+              <text x="66" y="171" font-family="Bricolage Grotesque, sans-serif" font-weight="800" font-size="15" fill="var(--observe)">Instructions</text>
+              <text x="34" y="195" font-family="Figtree, sans-serif" font-size="11" fill="var(--muted)">your Week 2 prompt,</text>
+              <text x="34" y="210" font-family="Figtree, sans-serif" font-size="11" fill="var(--muted)">applied automatically</text>
             </g>
             <g class="w3-piece" data-part="chats" id="w3PieceChats" role="button" tabindex="0" aria-label="Chats: separate conversations that share the knowledge and the instructions">
               <rect x="262" y="42" width="140" height="70" rx="12" fill="var(--act-soft)" stroke="var(--act)" stroke-width="2"></rect>
@@ -1696,7 +1697,8 @@ function drawHero(ctx, w, h, t){
     var y = top + i * (ch + gap), pop = easeOut(p / 0.35);
     ctx.save(); ctx.globalAlpha = pop; ctx.translate(cx + cw / 2, y + ch / 2); ctx.scale(lerp(0.9, 1, pop), lerp(0.9, 1, pop)); ctx.translate(-(cx + cw / 2), -(y + ch / 2));
     ctx.fillStyle = HERO_INK.panel; ctx.strokeStyle = line; ctx.lineWidth = 1; Course.roundRect(ctx, cx, y, cw, ch, 10); ctx.fill(); ctx.stroke();
-    ctx.fillStyle = HERO_INK.panel2; Course.roundRect(ctx, cx, y, cw, 18 * g + 4, 10); ctx.fill(); ctx.fillRect(cx, y + 10, cw, 8 * g + 4);
+    /* the chat's header strip: one band clipped to the card's rounded top, so the "chat 1" label sits inside a single shape */
+    ctx.save(); Course.roundRect(ctx, cx, y, cw, ch, 10); ctx.clip(); ctx.fillStyle = HERO_INK.panel2; ctx.fillRect(cx, y, cw, 18 * g + 4); ctx.restore();
     txt(ctx, 'chat ' + (i + 1), cx + 10, y + 13 * g + 2, fS + 'px ' + MONO, mut);
     var slotY = y + 5, slotX = cx + cw - 12;
     for (var k = 0; k < 4; k++) {

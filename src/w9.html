@@ -277,9 +277,9 @@ p code{overflow-wrap:anywhere}
             <g class="blk blk--script" data-blk="name"><rect x="158" y="22" width="112" height="44" rx="10"></rect><text x="214" y="48" text-anchor="middle">Ask name</text></g>
             <g class="blk blk--script" data-blk="email"><rect x="298" y="22" width="112" height="44" rx="10"></rect><text x="354" y="48" text-anchor="middle">Ask work email</text></g>
             <g class="blk blk--script" data-blk="intent"><polygon points="354,114 392,140 354,166 316,140"></polygon><text x="354" y="144" text-anchor="middle">Intent?</text></g>
-            <g class="blk blk--script" data-blk="shipment"><rect x="40" y="200" width="100" height="40" rx="10"></rect><text x="90" y="224" text-anchor="middle">Ask consignment #</text></g>
-            <g class="blk blk--script" data-blk="invoice"><rect x="190" y="200" width="100" height="40" rx="10"></rect><text x="240" y="224" text-anchor="middle">Ask invoice #</text></g>
-            <g class="blk blk--script" data-blk="other"><rect x="340" y="200" width="100" height="40" rx="10"></rect><text x="390" y="224" text-anchor="middle">Free text</text></g>
+            <g class="blk blk--script" data-blk="shipment"><rect x="34" y="200" width="112" height="40" rx="10"></rect><text x="90" y="224" text-anchor="middle">Ask consignment #</text></g>
+            <g class="blk blk--script" data-blk="invoice"><rect x="184" y="200" width="112" height="40" rx="10"></rect><text x="240" y="224" text-anchor="middle">Ask invoice #</text></g>
+            <g class="blk blk--script" data-blk="other"><rect x="334" y="200" width="112" height="40" rx="10"></rect><text x="390" y="224" text-anchor="middle">Free text</text></g>
             <g class="blk blk--agent" data-blk="handoff"><rect x="150" y="268" width="180" height="40" rx="10"></rect><text x="240" y="292" text-anchor="middle">Hand off to the n8n agent</text></g>
             <circle class="token" id="flowToken" cx="74" cy="44" r="8"></circle>
           </svg>
@@ -536,7 +536,7 @@ and say so. Treat the channel as proof of nothing.</code></pre>
           <rect class="box" id="waPhone" x="14" y="50" width="86" height="140" rx="12"></rect>
           <rect class="screen" x="20" y="62" width="74" height="116" rx="6"></rect>
           <g id="waMsgOut"><rect x="28" y="72" width="62" height="26" rx="8" fill="var(--think-soft)"></rect><text class="bub" x="33" y="83">Where is</text><text class="bub" x="33" y="94">MR-48812?</text></g>
-          <g id="waMsgIn" opacity="0"><rect x="24" y="140" width="64" height="26" rx="8" fill="var(--observe-soft)"></rect><text class="bub" x="29" y="151">Out for delivery.</text><text class="bub" x="29" y="162">By 4 pm today.</text></g>
+          <g id="waMsgIn" opacity="0"><rect x="24" y="140" width="64" height="26" rx="8" fill="var(--observe-soft)"></rect><text class="bub" x="29" y="151">On its way,</text><text class="bub" x="29" y="162">due by 4 pm.</text></g>
           <text x="57" y="208" text-anchor="middle">Priya's phone</text>
           <rect class="box" id="waMeta" x="160" y="95" width="120" height="56" rx="10"></rect>
           <text x="220" y="118" text-anchor="middle">Meta WhatsApp</text><text class="sub" x="220" y="134" text-anchor="middle">Cloud API (test number)</text>
@@ -587,20 +587,20 @@ and say so. Treat the channel as proof of nothing.</code></pre>
           <path class="wire" id="rtWireWeb" d="M144 53 C 180 53, 180 120, 215 120"></path>
           <path class="wire" id="rtWirePortal" d="M144 130 H215"></path>
           <path class="wire" id="rtWireWa" d="M144 207 C 180 207, 180 140, 215 140"></path>
-          <path class="wire" id="rtWireMem" d="M335 112 C 348 112, 348 70, 360 70"></path>
-          <path class="wire" id="rtWireTools" d="M335 148 C 348 148, 348 190, 360 190"></path>
+          <path class="wire" id="rtWireMem" d="M335 112 C 345 112, 345 70, 354 70"></path>
+          <path class="wire" id="rtWireTools" d="M335 148 C 345 148, 345 190, 354 190"></path>
           <text class="mono" x="150" y="46">sessionId a81f</text>
           <text class="mono" x="150" y="124">cust-1187</text>
           <text class="mono" x="150" y="222">+91 98•• ••• 4471</text>
           <g class="box--pick" data-ch="web"><rect class="box" id="rtWeb" x="14" y="30" width="130" height="46" rx="10"></rect><text x="79" y="49" text-anchor="middle">Website widget</text><text class="sub" x="79" y="64" text-anchor="middle">anonymous · streams</text></g>
           <g class="box--pick" data-ch="portal"><rect class="box" id="rtPortal" x="14" y="107" width="130" height="46" rx="10"></rect><text x="79" y="126" text-anchor="middle">Customer portal iframe</text><text class="sub" x="79" y="141" text-anchor="middle">signed in · streams</text></g>
-          <g class="box--pick" data-ch="wa"><rect class="box" id="rtWa" x="14" y="184" width="130" height="46" rx="10"></rect><text x="79" y="203" text-anchor="middle">WhatsApp</text><text class="sub" x="79" y="218" text-anchor="middle">number known · whole messages</text></g>
+          <g class="box--pick" data-ch="wa"><rect class="box" id="rtWa" x="14" y="184" width="130" height="46" rx="10"></rect><text x="79" y="199" text-anchor="middle">WhatsApp</text><text class="sub" x="79" y="212" text-anchor="middle">number known</text><text class="sub" x="79" y="224" text-anchor="middle">whole messages</text></g>
           <rect class="box box--agent" id="rtAgent" x="215" y="92" width="120" height="76" rx="10"></rect>
           <text x="275" y="114" text-anchor="middle">AI Agent node</text><text class="sub" x="275" y="130" text-anchor="middle">claude-sonnet-5-5</text><text class="sub" x="275" y="146" text-anchor="middle">system prompt · parser</text><text class="sub" x="275" y="160" text-anchor="middle">handover · identity</text>
-          <rect class="box" id="rtMem" x="360" y="40" width="88" height="60" rx="10"></rect>
+          <rect class="box" id="rtMem" x="354" y="40" width="100" height="60" rx="10"></rect>
           <text x="404" y="63" text-anchor="middle">Memory</text><text class="sub" x="404" y="79" text-anchor="middle">one row per</text><text class="sub" x="404" y="91" text-anchor="middle">session id</text>
-          <rect class="box" id="rtTools" x="360" y="160" width="88" height="60" rx="10"></rect>
-          <text x="404" y="183" text-anchor="middle">Tools</text><text class="sub" x="404" y="199" text-anchor="middle">shipments · invoices</text><text class="sub" x="404" y="211" text-anchor="middle">pickups · alert</text>
+          <rect class="box" id="rtTools" x="354" y="160" width="100" height="60" rx="10"></rect>
+          <text x="404" y="183" text-anchor="middle">Tools</text><text class="sub" x="404" y="199" text-anchor="middle">shipments, invoices</text><text class="sub" x="404" y="211" text-anchor="middle">pickups, alert</text>
           <circle class="pkt" id="rtPkt" cx="144" cy="53" r="7" opacity="0"></circle>
         </svg>
         <div class="w9-route" id="rtCard" aria-live="polite"></div>

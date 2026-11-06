@@ -1,0 +1,22 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Overflow audit runner</title>
+<!-- Runs tools/overflow_audit.js over built pages with no browser window, so the check can run in headless Chrome:
+     chrome --headless=new --virtual-time-budget=900000 --dump-dom "http://localhost:8790/tools/audit_run.html?pages=w1,w2&widths=1200,1440"
+     (the icon-board server serves the course root, so docs/ pages are same-origin with this runner). Results land in <pre id="out">. -->
+<pre id="out">running</pre>
+<script src="overflow_audit.js"></script>
+<script>
+(async function(){
+  var q = new URLSearchParams(location.search), out = document.getElementById('out'), lines = [];
+  var pages = (q.get('pages') || 'w1').split(','), widths = (q.get('widths') || '1440').split(',').map(Number);
+  /* optional: days=2,3 checks only those day tabs; nopoke=1 skips clicking the controls */
+  var days = q.get('days') ? q.get('days').split(',').map(Number) : null, opts = {noPoke: q.get('nopoke') === '1'};
+  for (var i = 0; i < pages.length; i++) for (var j = 0; j < widths.length; j++) {
+    try { lines.push(await window.__audit('../docs/' + pages[i] + '.html', widths[j], days, opts)); }
+    catch (e) { lines.push(pages[i] + '@' + widths[j] + ' ERROR ' + e); }
+    out.textContent = lines.join('\n') + '\n(running)';
+  }
+  out.textContent = lines.join('\n') + '\nAUDIT DONE';
+})();
+</script>

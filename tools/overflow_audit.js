@@ -131,6 +131,17 @@ window.__audit = async function(page, width, days, opts){
       if (!visible(svg)) return; const sr = svg.getBoundingClientRect(); const op = el => { let o = 1; for (let e = el; e && e !== svg.parentElement; e = e.parentElement) o *= parseFloat(W.getComputedStyle(e).opacity || '1'); return o; };
       const texts = [...svg.querySelectorAll('text')].filter(t => visible(t) && op(t) > 0.3).map(t => ({t: t, r: t.getBoundingClientRect(), s: t.textContent.trim()})).filter(x => x.s);
       texts.forEach(x => { const o = Math.max(sr.left - x.r.left, x.r.right - sr.right); if (o > 1.5) add('svg|' + where(svg) + '|' + x.s, {kind: 'SVG text clipped', where: nameOf(svg) + ' [' + where(svg) + ']', day: 'd' + day, text: x.s.slice(0, 60), amt: Math.round(o), info: '', frames: 1}); });
+      /* SVG text that runs out of the box it sits in: the smallest visible shape (rect, circle, ellipse or diamond, by its bounding box) holding the text's anchor point;
+         shapes under half the text's width are markers passing over it (a moving dot), not its box */
+      const boxes = [...svg.querySelectorAll('rect, circle, ellipse, polygon')].filter(b => visible(b) && op(b) > 0.1).map(b => b.getBoundingClientRect()).filter(b => b.width > 4 && b.height > 4);
+      texts.forEach(x => {
+        const anc = W.getComputedStyle(x.t).textAnchor, px = anc === 'middle' ? (x.r.left + x.r.right) / 2 : anc === 'end' ? x.r.right - 2 : x.r.left + 2, py = (x.r.top + x.r.bottom) / 2;
+        const B = boxes.filter(b => px > b.left && px < b.right && py > b.top && py < b.bottom && b.width >= 0.5 * x.r.width).sort((a, b) => a.width * a.height - b.width * b.height)[0];
+        if (!B) return;
+        const ox = Math.max(B.left + 1 - x.r.left, x.r.right - (B.right - 1)), oy = Math.max(B.top - x.r.top, x.r.bottom - B.bottom);
+        if (ox > 0.5) add('svgbox|' + where(svg) + '|' + x.s, {kind: 'SVG text leaves its box', where: nameOf(svg) + ' [' + where(svg) + ']', day: 'd' + day, text: x.s.slice(0, 60), amt: Math.round(ox), info: 'box ' + Math.round(B.width) + 'px wide, text ' + Math.round(x.r.width) + 'px', frames: 1});
+        else if (oy > 3) add('svgboxy|' + where(svg) + '|' + x.s, {kind: 'SVG text leaves its box vertically', where: nameOf(svg) + ' [' + where(svg) + ']', day: 'd' + day, text: x.s.slice(0, 60), amt: Math.round(oy), info: 'box ' + Math.round(B.height) + 'px tall', frames: 1});
+      });
       for (let i = 0; i < texts.length; i++) for (let j = i + 1; j < texts.length; j++) { const a = texts[i].r, b = texts[j].r; const iw = Math.min(a.right, b.right) - Math.max(a.left, b.left), ih = Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top); if (iw > 1 && ih > 1 && iw * ih > 0.2 * Math.min(a.width * a.height, b.width * b.height)) add('svgov|' + where(svg) + '|' + texts[i].s + texts[j].s, {kind: 'SVG text overlap', where: nameOf(svg) + ' [' + where(svg) + ']', day: 'd' + day, text: texts[i].s.slice(0, 30) + '  ⟂  ' + texts[j].s.slice(0, 30), amt: Math.round(Math.min(iw, ih)), info: '', frames: 1}); }
     });
     const sw = D.documentElement.scrollWidth - W.innerWidth; if (sw > 1) add('page|hscroll', {kind: 'page scrolls sideways', where: 'page', day: 'd' + day, text: '', amt: sw, info: '', frames: 1});
