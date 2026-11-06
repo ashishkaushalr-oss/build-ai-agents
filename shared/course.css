@@ -4,6 +4,7 @@
   --think:#6A52F5; --act:#F2552E; --observe:#0E9F86;
   --think-soft:#ECE8FF; --act-soft:#FFE9E2; --observe-soft:#DDF5EF;
   --accent:var(--act); --accent-ink:#FFFFFF;
+  --sel:#6A52F5; --sel-ink:#FFFFFF;   /* the selected day tab and week: the violet that starts the banner subtext, same in both themes (white on it is 5:1) */
   --ok:#1E9E5A; --warn:#D99400; --bad:#D63B3B;
   --stage:#0B1020; --stage-2:#141D36; --stage-fg:#EAF0FF; --stage-muted:#8E9BBE; --stage-line:#26325A;
   --shadow:0 10px 30px rgba(14,22,38,.08);
@@ -88,6 +89,23 @@ pre.code .k{color:#8F7BFF}pre.code .s{color:#2CD2B2}pre.code .c{color:#8E9BBE}pr
 .rail__links a{font-size:.85rem;font-weight:600;color:var(--muted);text-decoration:none;padding:6px 10px;border-radius:999px;border:1px solid var(--line);background:var(--surface);white-space:nowrap}
 .rail__links a:hover{color:var(--fg)}
 @media (max-width:720px){.rail__title{display:none}.rail__nav{margin-left:0;order:3;flex-basis:100%}}
+/* week switcher: Course.init turns a week page's "Week N" badge into this button and list */
+.wkm{position:relative;display:inline-flex}
+.wkm__btn{border:0;cursor:pointer;display:inline-flex;align-items:center;gap:6px;line-height:inherit;padding-right:8px}
+.wkm__btn:hover{background:color-mix(in srgb,var(--fg) 82%,var(--sel))}
+.wkm__btn svg{width:12px;height:12px;flex:none;transition:transform .2s}
+.wkm.is-open .wkm__btn svg{transform:rotate(180deg)}
+.wkm__panel{position:absolute;top:calc(100% + 10px);left:0;z-index:40;width:330px;max-width:calc(100vw - 32px);max-height:calc(100vh - 96px);overflow:auto;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-m);box-shadow:0 18px 40px rgba(14,22,38,.18);padding:6px;display:grid;gap:2px}
+.wkm__panel[hidden]{display:none}
+.wkm__panel a{display:grid;grid-template-columns:28px minmax(0,1fr) auto;align-items:center;gap:10px;padding:7px 8px;border-radius:9px;text-decoration:none;color:var(--fg);font-weight:600;font-size:.92rem}
+.wkm__panel a:hover{background:var(--surface-2)}
+.wkm__n{display:inline-grid;place-items:center;width:28px;height:28px;border-radius:8px;border:1px solid var(--line);font-family:var(--font-display);font-weight:800;font-size:.82rem;color:var(--muted)}
+.wkm__panel a[aria-current]{background:var(--think-soft)}
+.wkm__panel a[aria-current] .wkm__n{background:var(--sel);border-color:var(--sel);color:var(--sel-ink)}
+.wkm__here{font-size:.7rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--think)}
+.wkm__foot{margin:4px 0 0;border-top:1px solid var(--line);padding:9px 8px 5px;font-size:.85rem;color:var(--muted)}
+.wkm__panel .wkm__foot a{display:inline;padding:0;border-radius:0;font-size:inherit;color:var(--think);font-weight:700}
+.wkm__panel .wkm__foot a:hover{background:none;text-decoration:underline}
 
 /* ---------- Hero / stage ---------- */
 /* The banner is a light editorial card in both themes: paper, one soft colour orb, dark type, one gradient phrase in the title. */
@@ -286,13 +304,13 @@ footer.site{padding-block:32px 48px;color:var(--muted);font-size:.9rem;display:g
 @media (max-width:820px){.days{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:6px;scrollbar-width:thin}.days .dayt{min-width:170px;scroll-snap-align:start}}
 .dayt{display:grid;gap:4px;text-align:left;padding:12px 34px 12px 14px;border:1px solid var(--line);border-radius:var(--r-m);background:var(--surface);cursor:pointer;position:relative;transition:border-color .2s,background .2s;min-width:0;color:var(--fg)}
 .dayt:hover{border-color:color-mix(in srgb,var(--fg) 30%,var(--line))}
-.dayt.is-on{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.dayt.is-on{background:var(--sel);color:var(--sel-ink);border-color:var(--sel)}
 .dayt__n{font-family:var(--font-display);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;font-weight:800;color:var(--muted)}
 .dayt__t{font-size:.78rem;color:var(--muted)}
-.dayt.is-on .dayt__n,.dayt.is-on .dayt__t{color:color-mix(in srgb,var(--bg) 72%,transparent)}
+.dayt.is-on .dayt__n,.dayt.is-on .dayt__t{color:color-mix(in srgb,var(--sel-ink) 82%,transparent)}
 .dayt b{font-family:var(--font-display);font-size:.98rem;line-height:1.2}
 .dayt__dot{position:absolute;right:12px;top:13px;width:9px;height:9px;border-radius:50%;background:var(--line)}
-.dayt.is-on .dayt__dot{background:color-mix(in srgb,var(--bg) 40%,transparent)}
+.dayt.is-on .dayt__dot{background:color-mix(in srgb,var(--sel-ink) 45%,transparent)}
 .dayt.is-done .dayt__dot{background:var(--observe);box-shadow:0 0 0 3px color-mix(in srgb,var(--observe) 25%,transparent)}
 .daypanel{border-top:0;padding-top:30px}
 .today{margin-top:28px;border:1px solid color-mix(in srgb,var(--observe) 45%,var(--line));border-radius:var(--r-l);background:linear-gradient(180deg,color-mix(in srgb,var(--observe) 6%,var(--surface)),var(--surface));padding:20px;display:grid;gap:14px}

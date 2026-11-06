@@ -47,6 +47,7 @@
     Course.cfg = Object.assign({week: 0, title: '', sections: null, live: null}, cfg || {});
     document.documentElement.classList.toggle('no-motion', !Course.motionOK);
     renderWeeks();
+    weekMenu();
     wireRail();
     Course.checklists();
     Course.notes();
@@ -83,6 +84,39 @@
     });
   }
 
+  /* ---------- week switcher: on a week page the "Week N" badge in the top bar opens a list of all ten weeks ---------- */
+  Course.WEEKS = ['Meet Modern AI', 'Prompt Craft', 'Claude Projects', 'Context Engineering', 'Embeddings and RAG', 'n8n Workflows', 'Your First Agent', 'Tool Calling', 'Chat Channels', 'Capstone'];
+  function weekMenu(){
+    var cur = Course.cfg.week, badge = Course.$('.rail__badge'), u = Course.urls;
+    /* only a plain "Week N" badge: the hub, the playground and side pages such as "Week 1 · Day 2" keep theirs */
+    if (!badge || !(cur >= 1 && cur <= 10) || !/^Week \d+$/.test(badge.textContent.trim())) return;
+    function link(a, href){
+      a.setAttribute('href', href || '#');
+      if (!href || href === '#') a.classList.add('is-unlinked');
+      else if (/^https?:/.test(href)) { a.setAttribute('target', '_blank'); a.setAttribute('rel', 'noopener'); }
+      return a;
+    }
+    var btn = Course.el('button', {class: 'rail__badge wkm__btn', type: 'button', 'aria-expanded': 'false', 'aria-controls': 'wkmPanel',
+      html: 'Week ' + cur + '<svg viewBox="0 0 12 12" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 4.5 6 8l3.5-3.5"/></svg><span class="visually-hidden">, choose another week</span>'});
+    var panel = Course.el('nav', {class: 'wkm__panel', id: 'wkmPanel', 'aria-label': 'All ten weeks', hidden: true});
+    Course.WEEKS.forEach(function(t, i){
+      var n = i + 1, a = Course.el('a', {}, [Course.el('span', {class: 'wkm__n', text: String(n)}), Course.el('span', {class: 'wkm__t', text: t}), n === cur ? Course.el('span', {class: 'wkm__here', text: 'You are here'}) : null]);
+      if (n === cur) a.setAttribute('aria-current', 'page');
+      panel.appendChild(link(a, u.weeks && u.weeks[i]));
+    });
+    panel.appendChild(Course.el('p', {class: 'wkm__foot'}, [link(Course.el('a', {text: 'Course hub'}), u.hub), ' shows your progress in every week']));
+    var box = Course.el('div', {class: 'wkm'}, [btn, panel]);
+    badge.parentNode.replaceChild(box, badge);
+    function set(open, refocus){
+      panel.hidden = !open; btn.setAttribute('aria-expanded', open ? 'true' : 'false'); box.classList.toggle('is-open', open);
+      if (!open && refocus) btn.focus();
+    }
+    btn.addEventListener('click', function(){ set(panel.hidden); });
+    document.addEventListener('click', function(e){ if (!panel.hidden && !box.contains(e.target)) set(false); });
+    document.addEventListener('keydown', function(e){ if (e.key === 'Escape' && !panel.hidden) set(false, true); });
+    box.addEventListener('focusout', function(e){ if (!panel.hidden && e.relatedTarget && !box.contains(e.relatedTarget)) set(false); });
+  }
+
   function wireRail(){
     var pills = Course.$$('.rail__pill');
     if (!pills.length) return;
@@ -101,6 +135,8 @@
     }
     pills.forEach(function(p){ p.addEventListener('click', function(ev){
       var id = (p.getAttribute('href') || '').slice(1), t = document.getElementById(id);
+      /* day pills on a page with day tabs belong to Course.days, which decides whether the page moves */
+      if (t && t.getAttribute('role') === 'tabpanel') return;
       if (t) { ev.preventDefault(); t.scrollIntoView({behavior: Course.motionOK ? 'smooth' : 'auto', block: 'start'}); }
     }); });
   }
@@ -339,14 +375,25 @@
         Course.store.set('day', n);
         setTimeout(function(){ $$('canvas', panels[n]).forEach(function(c){ if (c.__course) c.__course.resize(); }); }, 0);
       }
-      if (scroll) { var strip = $('#dayTabs'); (strip || panels[n]).scrollIntoView({behavior: Course.motionOK ? 'smooth' : 'auto', block: 'start'}); }
+      /* scroll: true always brings the day tabs to the top (links such as "Start Day 1"); 'ifneeded' only when the tabs are off screen
+         (top-bar day pills, the Next day buttons at the foot of a day); false never moves the page (a click on a day tab itself). */
+      if (scroll === true || (scroll && !stripInView())) {
+        /* land the tabs just below the sticky top bar rather than under it (the bar is taller on phones, so measure it) */
+        var el = $('#dayTabs') || panels[n], rail = $('.rail'), off = (rail ? rail.getBoundingClientRect().bottom : 0) + 12;
+        window.scrollTo({top: Math.max(0, el.getBoundingClientRect().top + window.pageYOffset - off), behavior: Course.motionOK ? 'smooth' : 'auto'});
+      }
+    }
+    function stripInView(){
+      var s = $('#dayTabs'), rail = $('.rail'); if (!s) return false;
+      var r = s.getBoundingClientRect(), top = rail ? rail.getBoundingClientRect().bottom : 0;
+      return r.bottom > top && r.top < window.innerHeight;
     }
     function dots(){ for (var i = 1; i <= DAYS; i++) { if (!tabs[i]) continue; var cks = $$('input.check', panels[i]); tabs[i].classList.toggle('is-done', cks.length > 0 && cks.every(function(c){ return c.checked; })); } }
     for (var i = 1; i <= DAYS; i++) (function(i){
-      if (tabs[i]) tabs[i].addEventListener('click', function(){ show(i, true); });
-      if (pills[i]) pills[i].addEventListener('click', function(ev){ ev.preventDefault(); show(i, true); });
+      if (tabs[i]) tabs[i].addEventListener('click', function(){ show(i, false); });
+      if (pills[i]) pills[i].addEventListener('click', function(ev){ ev.preventDefault(); show(i, 'ifneeded'); });
     })(i);
-    $$('[data-go]').forEach(function(b){ b.addEventListener('click', function(){ show(parseInt(b.getAttribute('data-go'), 10), true); }); });
+    $$('[data-go]').forEach(function(b){ b.addEventListener('click', function(){ show(parseInt(b.getAttribute('data-go'), 10), 'ifneeded'); }); });
     document.addEventListener('change', function(e){ if (e.target && e.target.classList && e.target.classList.contains('check')) dots(); });
     function fromHash(){ var m = /^#(?:day([1-9])|(lab|quiz|build))$/.exec(location.hash || ''); if (!m) return 0; return m[1] ? parseInt(m[1], 10) : DAYS; }
     function innerTarget(){ return /^#(lab|quiz|build)$/.test(location.hash || '') ? $(location.hash) : null; }
