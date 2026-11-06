@@ -15,7 +15,7 @@
   --font-body:"Figtree",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
   --font-mono:"JetBrains Mono",ui-monospace,"Cascadia Code",Consolas,monospace;
   --r-s:10px; --r-m:14px; --r-l:20px;
-  --wrap:1120px;
+  --wrap:1256px;   /* 1,224 px of content plus the 16 px side gutters, the same content width as mckinsey.com */
   /* banner chart ink: the chart box is white paper in both themes, so these never change with the theme */
   --chart-bg:#FFFFFF; --chart-panel:#F4F6FB; --chart-panel-2:#E9EEF7; --chart-fg:#0E1626; --chart-muted:#5B6882; --chart-line:#D6DEEC;
   --chart-think:#6A52F5; --chart-act:#F2552E; --chart-observe:#0E9F86; --chart-warn:#C27A00; --chart-ok:#1E9E5A; --chart-bad:#D63B3B;
@@ -182,7 +182,7 @@ textarea{min-height:120px;resize:vertical;line-height:1.5}
 .concept__viz canvas{width:100%;display:block;border-radius:var(--r-m)}
 .concept__viz--dark{background:var(--stage);color:var(--stage-fg);border-color:var(--stage-line)}
 .concept__text{display:grid;gap:14px;min-width:0}
-.concept__text p{max-width:58ch;font-size:1.05rem}
+.concept__text p{max-width:70ch;font-size:1.05rem}
 .key{display:grid;gap:4px;padding:14px 16px;border-radius:var(--r-m);background:var(--surface-2)}
 .key::before{content:"Key idea";font-family:var(--font-display);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:800}
 .key p{font-weight:600;font-size:1rem}
