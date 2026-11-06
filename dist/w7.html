@@ -1421,6 +1421,13 @@ subject (short), body (under 100 words).</pre></div></li>
     function fromHash(){ var m = /^#(?:day([1-9])|(lab|quiz|build))$/.exec(location.hash || ''); if (!m) return 0; return m[1] ? parseInt(m[1], 10) : DAYS; }
     function innerTarget(){ return /^#(lab|quiz|build)$/.test(location.hash || '') ? $(location.hash) : null; }
     show(fromHash() || Course.store.get('day', 1), false);
+    /* Arriving from a day link elsewhere (the hub's tracker Open buttons and its Continue button end in #dayN) opens that day's tab with
+       the banner still in view, the same as clicking the tab on this page. Taking #dayN off the address stops the browser jumping to the
+       day's text; the day itself is remembered, so a reload opens the same tab. #lab, #quiz and #build still scroll to their part. */
+    if (/^#day[1-9]$/.test(location.hash || '')) {
+      try { history.replaceState(history.state, '', location.href.replace(/#.*$/, '')); } catch (e) {}
+      window.scrollTo(0, 0);
+    }
     var t0 = innerTarget(); if (t0) setTimeout(function(){ t0.scrollIntoView({block: 'start'}); }, 60);
     window.addEventListener('hashchange', function(){ var n = fromHash(); if (!n) return; show(n, !innerTarget()); var t = innerTarget(); if (t) setTimeout(function(){ t.scrollIntoView({behavior: Course.motionOK ? 'smooth' : 'auto', block: 'start'}); }, 80); });
     dots();
